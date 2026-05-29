@@ -18,27 +18,8 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError("Giriş başarısız. Email veya şifre hatalı.");
-      setLoading(false);
-      return;
-    }
-
-    // FIND (satır 19-27):
-    if (error) {
-      setError("Giriş başarısız. Email veya şifre hatalı.");
-      setLoading(false);
-      return;
-    }
-    router.push("/trainer");
-    router.refresh();
-
-// REPLACE:
     if (error) {
       setError("Giriş başarısız. Email veya şifre hatalı.");
       setLoading(false);
@@ -62,7 +43,6 @@ export default function LoginPage() {
       }
       router.refresh();
     }
-    router.refresh();
   };
 
   return (
