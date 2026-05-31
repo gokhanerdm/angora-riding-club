@@ -297,8 +297,8 @@ export default function ReservationsPage() {
           </div>
 
           {loading ? <p className="text-gray-500">Yükleniyor...</p> : (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <table className="w-full">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="text-left px-4 py-3 text-xs font-bold text-gray-600">Tarih & Saat</th>
@@ -346,7 +346,7 @@ export default function ReservationsPage() {
 
       {/* TAKVİM */}
       {tab === 'calendar' && (
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             {/* Eğitmen seç + tarih nav */}
             <div className="flex items-center gap-4 mb-4">
@@ -401,7 +401,7 @@ export default function ReservationsPage() {
 
           {/* Aksiyon paneli */}
           {selectedSlot && (
-            <div className="w-64 bg-white border border-gray-200 rounded-xl p-4 flex-shrink-0">
+            <div className="lg:w-64 lg:flex-shrink-0 bg-white border border-gray-200 rounded-xl p-4">
               <div className="flex justify-between items-center mb-3">
                 <p className="font-bold text-gray-900">{formatTime(selectedSlot)}</p>
                 <button onClick={() => setSelectedSlot(null)} className="text-gray-400 hover:text-gray-700 text-lg font-bold">✕</button>

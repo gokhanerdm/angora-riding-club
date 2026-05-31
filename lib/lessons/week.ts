@@ -2,6 +2,7 @@ const dayKeyFormatter = new Intl.DateTimeFormat("en-CA", {
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
+  timeZone: "Europe/Istanbul",
 });
 
 export function parseWeekOffset(value: string | undefined) {
@@ -11,7 +12,10 @@ export function parseWeekOffset(value: string | undefined) {
 }
 
 export function getWeekDays(weekOffset: number) {
-  const today = new Date();
+  // Sunucu UTC'de çalışır; Istanbul saatini (UTC+3) baz alarak "bugün"ü hesapla
+  const today = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" })
+  );
   today.setHours(0, 0, 0, 0);
 
   const weekday = today.getDay();

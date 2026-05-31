@@ -127,13 +127,15 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
       })
 
     if (!attendanceError) {
-      await supabase
+      const { error: resError } = await supabase
         .from('reservations')
         .update({ status })
         .eq('id', attendanceModal.reservationId)
 
-      const mapKey = `${attendanceModal.date}|${attendanceModal.time}`
-      setLocalStatuses(prev => ({ ...prev, [mapKey]: status }))
+      if (!resError) {
+        const mapKey = `${attendanceModal.date}|${attendanceModal.time}`
+        setLocalStatuses(prev => ({ ...prev, [mapKey]: status }))
+      }
     }
 
     setAttendanceLoading(false)

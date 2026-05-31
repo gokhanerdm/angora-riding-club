@@ -34,29 +34,16 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({ id: data.user.id, role: 'member' })
+      const { error: setupError } = await supabase.rpc('complete_signup', {
+        p_user_id: data.user.id,
+        p_name: name,
+        p_surname: surname,
+        p_email: email,
+        p_phone: phone,
+      })
 
-      if (profileError) {
-        setError('Profil oluşturulamadı')
-        setLoading(false)
-        return
-      }
-
-      const { error: memberError } = await supabase
-        .from('members')
-        .insert({
-          user_id: data.user.id,
-          name,
-          surname,
-          email,
-          phone,
-          member_status: 'active'
-        })
-
-      if (memberError) {
-        setError('Üye kaydı oluşturulamadı')
+      if (setupError) {
+        setError('Kayıt tamamlanamadı. Lütfen tekrar deneyin.')
         setLoading(false)
         return
       }

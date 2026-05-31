@@ -125,8 +125,8 @@ export default function MembersPage() {
   const resStatusLabel = (s: string) => ({ completed: 'Tamamlandı', cancelled: 'İptal', no_show: 'Gelmedi', pending: 'Beklemede', approved: 'Onaylı' }[s] ?? s)
 
   return (
-    <div className="flex gap-6 h-full">
-      <div className="flex-1 min-w-0">
+    <div className="relative flex gap-6 h-full">
+      <div className={`flex-1 min-w-0 ${selected ? 'hidden lg:block' : ''}`}>
         <div className="mb-6 flex flex-col gap-3">
           <h1 className="text-2xl font-bold text-gray-900">Üyeler</h1>
           <input
@@ -170,7 +170,7 @@ export default function MembersPage() {
       </div>
 
       {selected && (
-        <div className="w-96 flex-shrink-0 bg-white border border-gray-200 rounded-2xl p-5 overflow-y-auto max-h-[calc(100vh-8rem)]">
+        <div className="absolute inset-0 z-10 overflow-y-auto bg-white rounded-2xl p-5 lg:relative lg:inset-auto lg:z-auto lg:w-96 lg:flex-shrink-0 lg:border lg:border-gray-200 lg:max-h-[calc(100vh-8rem)]">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h2 className="text-xl font-bold text-gray-900">{selected.name} {selected.surname}</h2>
