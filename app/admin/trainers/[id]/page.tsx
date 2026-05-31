@@ -54,10 +54,12 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
       <TrainerDashboardClient
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}
+        initialShift={null}
         stats={{
           today_lessons: stats.today_lessons,
           completed_lessons: stats.completed_lessons,
           monthly_reserved: monthResult.count ?? 0,
+          next_month_reserved: 0,
           monthly_prim: monthlyPrim,
         }}
       />

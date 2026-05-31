@@ -3,170 +3,137 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-type Package = {
-  id: string
-  lesson_count: number
-  weekday_price: number
-  general_price: number
-  is_active: boolean
-}
+type Package = { id: string; lesson_count: number; weekday_price: number; general_price: number; is_active: boolean }
+
+const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+const INPUT = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
 
 export default function SettingsPage() {
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
-  const [newPackage, setNewPackage] = useState({ lesson_count: '', weekday_price: '', general_price: '' })
+  const [newPkg, setNewPkg] = useState({ lesson_count: '', weekday_price: '', general_price: '' })
   const [adding, setAdding] = useState(false)
+  const [toast, setToast] = useState('')
 
   useEffect(() => { loadPackages() }, [])
 
   const loadPackages = async () => {
     setLoading(true)
     const supabase = createClient()
-    const { data } = await supabase
-      .from('membership_packages')
-      .select('id, lesson_count, weekday_price, general_price, is_active')
-      .order('lesson_count', { ascending: true })
+    const { data } = await supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_active').order('lesson_count', { ascending: true })
     setPackages(data ?? [])
     setLoading(false)
   }
 
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2000) }
+
   const updatePackage = async (pkg: Package) => {
     setSaving(pkg.id)
     const supabase = createClient()
-    await supabase.from('membership_packages').update({
-      weekday_price: pkg.weekday_price,
-      general_price: pkg.general_price,
-      is_active: pkg.is_active
-    }).eq('id', pkg.id)
+    await supabase.from('membership_packages').update({ weekday_price: pkg.weekday_price, general_price: pkg.general_price, is_active: pkg.is_active }).eq('id', pkg.id)
     setSaving(null)
-    alert('Kaydedildi.')
+    showToast('Kaydedildi.')
   }
 
   const addPackage = async () => {
-    if (!newPackage.lesson_count || !newPackage.weekday_price || !newPackage.general_price) {
-      alert('Tüm alanları doldurun.')
-      return
-    }
+    if (!newPkg.lesson_count || !newPkg.weekday_price || !newPkg.general_price) { showToast('Tüm alanları doldurun.'); return }
     setAdding(true)
     const supabase = createClient()
-    await supabase.from('membership_packages').insert({
-      lesson_count: parseInt(newPackage.lesson_count),
-      weekday_price: parseFloat(newPackage.weekday_price),
-      general_price: parseFloat(newPackage.general_price),
-      is_active: true
-    })
-    setNewPackage({ lesson_count: '', weekday_price: '', general_price: '' })
+    await supabase.from('membership_packages').insert({ lesson_count: parseInt(newPkg.lesson_count), weekday_price: parseFloat(newPkg.weekday_price), general_price: parseFloat(newPkg.general_price), is_active: true })
+    setNewPkg({ lesson_count: '', weekday_price: '', general_price: '' })
     await loadPackages()
     setAdding(false)
   }
 
-  const toggleActive = (id: string, current: boolean) => {
-    setPackages(prev => prev.map(p => p.id === id ? { ...p, is_active: !current } : p))
-  }
-
-  const updatePrice = (id: string, field: 'weekday_price' | 'general_price', value: string) => {
-    setPackages(prev => prev.map(p => p.id === id ? { ...p, [field]: parseFloat(value) || 0 } : p))
-  }
+  const toggleActive = (id: string, current: boolean) => setPackages(prev => prev.map(p => p.id === id ? { ...p, is_active: !current } : p))
+  const updatePrice = (id: string, field: 'weekday_price' | 'general_price', value: string) => setPackages(prev => prev.map(p => p.id === id ? { ...p, [field]: parseFloat(value) || 0 } : p))
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Ayarlar</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Ayarlar</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Paket Fiyatları</h2>
+      <p className="text-sm font-bold mb-4" style={{ color: '#7b93c4' }}>Paket Fiyatları</p>
 
-        {loading ? <p className="text-gray-500">Yükleniyor...</p> : (
-          <div className="space-y-3">
-            {packages.map(pkg => (
-              <div key={pkg.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-20 text-center">
-                  <p className="text-2xl font-bold text-gray-900">{pkg.lesson_count}</p>
-                  <p className="text-xs text-gray-500">Ders</p>
+      {loading ? (
+        <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      ) : (
+        <div className="space-y-3">
+          {packages.map(pkg => (
+            <div key={pkg.id} className="rounded-2xl p-4" style={CARD}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-white">{pkg.lesson_count}</span>
+                  <span className="text-sm" style={{ color: '#7b93c4' }}>Ders</span>
                 </div>
-
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-gray-500 font-bold mb-1 block">Hafta İçi (₺)</label>
-                    <input
-                      type="number"
-                      value={pkg.weekday_price}
-                      onChange={e => updatePrice(pkg.id, 'weekday_price', e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg text-sm text-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500 font-bold mb-1 block">Genel (₺)</label>
-                    <input
-                      type="number"
-                      value={pkg.general_price}
-                      onChange={e => updatePrice(pkg.id, 'general_price', e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg text-sm text-gray-900"
-                    />
-                  </div>
+                <button
+                  onClick={() => toggleActive(pkg.id, pkg.is_active)}
+                  className="px-3 py-1 rounded-full text-xs font-bold"
+                  style={pkg.is_active
+                    ? { background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }
+                    : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  {pkg.is_active ? 'Aktif' : 'Pasif'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Hafta İçi (₺)</p>
+                  <input type="number" value={pkg.weekday_price} onChange={e => updatePrice(pkg.id, 'weekday_price', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => toggleActive(pkg.id, pkg.is_active)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${pkg.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {pkg.is_active ? 'Aktif' : 'Pasif'}
-                  </button>
-                  <button
-                    onClick={() => updatePackage(pkg)}
-                    disabled={saving === pkg.id}
-                    className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-700 disabled:opacity-50">
-                    {saving === pkg.id ? '...' : 'Kaydet'}
-                  </button>
+                <div>
+                  <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Genel (₺)</p>
+                  <input type="number" value={pkg.general_price} onChange={e => updatePrice(pkg.id, 'general_price', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              <button onClick={() => updatePackage(pkg)} disabled={saving === pkg.id}
+                className="w-full py-2 rounded-xl text-sm font-bold disabled:opacity-50"
+                style={{ background: '#f59e0b', color: '#0a0f2e' }}>
+                {saving === pkg.id ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* Yeni paket ekle */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="text-sm font-bold text-gray-700 mb-3">Yeni Paket Ekle</h3>
-          <div className="flex gap-3 items-end">
-            <div>
-              <label className="text-xs text-gray-500 font-bold mb-1 block">Ders Sayısı</label>
-              <input
-                type="number"
-                value={newPackage.lesson_count}
-                onChange={e => setNewPackage(p => ({ ...p, lesson_count: e.target.value }))}
-                className="w-24 px-3 py-2 border rounded-lg text-sm text-gray-900"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 font-bold mb-1 block">Hafta İçi (₺)</label>
-              <input
-                type="number"
-                value={newPackage.weekday_price}
-                onChange={e => setNewPackage(p => ({ ...p, weekday_price: e.target.value }))}
-                className="w-32 px-3 py-2 border rounded-lg text-sm text-gray-900"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 font-bold mb-1 block">Genel (₺)</label>
-              <input
-                type="number"
-                value={newPackage.general_price}
-                onChange={e => setNewPackage(p => ({ ...p, general_price: e.target.value }))}
-                className="w-32 px-3 py-2 border rounded-lg text-sm text-gray-900"
-                placeholder="0"
-              />
-            </div>
-            <button
-              onClick={addPackage}
-              disabled={adding}
-              className="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-600 disabled:opacity-50">
-              {adding ? '...' : 'Ekle'}
-            </button>
+      {/* Yeni paket */}
+      <div className="mt-6 rounded-2xl p-4" style={CARD}>
+        <p className="text-sm font-bold text-white mb-4">Yeni Paket Ekle</p>
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ders Sayısı</p>
+            <input type="number" value={newPkg.lesson_count} onChange={e => setNewPkg(p => ({ ...p, lesson_count: e.target.value }))}
+              placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Hafta İçi (₺)</p>
+              <input type="number" value={newPkg.weekday_price} onChange={e => setNewPkg(p => ({ ...p, weekday_price: e.target.value }))}
+                placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+            </div>
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Genel (₺)</p>
+              <input type="number" value={newPkg.general_price} onChange={e => setNewPkg(p => ({ ...p, general_price: e.target.value }))}
+                placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+            </div>
+          </div>
+          <button onClick={addPackage} disabled={adding}
+            className="w-full py-2 rounded-xl text-sm font-bold disabled:opacity-50"
+            style={{ background: '#f59e0b', color: '#0a0f2e' }}>
+            {adding ? 'Ekleniyor...' : 'Paket Ekle'}
+          </button>
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold text-white"
+          style={{ background: 'rgba(52,211,153,0.2)', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(8px)' }}>
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

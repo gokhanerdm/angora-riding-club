@@ -45,11 +45,12 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
     (s: any) => `${s.scheduled_date}|${s.start_time}`
   );
 
-  const reservationMap: Record<string, { member_name: string; status: string }> = {};
+  const reservationMap: Record<string, { id: string; member_name: string; status: string }> = {};
   for (const r of (reservations ?? []) as any[]) {
     const key = `${r.scheduled_date}|${r.start_time}`;
     const member = Array.isArray(r.members) ? r.members[0] : r.members;
     reservationMap[key] = {
+      id: r.id,
       member_name: member ? `${member.name} ${member.surname}` : "Bilinmiyor",
       status: r.status,
     };
