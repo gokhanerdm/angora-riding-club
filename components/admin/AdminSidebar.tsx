@@ -2,20 +2,20 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+
 export default function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+
   const menuItems = [
-    { href: '/admin', label: 'Kontrol Paneli', icon: '📊' },
-    { href: '/admin/members', label: 'Üyeler', icon: '👥' },
     { href: '/admin/trainers', label: 'Eğitmenler', icon: '🏇' },
-   { href: '/admin/memberships', label: 'Üyelikler', icon: '💳' },
-    { href: '/admin/membership-requests', label: 'Üyelik Talepleri', icon: '📋' },
-    { href: '/admin/reservations', label: 'Rezervasyonlar', icon: '📅' },
-    { href: '/admin/payments', label: 'Ödemeler', icon: '💰' },
+    { href: '/admin/members', label: 'Üyeler', icon: '👥' },
+    { href: '/admin/memberships', label: 'Üyelikler', icon: '💳' },
+    { href: '/admin/payments', label: 'Hesaplamalar', icon: '💰' },
     { href: '/admin/notifications', label: 'Bildirimler', icon: '🔔' },
     { href: '/admin/settings', label: 'Ayarlar', icon: '⚙️' },
   ]
+
   return (
     <>
       <button
@@ -39,6 +39,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setIsOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 mb-1 rounded-lg transition ${pathname === item.href ? 'bg-amber-500 text-gray-900 font-bold' : 'text-gray-300 hover:bg-gray-800'}`}
             >
               <span className="text-xl">{item.icon}</span>

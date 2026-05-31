@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import ReservationCalendar from '@/components/member/ReservationCalendar'
 import MemberDashboardClient from '@/components/member/MemberDashboardClient'
 
 interface MemberStats {
@@ -16,33 +15,41 @@ export default async function MemberDashboard() {
 
   const [statsResult, memberResult] = await Promise.all([
     supabase.rpc('member_dashboard_stats', { user_id: user.id }),
-    supabase.from('members').select('name').eq('user_id', user.id).single()
+    supabase.from('members').select('id, name').eq('user_id', user.id).single()
   ])
 
   const stats = statsResult.data?.[0] as MemberStats ?? {
     total_lessons: 0, used_lessons: 0, remaining_lessons: 0, reserved_lessons: 0
   }
+  const memberId = memberResult.data?.id
   const memberName = memberResult.data?.name ?? ''
 
+  let trainerName = ''
+  if (memberId) {
+    const { data: trainerData } = await supabase
+      .from('member_allowed_trainers')
+      .select('trainers(name, surname)')
+      .eq('member_id', memberId)
+      .limit(1)
+      .single()
+
+    if (trainerData) {
+      const t = Array.isArray(trainerData.trainers) ? trainerData.trainers[0] : trainerData.trainers
+      if (t) trainerName = `${t.name} ${t.surname}`
+    }
+  }
+
   return (
-    <div>
-      <div className="mb-8">
-        <p className="text-gray-500 font-medium mt-1">Hoş Geldin, <span className="font-bold text-gray-900">{memberName}</span></p>
-      </div>
-
-      <MemberDashboardClient stats={stats} userId={user.id} />
-
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Rezervasyon Takvimi</h2>
-        <ReservationCalendar />
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        
-          <a href="/member/packages" className="inline-block bg-amber-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-amber-600">
-  Üyelik Seçenekleri
-</a>
-      </div>
-    </div>
+    <MemberDashboardClient
+      stats={{
+        total_lessons: stats?.total_lessons ?? 0,
+        used_lessons: stats?.used_lessons ?? 0,
+        remaining_lessons: stats?.remaining_lessons ?? 0,
+        reserved_lessons: stats?.reserved_lessons ?? 0,
+      }}
+      userId={user.id}
+      memberName={memberName}
+      trainerName={trainerName}
+    />
   )
 }

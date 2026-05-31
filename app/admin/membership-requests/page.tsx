@@ -14,16 +14,25 @@ interface Request {
   created_at: string
 }
 
+interface Trainer {
+  id: string
+  name: string
+  surname: string
+}
+
 export default function MembershipRequestsPage() {
   const [requests, setRequests] = useState<Request[]>([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(true)
   const [approveModal, setApproveModal] = useState<Request | null>(null)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'nakit' | 'havale' | 'kart'>('nakit')
+  const [selectedTrainer, setSelectedTrainer] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     loadRequests()
+    loadTrainers()
   }, [])
 
   const loadRequests = async () => {
@@ -32,6 +41,16 @@ export default function MembershipRequestsPage() {
     const { data } = await supabase.rpc('get_membership_requests')
     if (data) setRequests(data)
     setLoading(false)
+  }
+
+  const loadTrainers = async () => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('trainers')
+      .select('id, name, surname')
+      .is('deleted_at', null)
+      .order('name')
+    setTrainers(data ?? [])
   }
 
   const formatPrice = (price: number) =>
@@ -49,6 +68,7 @@ export default function MembershipRequestsPage() {
     setApproveModal(request)
     setPaymentAmount(request.price.toString())
     setPaymentMethod('nakit')
+    setSelectedTrainer(trainers[0]?.id ?? '')
   }
 
   const handleReject = async (requestId: string) => {
@@ -58,11 +78,8 @@ export default function MembershipRequestsPage() {
       .from('membership_requests')
       .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
       .eq('id', requestId)
-    if (error) {
-      alert('Hata: ' + error.message)
-    } else {
-      loadRequests()
-    }
+    if (error) alert('Hata: ' + error.message)
+    else loadRequests()
   }
 
   const handleConfirmApprove = async () => {
@@ -77,7 +94,8 @@ export default function MembershipRequestsPage() {
       admin_user_id: user.id,
       request_id: approveModal.id,
       payment_amount: parseFloat(paymentAmount),
-      p_payment_method: paymentMethod
+      p_payment_method: paymentMethod,
+      p_trainer_id: selectedTrainer || null
     })
 
     if (error) {
@@ -119,24 +137,18 @@ export default function MembershipRequestsPage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button
-                  onClick={() => handleApprove(request)}
-                  className="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700"
-                >
+                <button onClick={() => handleApprove(request)}
+                  className="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700">
                   Onayla
                 </button>
-                <button
-                  onClick={() => handleReject(request.id)}
-                  className="bg-red-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-red-700"
-                >
+                <button onClick={() => handleReject(request.id)}
+                  className="bg-red-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-red-700">
                   Reddet
                 </button>
               </div>
             </div>
           ))}
-          {pendingRequests.length === 0 && (
-            <p className="text-gray-500">Bekleyen talep yok.</p>
-          )}
+          {pendingRequests.length === 0 && <p className="text-gray-500">Bekleyen talep yok.</p>}
         </div>
       </div>
 
@@ -150,9 +162,7 @@ export default function MembershipRequestsPage() {
                 <span className="text-gray-600 ml-4">{request.lesson_count} Ders</span>
               </div>
               <span className={`px-3 py-1 rounded font-bold text-sm ${
-                request.status === 'approved'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
+                request.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
               }`}>
                 {request.status === 'approved' ? 'Onaylandı' : 'Reddedildi'}
               </span>
@@ -173,18 +183,26 @@ export default function MembershipRequestsPage() {
             </div>
 
             <div className="mb-4">
+              <label className="block font-bold text-gray-900 mb-2">Eğitmen</label>
+              <select value={selectedTrainer} onChange={e => setSelectedTrainer(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg text-gray-900">
+                <option value="">Eğitmen seçin...</option>
+                {trainers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name} {t.surname}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-4">
               <label className="block font-bold text-gray-900 mb-2">Ödeme Yöntemi</label>
               <div className="flex gap-2">
                 {(['nakit', 'havale', 'kart'] as const).map(method => (
-                  <button
-                    key={method}
-                    onClick={() => setPaymentMethod(method)}
+                  <button key={method} onClick={() => setPaymentMethod(method)}
                     className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
                       paymentMethod === method
                         ? 'border-gray-900 bg-gray-900 text-white'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
-                    }`}
-                  >
+                    }`}>
                     {method.charAt(0).toUpperCase() + method.slice(1)}
                   </button>
                 ))}
@@ -193,28 +211,17 @@ export default function MembershipRequestsPage() {
 
             <div className="mb-6">
               <label className="block font-bold text-gray-900 mb-2">Ödenen Tutar (₺)</label>
-              <input
-                type="number"
-                value={paymentAmount}
-                onChange={e => setPaymentAmount(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg text-gray-900"
-                placeholder="0"
-              />
+              <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg text-gray-900" placeholder="0" />
             </div>
 
             <div className="flex gap-3">
-              <button
-                onClick={handleConfirmApprove}
-                disabled={submitting}
-                className="flex-1 bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-              >
+              <button onClick={handleConfirmApprove} disabled={submitting}
+                className="flex-1 bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 disabled:opacity-50">
                 {submitting ? 'İşleniyor...' : 'Onayla'}
               </button>
-              <button
-                onClick={() => setApproveModal(null)}
-                disabled={submitting}
-                className="flex-1 bg-gray-200 text-gray-900 font-bold py-2 rounded-lg hover:bg-gray-300"
-              >
+              <button onClick={() => setApproveModal(null)} disabled={submitting}
+                className="flex-1 bg-gray-200 text-gray-900 font-bold py-2 rounded-lg hover:bg-gray-300">
                 İptal
               </button>
             </div>
