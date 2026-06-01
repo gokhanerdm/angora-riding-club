@@ -16,9 +16,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <p className="font-bold text-white text-lg leading-none">Angora</p>
           <p className="text-xs font-bold mt-0.5" style={{ color: '#f59e0b' }}>Admin Paneli</p>
         </Link>
-        <div style={{ color: '#7b93c4' }}>
-          <LogoutButton />
-        </div>
       </header>
 
       <main className="px-4 py-6 pb-28">
@@ -26,6 +23,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </main>
 
       <AdminBottomNav />
+
+      {/* Çıkış — alt navigasyonun üstünde */}
+      <div className="fixed bottom-16 left-0 right-0 flex justify-center z-40 pb-1">
+        <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-1.5 rounded-xl transition-opacity hover:text-amber-300 opacity-50 hover:opacity-80" />
+      </div>
     </div>
   )
 }
