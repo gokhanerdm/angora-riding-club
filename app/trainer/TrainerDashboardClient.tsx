@@ -319,6 +319,10 @@ export default function TrainerDashboardClient({
           <div>
             <p className="text-[10px] font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
             <h1 className="text-2xl font-bold text-white">{trainerName}</h1>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>Eğitmen</p>
+            </div>
           </div>
         </div>
         <button
