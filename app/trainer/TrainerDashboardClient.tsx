@@ -304,7 +304,7 @@ export default function TrainerDashboardClient({
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
+      className="min-h-screen flex flex-col"
       style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)' }}
     >
       {/* Header */}
@@ -378,12 +378,12 @@ export default function TrainerDashboardClient({
         </button>
       </div>
 
-      {/* Slot grid - no scroll, fills remaining space */}
-      <div className="flex-1 px-5 pb-4 overflow-hidden">
+      {/* Slot grid */}
+      <div className="flex-1 px-5 pb-4">
         {scheduleLoading
           ? <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
           : (
-            <div className="grid grid-cols-2 gap-1 h-full content-start">
+            <div className="grid grid-cols-2 gap-1">
               {visibleSlots.map(slot => {
                 const res = reservations[slot]
                 const isClosed = closedSlots.has(slot)
