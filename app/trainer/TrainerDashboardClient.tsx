@@ -98,6 +98,8 @@ export default function TrainerDashboardClient({
   const [shift, setShift] = useState<string>(initialShift ?? 'fullday')
   const [showShiftPicker, setShowShiftPicker] = useState(false)
   const [shiftSaving, setShiftSaving] = useState(false)
+  const [toast, setToast] = useState('')
+  const showFeedback = (msg: string, ok: boolean) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
   const [showStudents, setShowStudents] = useState(false)
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [selectedMemberStats, setSelectedMemberStats] = useState<MemberStats | null>(null)
@@ -189,7 +191,7 @@ export default function TrainerDashboardClient({
 
   const handleBookMember = async (member: Member) => {
     if (member.remaining_lessons <= 0) {
-      alert(`${member.name} ${member.surname} adlı üyenin dersi kalmamış.`)
+      showFeedback(`${member.name} ${member.surname} adlı üyenin dersi kalmamış.`, false)
       return
     }
     setActionLoading(true)
@@ -201,16 +203,21 @@ export default function TrainerDashboardClient({
       p_scheduled_date: currentDate, p_start_time: selectedSlot!,
       p_end_time: endTime.toTimeString().substring(0, 8),
     })
-    if (error) alert('Hata: ' + error.message)
+    if (error) showFeedback('Hata: ' + error.message, false)
     else { await loadSchedule(currentDate); await loadMembers() }
     setActionLoading(false)
   }
 
-  const handleCancelReservation = async (reservationId: string) => {
-    if (!confirm('Bu dersi iptal etmek istediğinize emin misiniz?')) return
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
+
+  const handleCancelReservation = async () => {
+    if (!cancelTarget) return
     setActionLoading(true)
     const supabase = createClient()
-    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', reservationId)
+    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', cancelTarget)
+    setCancelTarget(null)
+    setSelectedSlot(null)
+    setSlotAction(null)
     await loadSchedule(currentDate)
     setActionLoading(false)
   }
@@ -333,6 +340,14 @@ export default function TrainerDashboardClient({
           Slotlar
         </button>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold text-white mx-4"
+          style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)', backdropFilter: 'blur(8px)' }}>
+          {toast}
+        </div>
+      )}
 
       {/* Stat cards 3x2 */}
       <div className="grid grid-cols-3 gap-1.5 px-5 mb-2 flex-shrink-0">
@@ -491,7 +506,7 @@ export default function TrainerDashboardClient({
                         </>
                       )}
                       {future && !done && (
-                        <button onClick={() => handleCancelReservation(selectedRes.id)}
+                        <button onClick={() => setCancelTarget(selectedRes.id)}
                           disabled={actionLoading}
                           className="w-full py-3 rounded-2xl text-sm font-bold"
                           style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
@@ -686,6 +701,29 @@ export default function TrainerDashboardClient({
                   {shift === opt.key && <span style={{ color: '#38bdf8' }}>✓</span>}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* İptal onay modalı */}
+      {cancelTarget && (
+        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="text-lg font-bold text-white mb-2">Dersi İptal Et</h3>
+            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu dersi iptal etmek istediğinize emin misiniz?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setCancelTarget(null)} disabled={actionLoading}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                Vazgeç
+              </button>
+              <button onClick={handleCancelReservation} disabled={actionLoading}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                {actionLoading ? '...' : 'İptal Et'}
+              </button>
             </div>
           </div>
         </div>

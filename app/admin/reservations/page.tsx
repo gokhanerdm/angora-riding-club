@@ -78,6 +78,9 @@ export default function ReservationsPage() {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [actionLoading, setActionLoading] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
+  const [actionMsg, setActionMsg] = useState('')
+  const showMsg = (m: string) => { setActionMsg(m); setTimeout(() => setActionMsg(''), 3000) }
 
   useEffect(() => { loadReservations() }, [])
   useEffect(() => { loadTrainers() }, [])
@@ -147,16 +150,17 @@ export default function ReservationsPage() {
     const endTime = new Date(`2000-01-01T${selectedSlot!}`)
     endTime.setMinutes(endTime.getMinutes() + 30)
     const { error } = await supabase.rpc('trainer_create_reservation', { p_member_id: member.id, p_trainer_id: selectedTrainer, p_scheduled_date: currentDate, p_start_time: selectedSlot!, p_end_time: endTime.toTimeString().substring(0, 8) })
-    if (error) alert('Hata: ' + error.message)
+    if (error) showMsg('Hata: ' + error.message)
     else await loadCalendar()
     setActionLoading(false)
   }
 
-  const handleCancel = async (reservationId: string) => {
-    if (!confirm('Bu rezervasyonu iptal etmek istediğinize emin misiniz?')) return
+  const handleCancel = async () => {
+    if (!cancelTarget) return
     setActionLoading(true)
     const supabase = createClient()
-    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', reservationId)
+    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', cancelTarget)
+    setCancelTarget(null)
     await loadCalendar()
     setActionLoading(false)
   }
@@ -365,7 +369,7 @@ export default function ReservationsPage() {
                       <option value="cancelled">İptal</option>
                       <option value="no_show">Gelmedi</option>
                     </select>
-                    <button onClick={() => handleCancel(selectedRes.id)} disabled={actionLoading}
+                    <button onClick={() => setCancelTarget(selectedRes.id)} disabled={actionLoading}
                       className="w-full py-2 rounded-xl text-sm font-bold disabled:opacity-50"
                       style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
                       İptal Et
@@ -405,6 +409,33 @@ export default function ReservationsPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {cancelTarget && (
+        <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="text-lg font-bold text-white mb-2">Rezervasyonu İptal Et</h3>
+            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu rezervasyonu iptal etmek istediğinize emin misiniz?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setCancelTarget(null)} disabled={actionLoading}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={handleCancel} disabled={actionLoading}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                {actionLoading ? '...' : 'İptal Et'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {actionMsg && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold text-white"
+          style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)' }}>
+          {actionMsg}
         </div>
       )}
     </div>

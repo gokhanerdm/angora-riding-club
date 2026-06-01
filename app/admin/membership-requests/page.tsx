@@ -45,11 +45,19 @@ export default function MembershipRequestsPage() {
 
   const handleApprove = (req: Request) => { setApproveModal(req); setPaymentAmount(req.price.toString()); setPaymentMethod('nakit'); setSelectedTrainer(trainers[0]?.id ?? '') }
 
-  const handleReject = async (id: string) => {
-    if (!confirm('Bu talebi reddetmek istediğinize emin misiniz?')) return
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null)
+  const [rejecting, setRejecting] = useState(false)
+  const [toast, setToast] = useState('')
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+
+  const handleReject = async () => {
+    if (!rejectTarget) return
+    setRejecting(true)
     const supabase = createClient()
-    const { error } = await supabase.from('membership_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', id)
-    if (error) alert('Hata: ' + error.message)
+    const { error } = await supabase.from('membership_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', rejectTarget)
+    setRejecting(false)
+    setRejectTarget(null)
+    if (error) showToast('Hata: ' + error.message)
     else loadRequests()
   }
 
@@ -60,7 +68,7 @@ export default function MembershipRequestsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { error } = await supabase.rpc('approve_membership_request_with_payment', { admin_user_id: user.id, request_id: approveModal.id, payment_amount: parseFloat(paymentAmount), p_payment_method: paymentMethod, p_trainer_id: selectedTrainer || null })
-    if (error) alert('Hata: ' + error.message)
+    if (error) showToast('Hata: ' + error.message)
     else { setApproveModal(null); loadRequests() }
     setSubmitting(false)
   }
@@ -97,7 +105,7 @@ export default function MembershipRequestsPage() {
                 style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
                 Onayla
               </button>
-              <button onClick={() => handleReject(r.id)}
+              <button onClick={() => setRejectTarget(r.id)}
                 className="flex-1 py-2 rounded-xl text-sm font-bold"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
                 Reddet
@@ -175,6 +183,35 @@ export default function MembershipRequestsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Reddet onay modalı */}
+      {rejectTarget && (
+        <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="text-lg font-bold text-white mb-2">Talebi Reddet</h3>
+            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu üyelik talebini reddetmek istediğinize emin misiniz?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setRejectTarget(null)} disabled={rejecting}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={handleReject} disabled={rejecting}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                {rejecting ? '...' : 'Reddet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold text-white"
+          style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)' }}>
+          {toast}
         </div>
       )}
     </div>
