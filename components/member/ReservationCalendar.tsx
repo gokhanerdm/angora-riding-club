@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface TimeSlot {
@@ -17,6 +18,7 @@ function toDateStr(date: Date): string {
 }
 
 export default function ReservationCalendar() {
+  const router = useRouter()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -26,6 +28,8 @@ export default function ReservationCalendar() {
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const [bookingState, setBookingState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [bookingMsg, setBookingMsg] = useState('')
 
   // Max 4 ay ileri, her ay başında bir yeni ay açılır
   const maxMonth = (today.getMonth() + 3) % 12
@@ -93,7 +97,8 @@ export default function ReservationCalendar() {
   }
 
   const handleReservation = async (slot: TimeSlot) => {
-    if (!confirm(`${slot.slot_time.substring(0, 5)} saatinde rezervasyon yapmak istiyor musunuz?`)) return
+    setBookingState('loading')
+    setBookingMsg('')
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -111,8 +116,15 @@ export default function ReservationCalendar() {
       p_reservation_type: 'general'
     })
 
-    if (error) alert('Rezervasyon yapılamadı: ' + error.message)
-    else { alert('Rezervasyon başarılı!'); setModalOpen(false) }
+    if (error) {
+      setBookingState('error')
+      setBookingMsg(error.message)
+    } else {
+      setBookingState('success')
+      setBookingMsg(`${slot.slot_time.substring(0,5)} rezervasyonunuz alındı!`)
+      router.refresh()
+      setTimeout(() => { setModalOpen(false); setBookingState('idle') }, 1800)
+    }
   }
 
   return (
@@ -194,6 +206,18 @@ export default function ReservationCalendar() {
             </div>
 
             <div className="overflow-y-auto flex-1 px-4 py-4">
+              {bookingState === 'success' && (
+                <div className="mb-3 px-4 py-3 rounded-2xl text-sm font-bold text-center"
+                  style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                  {bookingMsg}
+                </div>
+              )}
+              {bookingState === 'error' && (
+                <div className="mb-3 px-4 py-3 rounded-2xl text-sm font-bold text-center"
+                  style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                  {bookingMsg}
+                </div>
+              )}
               {loading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
               {!loading && slots.length === 0 && (
                 <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Bu tarihte müsait ders bulunamadı.</p>
@@ -203,7 +227,7 @@ export default function ReservationCalendar() {
                   {slots.map((slot, index) => (
                     <button
                       key={index}
-                      disabled={!slot.is_available}
+                      disabled={!slot.is_available || bookingState === 'loading'}
                       onClick={() => handleReservation(slot)}
                       className="py-3.5 rounded-2xl text-sm font-bold transition-all"
                       style={slot.is_available

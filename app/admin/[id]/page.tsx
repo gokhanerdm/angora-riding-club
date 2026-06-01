@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import TrainerDashboardClient from '@/app/trainer/TrainerDashboardClient'
 
 export default async function AdminTrainerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -7,39 +8,28 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
   const supabase = await createClient()
 
   const { data: trainer } = await supabase
-    .from('trainers')
-    .select('id, name, surname, bonus_rate')
-    .eq('id', id)
-    .single()
+    .from('trainers').select('id, name, surname, bonus_rate').eq('id', id).single()
 
   if (!trainer) redirect('/admin/trainers')
 
-  const now = new Date()
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
-  const nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1)
-  const monthEnd = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth()+1).padStart(2,'0')}-01`
+  const now        = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
+  const pad        = (n: number) => String(n).padStart(2, '0')
+  const monthStart = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`
+  const nextMonth  = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  const monthEnd   = `${nextMonth.getFullYear()}-${pad(nextMonth.getMonth() + 1)}-01`
 
   const [statsResult, monthResult, primResult] = await Promise.all([
     supabase.rpc("get_trainer_stats", { p_trainer_id: trainer.id }).single<{
       today_lessons: number; week_lessons: number; completed_lessons: number
     }>(),
-    supabase.from('reservations')
-      .select('id', { count: 'exact' })
-      .eq('trainer_id', trainer.id)
-      .gte('scheduled_date', monthStart)
-      .lt('scheduled_date', monthEnd)
-      .neq('status', 'cancelled'),
-    supabase.from('reservations')
-      .select('member_id, memberships(lesson_price_snapshot)')
-      .eq('trainer_id', trainer.id)
-      .gte('scheduled_date', monthStart)
-      .lt('scheduled_date', monthEnd)
-      .in('status', ['completed', 'no_show'])
+    supabase.from('reservations').select('id', { count: 'exact' })
+      .eq('trainer_id', trainer.id).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd).neq('status', 'cancelled'),
+    supabase.from('reservations').select('member_id, memberships(lesson_price_snapshot)')
+      .eq('trainer_id', trainer.id).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd).in('status', ['completed', 'no_show']),
   ])
 
   const stats = statsResult.data ?? { today_lessons: 0, week_lessons: 0, completed_lessons: 0 }
   const bonusRate = trainer.bonus_rate ?? 0
-
   let monthlyPrim = 0
   for (const r of (primResult.data ?? []) as any[]) {
     const membership = Array.isArray(r.memberships) ? r.memberships[0] : r.memberships
@@ -48,19 +38,23 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
 
   return (
     <div>
-      <div className="mb-4">
-        <a href="/admin/trainers" className="text-sm text-gray-500 hover:text-gray-900">← Eğitmenler</a>
-      </div>
+      <Link
+        href="/admin/trainers"
+        className="inline-flex items-center gap-2 text-sm font-bold mb-6 px-4 py-2 rounded-xl"
+        style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        ← Eğitmenler
+      </Link>
       <TrainerDashboardClient
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}
         initialShift={null}
         stats={{
-          today_lessons: stats.today_lessons,
-          completed_lessons: stats.completed_lessons,
-          monthly_reserved: monthResult.count ?? 0,
+          today_lessons:       stats.today_lessons,
+          completed_lessons:   stats.completed_lessons,
+          monthly_reserved:    monthResult.count ?? 0,
           next_month_reserved: 0,
-          monthly_prim: monthlyPrim,
+          monthly_prim:        monthlyPrim,
         }}
       />
     </div>

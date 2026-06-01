@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReservationCalendar from './ReservationCalendar'
 import WelcomeModal from './WelcomeModal'
@@ -63,10 +64,12 @@ export default function MemberDashboardClient({
   memberName: string
   trainerName: string
 }) {
+  const router = useRouter()
   const [modal, setModal] = useState<ModalType>(null)
   const [packages, setPackages] = useState<Package[]>([])
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(false)
+  const [cancelFeedback, setCancelFeedback] = useState<{ msg: string; ok: boolean } | null>(null)
 
   const getMemberId = async (supabase: any) => {
     const { data } = await supabase.from('members').select('id').eq('user_id', userId).single()
@@ -103,16 +106,23 @@ export default function MemberDashboardClient({
 
   const handleCancel = async (reservationId: string, scheduledDate: string, startTime: string) => {
     if (!canCancel(scheduledDate, startTime)) {
-      alert('Dersi iptal etmek için en az 12 saat öncesinde işlem yapmanız gerekiyor.')
+      setCancelFeedback({ msg: 'Ders başlamadan en az 12 saat önce iptal yapılabilir.', ok: false })
+      setTimeout(() => setCancelFeedback(null), 3000)
       return
     }
-    if (!confirm('Bu dersi iptal etmek istediğinize emin misiniz?')) return
     const supabase = createClient()
     const { error } = await supabase.rpc('cancel_reservation', {
       p_reservation_id: reservationId, p_user_id: userId
     })
-    if (error) alert('İptal başarısız: ' + error.message)
-    else { alert('Ders iptal edildi.'); setModal(null); window.location.reload() }
+    if (error) {
+      setCancelFeedback({ msg: error.message, ok: false })
+      setTimeout(() => setCancelFeedback(null), 4000)
+    } else {
+      setReservations(prev => prev.filter(r => r.id !== reservationId))
+      setCancelFeedback({ msg: 'Ders iptal edildi.', ok: true })
+      setTimeout(() => setCancelFeedback(null), 3000)
+      router.refresh()
+    }
   }
 
   return (
@@ -205,6 +215,18 @@ export default function MemberDashboardClient({
             </div>
 
             <div className="overflow-y-auto flex-1 px-4 py-4 space-y-2">
+              {cancelFeedback && (
+                <div
+                  className="px-4 py-3 rounded-2xl text-sm font-bold text-center"
+                  style={{
+                    background: cancelFeedback.ok ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+                    color:      cancelFeedback.ok ? '#34d399' : '#f87171',
+                    border:     `1px solid ${cancelFeedback.ok ? 'rgba(52,211,153,0.3)' : 'rgba(248,113,113,0.3)'}`,
+                  }}
+                >
+                  {cancelFeedback.msg}
+                </div>
+              )}
               {loading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
 
               {!loading && modal === 'total' && (
