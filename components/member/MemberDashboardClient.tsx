@@ -148,16 +148,13 @@ export default function MemberDashboardClient({
             </div>
           )}
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <a
-            href="/member/packages"
-            className="text-xs font-bold px-4 py-2.5 rounded-2xl"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
-          >
-            Üyelik
-          </a>
-          <LogoutButton className="text-xs font-bold px-3 py-1.5 rounded-xl opacity-50 hover:opacity-80 active:opacity-100 transition-opacity" />
-        </div>
+        <a
+          href="/member/packages"
+          className="text-xs font-bold px-4 py-2.5 rounded-2xl"
+          style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
+        >
+          Üyelik
+        </a>
       </div>
 
       {/* Stat cards */}
@@ -193,6 +190,11 @@ export default function MemberDashboardClient({
       {/* Calendar */}
       <div className="flex-1 px-2">
         <ReservationCalendar />
+      </div>
+
+      {/* Çıkış */}
+      <div className="px-5 pb-10 pt-2 flex justify-center">
+        <LogoutButton className="text-xs px-4 py-2 rounded-xl transition-opacity opacity-30 hover:opacity-60 active:opacity-80" />
       </div>
 
       {/* Modal */}
