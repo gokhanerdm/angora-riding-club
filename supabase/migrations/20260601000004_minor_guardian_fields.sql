@@ -20,7 +20,8 @@ CREATE OR REPLACE FUNCTION public.update_member_profile(
   p_photo_url        TEXT DEFAULT NULL,
   p_veli_adi_soyadi  TEXT DEFAULT NULL,
   p_veli_telefon     TEXT DEFAULT NULL,
-  p_veli_iliskisi    TEXT DEFAULT NULL
+  p_veli_iliskisi    TEXT DEFAULT NULL,
+  p_veli_tc_kimlik   TEXT DEFAULT NULL
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -76,6 +77,7 @@ BEGIN
     veli_adi_soyadi         = p_veli_adi_soyadi,
     veli_telefon            = p_veli_telefon,
     veli_iliskisi           = p_veli_iliskisi,
+    veli_tc_kimlik          = p_veli_tc_kimlik,
     profile_completed       = v_completed,
     updated_at              = NOW()
   WHERE id = v_member_id;

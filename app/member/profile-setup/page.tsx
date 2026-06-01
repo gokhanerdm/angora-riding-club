@@ -36,6 +36,7 @@ export default function ProfileSetupPage() {
   const [veliAdi, setVeliAdi]             = useState('')
   const [veliTelefon, setVeliTelefon]     = useState('')
   const [veliIliskisi, setVeliIliskisi]   = useState('')
+  const [veliTcKimlik, setVeliTcKimlik]   = useState('')
   const [veliOnay, setVeliOnay]           = useState(false)
 
   const [saving, setSaving]               = useState(false)
@@ -62,7 +63,7 @@ export default function ProfileSetupPage() {
       return
     }
 
-    if (isMinor && (!veliAdi || !veliTelefon || !veliIliskisi)) {
+    if (isMinor && (!veliAdi || !veliTelefon || !veliIliskisi || !veliTcKimlik)) {
       setError('18 yaş ve altı üyeler için veli bilgileri zorunludur.')
       return
     }
@@ -107,6 +108,7 @@ export default function ProfileSetupPage() {
       p_veli_adi_soyadi: isMinor ? veliAdi : null,
       p_veli_telefon:    isMinor ? veliTelefon : null,
       p_veli_iliskisi:   isMinor ? veliIliskisi : null,
+      p_veli_tc_kimlik:  isMinor ? veliTcKimlik : null,
     })
 
     setSaving(false)
@@ -219,6 +221,16 @@ export default function ProfileSetupPage() {
               </label>
               <input type="text" value={veliAdi} onChange={e => setVeliAdi(e.target.value)}
                 placeholder="Anne veya babanın adı soyadı"
+                className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+                Veli TC Kimlik No <span style={{ color: '#f87171' }}>*</span>
+              </label>
+              <input type="text" inputMode="numeric" maxLength={11}
+                value={veliTcKimlik} onChange={e => setVeliTcKimlik(e.target.value.replace(/\D/g, ''))}
+                placeholder="11 haneli TC kimlik no"
                 className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT} />
             </div>
 
