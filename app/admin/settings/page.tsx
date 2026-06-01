@@ -21,7 +21,7 @@ export default function SettingsPage() {
   const loadPackages = async () => {
     setLoading(true)
     const supabase = createClient()
-    const { data } = await supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_active').order('lesson_count', { ascending: true })
+    const { data } = await supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_active').eq('is_active', true).order('lesson_count', { ascending: true })
     setPackages(data ?? [])
     setLoading(false)
   }
