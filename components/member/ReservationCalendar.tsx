@@ -290,7 +290,7 @@ export default function ReservationCalendar() {
               )}
 
               {!loading && slots.length > 0 && (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-1.5">
                   {slots.map((slot, idx) => {
                     const st = slotStyle(slot.slot_status)
                     return (
@@ -298,7 +298,7 @@ export default function ReservationCalendar() {
                         key={idx}
                         onClick={() => handleSlotClick(slot)}
                         disabled={slot.slot_status !== 'available' || bookingState === 'loading'}
-                        className="rounded-2xl py-3 px-3 text-left transition-opacity disabled:cursor-default active:opacity-70"
+                        className="rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
                         style={{ background: st.bg, border: st.border }}
                       >
                         <p className="text-sm font-bold text-white">
