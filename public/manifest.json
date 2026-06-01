@@ -1,0 +1,24 @@
+{
+  "name": "Angora Binicilik Spor Kulübü",
+  "short_name": "Angora",
+  "description": "Angora Binicilik Spor Kulübü üye ve yönetim uygulaması",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f2e",
+  "theme_color": "#0a0f2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

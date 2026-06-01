@@ -16,9 +16,7 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    loadPackages()
-  }, [])
+  useEffect(() => { loadPackages() }, [])
 
   const loadPackages = async () => {
     const supabase = createClient()
@@ -27,98 +25,90 @@ export default function PackagesPage() {
       .select('id, lesson_count, weekday_price, general_price')
       .eq('is_active', true)
       .order('lesson_count', { ascending: true })
-
-    if (data) {
-      setPackages(data)
-    }
+    if (data) setPackages(data)
     setLoading(false)
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY',
-      minimumFractionDigits: 0
-    }).format(price)
-  }
+  const formatPrice = (p: number) =>
+    new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(p)
 
   const handlePackageClick = async (pkg: Package, type: 'weekday' | 'general') => {
-  const price = type === 'weekday' ? pkg.weekday_price : pkg.general_price
-  const typeText = type === 'weekday' ? 'Hafta İçi' : 'Genel'
-  
-  if (!confirm(`${pkg.lesson_count} Ders - ${typeText} (${formatPrice(price)})\n\nBu paketi almak istiyor musunuz?`)) {
-    return
-  }
+    const price = type === 'weekday' ? pkg.weekday_price : pkg.general_price
+    const typeText = type === 'weekday' ? 'Hafta İçi' : 'Genel'
+    if (!confirm(`${pkg.lesson_count} Ders — ${typeText} (${formatPrice(price)})\n\nBu paketi almak istiyor musunuz?`)) return
 
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
 
-  const { error } = await supabase.rpc('create_membership_request', {
-    user_id: user.id,
-    p_package_id: pkg.id,
-    p_request_type: type
-  })
+    const { error } = await supabase.rpc('create_membership_request', {
+      user_id: user.id,
+      p_package_id: pkg.id,
+      p_request_type: type,
+    })
 
-  if (error) {
-    alert('Hata: ' + error.message)
-  } else {
-    alert('Satın alma talebiniz alındı. Admin onayından sonra üyeliğiniz aktif olacaktır.')
-    router.push('/member')
-  }
-}
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <p className="text-gray-500">Yükleniyor...</p>
-      </div>
-    )
+    if (error) alert('Hata: ' + error.message)
+    else {
+      alert('Talebiniz alındı. Admin onayından sonra üyeliğiniz aktif olacaktır.')
+      router.push('/member')
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <button
-            onClick={() => router.back()}
-            className="text-gray-600 hover:text-gray-900 mb-4"
-          >
-            ← Geri
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Üyelik Seçenekleri</h1>
-          <p className="text-gray-600 mt-2">Size uygun paketi seçin ve satın alma talebi gönderin.</p>
+    <div
+      className="min-h-screen px-4 py-6"
+      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
+    >
+      <div className="flex items-center gap-3 mb-8 pt-10">
+        <button onClick={() => router.back()}
+          className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-bold"
+          style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+          ←
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-white">Üyelik Seçenekleri</h1>
+          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Size uygun paketi seçin</p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <div key={pkg.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <div className="text-center mb-6">
-                <div className="text-5xl font-bold text-gray-900 mb-2">{pkg.lesson_count}</div>
-                <div className="text-gray-600">Ders</div>
+      {loading ? (
+        <p className="text-center py-12" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      ) : (
+        <div className="space-y-4 max-w-md mx-auto">
+          {packages.map(pkg => (
+            <div
+              key={pkg.id}
+              className="rounded-2xl p-5"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <div className="text-center mb-5">
+                <span className="text-5xl font-bold text-white">{pkg.lesson_count}</span>
+                <span className="text-lg ml-2" style={{ color: '#7b93c4' }}>Ders</span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <button
                   onClick={() => handlePackageClick(pkg, 'weekday')}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-4 px-6 rounded-xl text-left transition"
+                  className="w-full py-4 px-5 rounded-2xl text-left transition-opacity active:opacity-80"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
                 >
-                  <div className="text-sm text-gray-600 mb-1">Hafta İçi</div>
-                  <div className="text-xl font-bold">{formatPrice(pkg.weekday_price)}</div>
+                  <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Hafta İçi</p>
+                  <p className="text-xl font-bold text-white">{formatPrice(pkg.weekday_price)}</p>
                 </button>
 
                 <button
                   onClick={() => handlePackageClick(pkg, 'general')}
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-white py-4 px-6 rounded-xl text-left transition"
+                  className="w-full py-4 px-5 rounded-2xl text-left transition-opacity active:opacity-80"
+                  style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)' }}
                 >
-                  <div className="text-sm text-amber-100 mb-1">Genel</div>
-                  <div className="text-xl font-bold">{formatPrice(pkg.general_price)}</div>
+                  <p className="text-xs mb-1" style={{ color: '#f59e0b' }}>Genel</p>
+                  <p className="text-xl font-bold text-white">{formatPrice(pkg.general_price)}</p>
                 </button>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   )
 }

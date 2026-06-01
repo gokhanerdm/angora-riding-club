@@ -29,67 +29,90 @@ export default function LoginPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
         .single();
 
-      if (profile?.role === 'admin') {
-        router.push('/admin');
-      } else if (profile?.role === 'trainer') {
-        router.push('/trainer');
-      } else {
-        router.push('/member');
-      }
+      if (profile?.role === "admin") router.push("/admin");
+      else if (profile?.role === "trainer") router.push("/trainer");
+      else router.push("/member");
       router.refresh();
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full">
-        <h1 className="text-3xl font-bold text-white mb-2 text-center">
-          Angora Binicilik Spor Kulübü
-        </h1>
-        <p className="text-gray-400 text-center mb-8">Üye Girişi</p>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)" }}
+    >
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-bold text-white">Angora</h1>
+          <p className="text-sm mt-1 font-bold" style={{ color: "#f59e0b" }}>
+            Binicilik Spor Kulübü
+          </p>
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-gray-300 mb-2">Email</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: "#7b93c4" }}>
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#c8d6f0",
+              }}
             />
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2">Şifre</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: "#7b93c4" }}>
+              Şifre
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#c8d6f0",
+              }}
             />
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && (
+            <div
+              className="px-4 py-3 rounded-2xl text-sm"
+              style={{ background: "rgba(248,113,113,0.12)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}
+            >
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full py-3 rounded-2xl font-bold text-sm disabled:opacity-50 mt-2"
+            style={{ background: "#f59e0b", color: "#0a0f2e" }}
           >
             {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
           </button>
         </form>
 
-        <p className="text-gray-400 text-center mt-6 text-sm">
+        <p className="text-center text-sm mt-6" style={{ color: "#4a6190" }}>
           Hesabınız yok mu?{" "}
-          <Link href="/signup" className="text-blue-400 hover:underline">
+          <Link href="/signup" className="font-bold" style={{ color: "#f59e0b" }}>
             Kayıt Ol
           </Link>
         </p>
