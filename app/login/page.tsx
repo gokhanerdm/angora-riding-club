@@ -80,7 +80,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/logo-cropped.png"
+            src="/logo.svg"
             alt="Angora Binicilik Spor Kulübü"
             width={280}
             height={163}
