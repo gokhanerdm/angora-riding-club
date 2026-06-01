@@ -126,8 +126,10 @@ export default function PackagesPage() {
                 className="flex flex-col items-center justify-center py-5 px-2 rounded-3xl active:scale-95 transition-transform"
                 style={{ background: t.bg, border: `1px solid ${t.border}` }}
               >
-                <p className="text-3xl font-bold text-white leading-none">{s.pkg.lesson_count}</p>
-                <p className="text-[10px] font-bold mt-1" style={{ color: '#c8d6f0' }}>Ders</p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold text-white leading-none">{s.pkg.lesson_count}</p>
+                  <p className="text-[11px] font-bold" style={{ color: '#c8d6f0' }}>Ders</p>
+                </div>
                 <p className="text-[11px] font-bold mt-2" style={{ color: t.accent }}>{t.label}</p>
                 <p className="text-xs font-bold mt-2 text-white">{formatPrice(price(s))}</p>
               </button>
