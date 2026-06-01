@@ -194,7 +194,7 @@ export default function MemberDashboardClient({
 
       {/* Çıkış */}
       <div className="px-5 pb-10 pt-2 flex justify-center">
-        <LogoutButton className="text-xs px-4 py-2 rounded-xl transition-opacity opacity-30 hover:opacity-60 active:opacity-80" />
+        <LogoutButton className="text-xs text-white px-4 py-2 rounded-xl transition-opacity opacity-40 hover:opacity-70 active:opacity-100" />
       </div>
 
       {/* Modal */}
