@@ -71,7 +71,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-end justify-center p-4 pb-40"
+      className="flex items-center justify-center p-4"
+      style={{ minHeight: '100dvh' }}
       style={{ background: "linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)" }}
     >
       <div className="w-full max-w-sm">
