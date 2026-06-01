@@ -27,18 +27,29 @@ type Member = {
 type MemberDetail = { memberships: any[]; reservations: any[]; trainers: any[] }
 
 const STATUS_FILTERS = ['Tümü', 'Aktif', 'Pasif', 'Paketi Biten', 'Paketi Bitecek']
+const SHIFT_OPTIONS  = [
+  { value: 'morning',  label: 'Sabah' },
+  { value: 'evening',  label: 'Akşam' },
+  { value: 'fullday',  label: 'Tam Gün' },
+]
 
 const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
 const CARD_ACTIVE = { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)' }
 
 export default function MembersPage() {
-  const [members, setMembers] = useState<Member[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState('Tümü')
-  const [selected, setSelected] = useState<Member | null>(null)
-  const [detail, setDetail] = useState<MemberDetail | null>(null)
+  const [members, setMembers]         = useState<Member[]>([])
+  const [loading, setLoading]             = useState(true)
+  const [search, setSearch]               = useState('')
+  const [filter, setFilter]               = useState('Tümü')
+  const [selected, setSelected]           = useState<Member | null>(null)
+  const [detail, setDetail]               = useState<MemberDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  // Eğitmen atama modal
+  const [promoteModal, setPromoteModal]   = useState(false)
+  const [bonusRate, setBonusRate]         = useState('0')
+  const [shift, setShift]                 = useState('fullday')
+  const [promoting, setPromoting]         = useState(false)
+  const [promoteMsg, setPromoteMsg]       = useState('')
 
   useEffect(() => { loadMembers() }, [])
 
@@ -77,6 +88,32 @@ export default function MembersPage() {
     ])
     setDetail({ memberships: memberships ?? [], reservations: reservations ?? [], trainers: trainers ?? [] })
     setDetailLoading(false)
+  }
+
+  const handlePromote = async () => {
+    if (!selected) return
+    setPromoting(true)
+    setPromoteMsg('')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { error } = await supabase.rpc('promote_member_to_trainer', {
+      p_member_id:  selected.id,
+      p_admin_id:   user.id,
+      p_bonus_rate: parseFloat(bonusRate) || 0,
+      p_shift:      shift,
+    })
+
+    setPromoting(false)
+    if (error) {
+      setPromoteMsg('Hata: ' + error.message)
+    } else {
+      setPromoteModal(false)
+      setSelected(null)
+      setDetail(null)
+      await loadMembers()
+    }
   }
 
   const updateTrainer = async (memberId: string, trainerId: string) => {
@@ -269,6 +306,74 @@ export default function MembersPage() {
                 </div>
               </>
             )}
+          {/* Eğitmen Yap butonu */}
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <button
+              onClick={() => { setPromoteModal(true); setBonusRate('0'); setShift('fullday'); setPromoteMsg('') }}
+              className="w-full py-2.5 rounded-xl text-sm font-bold"
+              style={{ background: 'rgba(56,189,248,0.12)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.25)' }}
+            >
+              🏇 Eğitmen Olarak Ata
+            </button>
+          </div>
+        </div>
+        </div>
+      )}
+
+      {/* Eğitmen atama onay modalı */}
+      {promoteModal && selected && (
+        <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="text-lg font-bold text-white mb-1">Eğitmen Olarak Ata</h3>
+            <p className="text-sm mb-5" style={{ color: '#7b93c4' }}>
+              {selected.name} {selected.surname} üyelikten çıkarılır ve eğitmen paneline taşınır.
+            </p>
+
+            <div className="space-y-4 mb-5">
+              <div>
+                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Prim Oranı (%)</p>
+                <input
+                  type="number" min="0" max="100" value={bonusRate}
+                  onChange={e => setBonusRate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
+                />
+              </div>
+              <div>
+                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Vardiya</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {SHIFT_OPTIONS.map(s => (
+                    <button key={s.value} type="button" onClick={() => setShift(s.value)}
+                      className="py-2.5 rounded-xl text-sm font-bold"
+                      style={shift === s.value
+                        ? { background: '#f59e0b', color: '#0a0f2e' }
+                        : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {promoteMsg && (
+              <p className="text-xs mb-4 px-3 py-2 rounded-xl" style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171' }}>
+                {promoteMsg}
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <button onClick={() => setPromoteModal(false)} disabled={promoting}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                Vazgeç
+              </button>
+              <button onClick={handlePromote} disabled={promoting}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #38bdf8, #0284c7)', color: '#fff' }}>
+                {promoting ? 'Atanıyor...' : 'Onayla'}
+              </button>
+            </div>
           </div>
         </div>
       )}
