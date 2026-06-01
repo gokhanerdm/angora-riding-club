@@ -9,18 +9,28 @@ interface Request {
   status: string; created_at: string
 }
 
+interface Trainer { id: string; name: string; surname: string }
+
 const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
 const INPUT_STYLE = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
 
 export default function MembershipsPage() {
   const [requests, setRequests] = useState<Request[]>([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(true)
   const [approveModal, setApproveModal] = useState<Request | null>(null)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'nakit' | 'havale' | 'kart'>('nakit')
+  const [selectedTrainer, setSelectedTrainer] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => { loadRequests() }, [])
+  useEffect(() => { loadRequests(); loadTrainers() }, [])
+
+  const loadTrainers = async () => {
+    const supabase = createClient()
+    const { data } = await supabase.from('trainers').select('id, name, surname').is('deleted_at', null).order('name')
+    setTrainers(data ?? [])
+  }
 
   const loadRequests = async () => {
     setLoading(true)
@@ -33,7 +43,7 @@ export default function MembershipsPage() {
   const formatPrice = (p: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(p)
   const formatDate = (d: string) => new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-  const handleApprove = (req: Request) => { setApproveModal(req); setPaymentAmount(req.price.toString()); setPaymentMethod('nakit') }
+  const handleApprove = (req: Request) => { setApproveModal(req); setPaymentAmount(req.price.toString()); setPaymentMethod('nakit'); setSelectedTrainer(trainers[0]?.id ?? '') }
 
   const handleReject = async (id: string) => {
     if (!confirm('Bu talebi reddetmek istediğinize emin misiniz?')) return
@@ -49,7 +59,7 @@ export default function MembershipsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { error } = await supabase.rpc('approve_membership_request_with_payment', { admin_user_id: user.id, request_id: approveModal.id, payment_amount: parseFloat(paymentAmount), p_payment_method: paymentMethod })
+    const { error } = await supabase.rpc('approve_membership_request_with_payment', { admin_user_id: user.id, request_id: approveModal.id, payment_amount: parseFloat(paymentAmount), p_payment_method: paymentMethod, p_trainer_id: selectedTrainer || null })
     if (error) alert('Hata: ' + error.message)
     else { setApproveModal(null); loadRequests() }
     setSubmitting(false)
@@ -124,6 +134,13 @@ export default function MembershipsPage() {
               <p className="text-sm mt-0.5" style={{ color: '#7b93c4' }}>{approveModal.lesson_count} Ders — {approveModal.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
               <p className="text-xs mt-0.5" style={{ color: '#4a6190' }}>Liste fiyatı: {formatPrice(approveModal.price)}</p>
             </div>
+            <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Eğitmen <span style={{ color: '#f59e0b' }}>*</span></p>
+            <select value={selectedTrainer} onChange={e => setSelectedTrainer(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE}>
+              <option value="">Eğitmen seçin...</option>
+              {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
+            </select>
+
             <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Ödeme Yöntemi</p>
             <div className="flex gap-2 mb-4">
               {(['nakit','havale','kart'] as const).map(m => (
