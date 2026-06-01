@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -78,14 +77,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
 
         {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <Image
-            src="/logo.svg"
-            alt="Angora Binicilik Spor Kulübü"
-            width={280}
-            height={163}
-            priority
-          />
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Angora</h1>
+          <p className="text-sm mt-1 font-bold" style={{ color: "#f59e0b" }}>
+            Binicilik Spor Kulübü
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
