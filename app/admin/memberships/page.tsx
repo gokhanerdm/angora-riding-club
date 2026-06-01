@@ -154,8 +154,13 @@ export default function MembershipsPage() {
             <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Ödenen Tutar (₺)</p>
             <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
               placeholder="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE} />
+            {!selectedTrainer && (
+              <p className="text-xs font-bold mb-3 text-center" style={{ color: '#f59e0b' }}>
+                ⚠️ Onaylamak için eğitmen seçimi zorunludur.
+              </p>
+            )}
             <div className="flex gap-3">
-              <button onClick={handleConfirmApprove} disabled={submitting}
+              <button onClick={handleConfirmApprove} disabled={submitting || !selectedTrainer}
                 className="flex-1 py-3 rounded-xl font-bold disabled:opacity-50"
                 style={{ background: '#34d399', color: '#0a0f2e' }}>
                 {submitting ? 'İşleniyor...' : 'Onayla'}
