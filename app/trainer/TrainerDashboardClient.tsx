@@ -17,7 +17,7 @@ const SHIFT_SLOTS: Record<string, string[]> = {
     "10:30:00","11:00:00","11:30:00","12:00:00","12:30:00",
     "13:00:00","13:30:00","14:00:00","14:30:00","15:00:00",
     "15:30:00","16:00:00","16:30:00","17:00:00","17:30:00",
-    "18:00:00","18:30:00","19:00:00","19:30:00",
+    "18:00:00","18:30:00","19:00:00","19:30:00","20:00:00","20:30:00",
   ],
   evening: [
     "14:00:00","14:30:00","15:00:00","15:30:00","16:00:00",
@@ -441,18 +441,6 @@ export default function TrainerDashboardClient({
                 )
               })}
 
-              {EXTRA_SLOTS.filter(s => !openExtraSlots.has(s)).map(slot => (
-                <button
-                  key={`extra-${slot}`}
-                  onClick={() => handleToggleExtra(slot, false)}
-                  disabled={actionLoading}
-                  className="flex items-center justify-between px-3 rounded-lg text-left"
-                  style={{ background: 'rgba(245,158,11,0.05)', border: '1px dashed rgba(245,158,11,0.2)', height: 32 }}
-                >
-                  <span className="text-[11px] font-bold" style={{ color: 'rgba(245,158,11,0.5)' }}>{formatTime(slot)} – {formatTime(addHalfHour(slot))}</span>
-                  <span className="text-[10px]" style={{ color: 'rgba(245,158,11,0.4)' }}>+ Aç</span>
-                </button>
-              ))}
             </div>
           )
         }
