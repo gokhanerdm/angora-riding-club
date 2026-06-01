@@ -153,7 +153,7 @@ export default function AdminDashboard() {
 
       {/* Modal */}
       {activeCard && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
+        <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl flex flex-col"
             style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
