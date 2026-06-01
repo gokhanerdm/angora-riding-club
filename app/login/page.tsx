@@ -11,6 +11,12 @@ export default function LoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 300)
+  }
+
   // Şifremi unuttum
   const [forgotOpen, setForgotOpen]     = useState(false);
   const [resetEmail, setResetEmail]     = useState("");
@@ -72,8 +78,7 @@ export default function LoginPage() {
   return (
     <div
       className="flex items-center justify-center p-4"
-      style={{ minHeight: '100dvh' }}
-      style={{ background: "linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)" }}
+      style={{ minHeight: '100dvh', background: "linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)" }}
     >
       <div className="w-full max-w-sm">
 
@@ -93,6 +98,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              onFocus={handleFocus}
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
               style={inputStyle}
             />
@@ -105,6 +111,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              onFocus={handleFocus}
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
               style={inputStyle}
             />
