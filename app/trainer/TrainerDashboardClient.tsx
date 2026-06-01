@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import LogoutButton from '@/components/logout-button'
 
 type Stats = { today_lessons: number; completed_lessons: number; monthly_reserved: number; next_month_reserved: number; monthly_prim: number }
 type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string }
@@ -307,10 +308,18 @@ export default function TrainerDashboardClient({
       style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)' }}
     >
       {/* Header */}
-      <div className="px-5 pt-6 pb-2 flex items-center justify-between flex-shrink-0">
-        <div>
-          <p className="text-[10px] font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
-          <h1 className="text-2xl font-bold text-white">{trainerName}</h1>
+      <div className="px-5 pt-12 pb-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(245,158,11,0.4)' }}
+          >
+            <span className="text-2xl">🏇</span>
+          </div>
+          <div>
+            <p className="text-[10px] font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
+            <h1 className="text-2xl font-bold text-white">{trainerName}</h1>
+          </div>
         </div>
         <button
           onClick={() => setShowShiftPicker(true)}
@@ -689,6 +698,11 @@ export default function TrainerDashboardClient({
           </div>
         </div>
       )}
+
+      {/* Çıkış */}
+      <div className="px-5 pb-8 pt-2 flex justify-center flex-shrink-0">
+        <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-2 rounded-xl transition-opacity hover:text-amber-300" />
+      </div>
     </div>
   )
 }
