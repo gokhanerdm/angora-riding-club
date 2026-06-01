@@ -37,14 +37,22 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
   }
 
   return (
-    <div>
-      <Link
-        href="/admin/trainers"
-        className="inline-flex items-center gap-2 text-sm font-bold mb-6 px-4 py-2 rounded-xl"
-        style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
-      >
-        ← Eğitmenler
-      </Link>
+    /* Tam ekran overlay — admin layout'u örter */
+    <div
+      className="fixed inset-0 z-[100] overflow-y-auto"
+      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
+    >
+      {/* Geri oku */}
+      <div className="absolute top-12 left-4 z-10">
+        <Link
+          href="/admin/trainers"
+          className="flex items-center gap-2 text-sm font-bold px-3 py-2 rounded-xl"
+          style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+        >
+          ←
+        </Link>
+      </div>
+
       <TrainerDashboardClient
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}

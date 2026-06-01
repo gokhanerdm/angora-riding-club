@@ -203,7 +203,7 @@ export default function MembersPage() {
       {/* DETAY PANELİ — mobilde tam ekran overlay */}
       {selected && (
         <div
-          className="fixed inset-0 z-40 overflow-y-auto"
+          className="fixed inset-0 z-[100] overflow-y-auto"
           style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
         >
           {/* Geri header */}
