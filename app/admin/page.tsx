@@ -51,7 +51,7 @@ export default function AdminDashboard() {
     Promise.all([
       supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled'),
       supabase.from('membership_requests').select('id').eq('status', 'pending'),
-      supabase.from('members').select('id').gte('created_at', weekAgo + 'T00:00:00').is('deleted_at', null),
+      supabase.from('members').select('id').gte('created_at', today + 'T00:00:00').is('deleted_at', null),
     ]).then(([{ data: res }, { data: reqs }, { data: mem }]) => {
       setStats({
         total:      res?.length ?? 0,
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
     } else {
       const { data } = await supabase.from('members')
         .select('id, name, surname, email, phone, created_at')
-        .gte('created_at', weekAgo + 'T00:00:00')
+        .gte('created_at', today + 'T00:00:00')
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
       setModalData(data ?? [])
@@ -106,14 +106,14 @@ export default function AdminDashboard() {
     { key: 'total',       label: 'Toplam Ders',     value: stats.total,      icon: '📅', color: '#38bdf8' },
     { key: 'completed',   label: 'Tamamlandı',      value: stats.completed,  icon: '✅', color: '#34d399' },
     { key: 'remaining',   label: 'Kalan',           value: stats.remaining,  icon: '⏳', color: '#f59e0b' },
-    { key: 'new_members', label: 'Yeni Kayıt (7g)', value: stats.newMembers, icon: '👤', color: '#a78bfa' },
+    { key: 'new_members', label: 'Yeni Kayıt',     value: stats.newMembers, icon: '👤', color: '#a78bfa' },
   ]
 
   const MODAL_TITLE: Record<CardKey, string> = {
     total:       'Bugünkü Tüm Dersler',
     completed:   'Tamamlanan Dersler',
     remaining:   'Kalan Dersler',
-    new_members: 'Son 7 Gün Yeni Kayıtlar',
+    new_members: 'Bugün Yeni Kayıtlar',
   }
 
   return (
