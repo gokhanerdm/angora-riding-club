@@ -17,7 +17,7 @@ export default async function MemberDashboard() {
   const [statsResult, memberResult] = await Promise.all([
     supabase.rpc('member_dashboard_stats', { user_id: user.id }),
     supabase.from('members')
-      .select('id, name, profile_completed, profile_photo_url')
+      .select('id, name, profile_completed, profile_photo_url, default_trainer_id')
       .eq('user_id', user.id)
       .single()
   ])
@@ -36,16 +36,27 @@ export default async function MemberDashboard() {
 
   let trainerName = ''
   if (memberId) {
-    const { data: trainerData } = await supabase
+    // Önce member_allowed_trainers, yoksa default_trainer_id'den bak
+    const { data: matData } = await supabase
       .from('member_allowed_trainers')
       .select('trainers(name, surname)')
       .eq('member_id', memberId)
       .limit(1)
       .single()
 
-    if (trainerData) {
-      const t = Array.isArray(trainerData.trainers) ? trainerData.trainers[0] : trainerData.trainers
+    if (matData) {
+      const t = Array.isArray(matData.trainers) ? matData.trainers[0] : matData.trainers
       if (t) trainerName = `${t.name} ${t.surname}`
+    }
+
+    // Fallback: default_trainer_id
+    if (!trainerName && memberResult.data?.default_trainer_id) {
+      const { data: dtData } = await supabase
+        .from('trainers')
+        .select('name, surname')
+        .eq('id', memberResult.data.default_trainer_id)
+        .single()
+      if (dtData) trainerName = `${dtData.name} ${dtData.surname}`
     }
   }
 
