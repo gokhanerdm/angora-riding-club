@@ -56,9 +56,14 @@ export default function SettingsPage() {
     if (!deleteTarget) return
     setDeleting(true)
     const supabase = createClient()
-    await supabase.from('membership_packages').update({ is_active: false }).eq('id', deleteTarget)
-    setDeleteTarget(null)
+    const { error } = await supabase.from('membership_packages').update({ is_active: false }).eq('id', deleteTarget)
     setDeleting(false)
+    if (error) {
+      showToast('Hata: ' + error.message)
+      setDeleteTarget(null)
+      return
+    }
+    setDeleteTarget(null)
     await loadPackages()
     showToast('Paket kaldırıldı.')
   }
