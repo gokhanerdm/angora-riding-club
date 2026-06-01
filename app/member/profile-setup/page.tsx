@@ -7,7 +7,18 @@ import { useRouter } from 'next/navigation'
 const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
 const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
 
-const OGRETIM = ['İlkokul', 'Ortaokul', 'Lise', 'Ön Lisans', 'Lisans', 'Yüksek Lisans', 'Doktora', 'Diğer']
+const OGRETIM  = ['İlkokul', 'Ortaokul', 'Lise', 'Ön Lisans', 'Lisans', 'Yüksek Lisans', 'Doktora', 'Diğer']
+const VELİ_REL = ['Anne', 'Baba', 'Vasi', 'Diğer']
+
+function calculateAge(dateStr: string): number {
+  if (!dateStr) return 99
+  const today = new Date()
+  const dob   = new Date(dateStr)
+  let age = today.getFullYear() - dob.getFullYear()
+  const m = today.getMonth() - dob.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--
+  return age
+}
 
 export default function ProfileSetupPage() {
   const [tcKimlik, setTcKimlik]           = useState('')
@@ -21,9 +32,17 @@ export default function ProfileSetupPage() {
   const [adres, setAdres]                 = useState('')
   const [photo, setPhoto]                 = useState<File | null>(null)
   const [photoPreview, setPhotoPreview]   = useState<string | null>(null)
+  // Veli
+  const [veliAdi, setVeliAdi]             = useState('')
+  const [veliTelefon, setVeliTelefon]     = useState('')
+  const [veliIliskisi, setVeliIliskisi]   = useState('')
+  const [veliOnay, setVeliOnay]           = useState(false)
+
   const [saving, setSaving]               = useState(false)
   const [error, setError]                 = useState('')
   const router = useRouter()
+
+  const isMinor = calculateAge(dogumTarihi) <= 18
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -43,6 +62,14 @@ export default function ProfileSetupPage() {
       return
     }
 
+    if (isMinor && (!veliAdi || !veliTelefon || !veliIliskisi)) {
+      setError('18 yaş ve altı üyeler için veli bilgileri zorunludur.')
+      return
+    }
+    if (isMinor && !veliOnay) {
+      setError('Devam etmek için veli onayını işaretleyin.')
+      return
+    }
     setSaving(true)
     setError('')
     const supabase = createClient()
@@ -77,6 +104,9 @@ export default function ProfileSetupPage() {
       p_ogretim_durumu:  ogretimDurumu || null,
       p_adres:           adres || null,
       p_photo_url:       photoUrl,
+      p_veli_adi_soyadi: isMinor ? veliAdi : null,
+      p_veli_telefon:    isMinor ? veliTelefon : null,
+      p_veli_iliskisi:   isMinor ? veliIliskisi : null,
     })
 
     setSaving(false)
@@ -167,6 +197,65 @@ export default function ProfileSetupPage() {
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT} />
           </div>
         </div>
+
+        {/* 18 yaş ve altı — veli bilgileri */}
+        {isMinor && dogumTarihi && (
+          <div
+            className="rounded-2xl p-4 space-y-4"
+            style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#f59e0b' }}>
+                Veli Bilgileri
+              </p>
+              <p className="text-xs" style={{ color: '#7b93c4' }}>
+                18 yaş ve altı üyeler için veli onayı zorunludur.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+                Veli Adı Soyadı <span style={{ color: '#f87171' }}>*</span>
+              </label>
+              <input type="text" value={veliAdi} onChange={e => setVeliAdi(e.target.value)}
+                placeholder="Anne veya babanın adı soyadı"
+                className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+                  Veli Telefonu <span style={{ color: '#f87171' }}>*</span>
+                </label>
+                <input type="tel" value={veliTelefon} onChange={e => setVeliTelefon(e.target.value)}
+                  placeholder="05xx xxx xx xx"
+                  className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+                  Yakınlığı <span style={{ color: '#f87171' }}>*</span>
+                </label>
+                <select value={veliIliskisi} onChange={e => setVeliIliskisi(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={INPUT}>
+                  <option value="">Seçin...</option>
+                  {VELİ_REL.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={veliOnay}
+                onChange={e => setVeliOnay(e.target.checked)}
+                className="mt-0.5 w-4 h-4 flex-shrink-0 accent-amber-400"
+              />
+              <span className="text-xs leading-relaxed font-bold" style={{ color: '#f59e0b' }}>
+                Velinin bilgi ve onayı ile kayıt yapıyorum. <span style={{ color: '#f87171' }}>*</span>
+              </span>
+            </label>
+          </div>
+        )}
 
         {/* İsteğe bağlı bilgiler */}
         <div className="rounded-2xl p-4 space-y-4" style={CARD}>
