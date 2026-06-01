@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReservationCalendar from './ReservationCalendar'
 import WelcomeModal from './WelcomeModal'
+import LogoutButton from '@/components/logout-button'
 
 interface Stats {
   total_lessons: number
@@ -147,13 +148,16 @@ export default function MemberDashboardClient({
             </div>
           )}
         </div>
-        <a
-          href="/member/packages"
-          className="text-xs font-bold px-4 py-2.5 rounded-2xl"
-          style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
-        >
-          Üyelik
-        </a>
+        <div className="flex flex-col items-end gap-2">
+          <a
+            href="/member/packages"
+            className="text-xs font-bold px-4 py-2.5 rounded-2xl"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
+          >
+            Üyelik
+          </a>
+          <LogoutButton className="text-xs font-bold px-3 py-1.5 rounded-xl opacity-50 hover:opacity-80 active:opacity-100 transition-opacity" />
+        </div>
       </div>
 
       {/* Stat cards */}
