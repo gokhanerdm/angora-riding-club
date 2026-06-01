@@ -8,7 +8,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
   const supabase = await createClient()
 
   const { data: trainer } = await supabase
-    .from('trainers').select('id, name, surname, bonus_rate').eq('id', id).single()
+    .from('trainers').select('id, name, surname, bonus_rate, shift').eq('id', id).single()
 
   if (!trainer) redirect('/admin/trainers')
 
@@ -56,7 +56,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
       <TrainerDashboardClient
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}
-        initialShift={null}
+        initialShift={trainer.shift ?? 'fullday'}
         stats={{
           today_lessons:       stats.today_lessons,
           completed_lessons:   stats.completed_lessons,
