@@ -58,12 +58,13 @@ function canCancel(scheduledDate: string, startTime: string) {
 type ModalType = 'total' | 'used' | 'reserved' | null
 
 export default function MemberDashboardClient({
-  stats, userId, memberName, trainerName
+  stats, userId, memberName, trainerName, profilePhotoUrl
 }: {
   stats: Stats
   userId: string
   memberName: string
   trainerName: string
+  profilePhotoUrl?: string | null
 }) {
   const router = useRouter()
   const [modal, setModal] = useState<ModalType>(null)
@@ -134,19 +135,31 @@ export default function MemberDashboardClient({
       <WelcomeModal />
       {/* Header */}
       <div className="px-5 pt-12 pb-4 flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium tracking-widest" style={{ color: '#7b93c4' }}>
-            Hoş geldin
-          </p>
-          <h1 className="text-3xl font-bold text-white mt-0.5">{memberName}</h1>
-          {trainerName && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>
-                Eğitmen: {trainerName}
-              </p>
-            </div>
-          )}
+        <div className="flex items-center gap-3">
+          {/* Profil fotoğrafı */}
+          <div
+            className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(245,158,11,0.4)' }}
+          >
+            {profilePhotoUrl
+              ? <img src={profilePhotoUrl} alt={memberName} className="w-full h-full object-cover" />
+              : <span className="text-2xl">🏇</span>
+            }
+          </div>
+          <div>
+            <p className="text-xs font-medium tracking-widest" style={{ color: '#7b93c4' }}>
+              Hoş geldin
+            </p>
+            <h1 className="text-2xl font-bold text-white mt-0.5">{memberName}</h1>
+            {trainerName && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>
+                  Eğitmen: {trainerName}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
         <a
           href="/member/packages"
