@@ -18,14 +18,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Link>
       </header>
 
-      <main className="px-4 py-6 pb-28">
+      <main className="px-4 py-6 pb-40">
         {children}
       </main>
 
       <AdminBottomNav />
 
       {/* Çıkış — alt navigasyonun üstünde */}
-      <div className="fixed bottom-16 left-0 right-0 flex justify-center z-40 pb-1">
+      <div className="fixed bottom-16 left-0 right-0 flex justify-center z-[55] pb-1">
         <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-1.5 rounded-xl transition-opacity hover:text-amber-300 opacity-50 hover:opacity-80" />
       </div>
     </div>
