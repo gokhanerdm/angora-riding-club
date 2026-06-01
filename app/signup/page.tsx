@@ -25,7 +25,13 @@ export default function SignupPage() {
     const { data, error: signupError } = await supabase.auth.signUp({ email, password })
 
     if (signupError) {
-      setError(signupError.message)
+      if (signupError.message.toLowerCase().includes('already registered') ||
+          signupError.message.toLowerCase().includes('already been registered') ||
+          signupError.message.toLowerCase().includes('user already')) {
+        setError('Bu email adresi zaten kayıtlı. Giriş yapmayı deneyin.')
+      } else {
+        setError('Kayıt başarısız: ' + signupError.message)
+      }
       setLoading(false)
       return
     }
