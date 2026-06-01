@@ -80,11 +80,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/logo.jpeg"
+            src="/logo-cropped.png"
             alt="Angora Binicilik Spor Kulübü"
-            width={200}
-            height={200}
-            className="rounded-2xl"
+            width={280}
+            height={163}
             priority
           />
         </div>
