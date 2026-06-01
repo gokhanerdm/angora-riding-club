@@ -8,13 +8,14 @@ import Link from 'next/link'
 interface LegalDoc { title: string; content: string }
 
 export default function SignupPage() {
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName]         = useState('')
-  const [surname, setSurname]   = useState('')
-  const [phone, setPhone]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [name, setName]               = useState('')
+  const [surname, setSurname]         = useState('')
+  const [phone, setPhone]             = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
 
   const [agreementChecked, setAgreementChecked] = useState(false)
   const [kvkkChecked, setKvkkChecked]           = useState(false)
@@ -36,6 +37,10 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (password !== passwordConfirm) {
+      setError('Şifreler eşleşmiyor. Lütfen tekrar kontrol edin.')
+      return
+    }
     if (!agreementChecked || !kvkkChecked) {
       setError('Devam etmek için sözleşme ve KVKK metnini onaylamanız gerekiyor.')
       return
@@ -120,6 +125,24 @@ export default function SignupPage() {
             <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre Tekrar</label>
+            <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} required minLength={6}
+              placeholder="Şifrenizi tekrar girin"
+              className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
+              style={{
+                ...inputStyle,
+                border: passwordConfirm && password !== passwordConfirm
+                  ? '1px solid rgba(248,113,113,0.6)'
+                  : passwordConfirm && password === passwordConfirm
+                  ? '1px solid rgba(52,211,153,0.6)'
+                  : inputStyle.border
+              }} />
+            {passwordConfirm && password !== passwordConfirm && (
+              <p className="text-xs mt-1" style={{ color: '#f87171' }}>Şifreler eşleşmiyor</p>
+            )}
           </div>
 
           {/* Onay kutuları */}
