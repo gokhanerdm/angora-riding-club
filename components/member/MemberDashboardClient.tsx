@@ -58,7 +58,7 @@ function canCancel(scheduledDate: string, startTime: string) {
 type ModalType = 'total' | 'used' | 'reserved' | null
 
 export default function MemberDashboardClient({
-  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode
+  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId
 }: {
   stats: Stats
   userId: string
@@ -66,6 +66,7 @@ export default function MemberDashboardClient({
   trainerName: string
   profilePhotoUrl?: string | null
   referralCode?: string | null
+  adminMemberId?: string   // sadece admin görüntülerken gelir
 }) {
   const router = useRouter()
   const [modal, setModal] = useState<ModalType>(null)
@@ -162,13 +163,23 @@ export default function MemberDashboardClient({
             )}
           </div>
         </div>
-        <a
-          href="/member/packages"
-          className="text-xs font-bold px-4 py-2.5 rounded-2xl"
-          style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
-        >
-          Üyelik
-        </a>
+        {adminMemberId ? (
+          <a
+            href={`/admin/members/${adminMemberId}/settings`}
+            className="text-xs font-bold px-4 py-2.5 rounded-2xl flex items-center gap-1"
+            style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            ⚙️ Ayarlar
+          </a>
+        ) : (
+          <a
+            href="/member/packages"
+            className="text-xs font-bold px-4 py-2.5 rounded-2xl"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
+          >
+            Üyelik
+          </a>
+        )}
       </div>
 
       {/* Stat cards */}
