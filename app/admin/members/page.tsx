@@ -132,6 +132,7 @@ export default function MembersPage() {
       showTrainerMsg('Eğitmen atanamadı: ' + error.message)
     } else {
       showTrainerMsg('Eğitmen güncellendi ✓')
+      setSelected(prev => prev ? { ...prev, default_trainer_id: trainerId || null } : prev)
       await loadMembers()
     }
   }
@@ -270,16 +271,30 @@ export default function MembersPage() {
             {/* Eğitmen */}
             {detail && (
               <div className="rounded-2xl p-4" style={CARD}>
-                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Eğitmen</p>
-                <select
-                  value={selected.default_trainer_id ?? ''}
-                  onChange={e => updateTrainer(selected.id, e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#c8d6f0' }}
-                >
-                  <option value="">Atanmamış</option>
-                  {detail.trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
-                </select>
+                <p className="text-xs font-bold mb-3" style={{ color: '#7b93c4' }}>Eğitmen</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => updateTrainer(selected.id, '')}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm font-bold text-left transition-opacity active:opacity-60"
+                    style={!selected.default_trainer_id
+                      ? { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b' }
+                      : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                  >
+                    Atanmamış
+                  </button>
+                  {detail.trainers.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => updateTrainer(selected.id, t.id)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm font-bold text-left transition-opacity active:opacity-60"
+                      style={selected.default_trainer_id === t.id
+                        ? { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b' }
+                        : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#c8d6f0' }}
+                    >
+                      {t.name} {t.surname}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
