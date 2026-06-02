@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setTimeout(() => {
@@ -32,7 +33,11 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { persistSession: rememberMe },
+    });
 
     if (error) {
       setError("Giriş başarısız. Email veya şifre hatalı.");
@@ -116,6 +121,17 @@ export default function LoginPage() {
               style={inputStyle}
             />
           </div>
+
+          {/* Oturumu açık tut */}
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded accent-amber-400"
+            />
+            <span className="text-xs" style={{ color: '#7b93c4' }}>Oturumumu açık tut</span>
+          </label>
 
           {/* Şifremi unuttum */}
           <div className="text-right">
