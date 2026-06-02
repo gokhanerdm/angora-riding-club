@@ -37,15 +37,19 @@ export default function NotificationsPage() {
 
   useEffect(() => { load() }, [])
 
+  const [legacyRequests, setLegacyRequests] = useState<any[]>([])
+
   const load = async () => {
     setLoading(true)
     const supabase = createClient()
     const items: Notification[] = []
 
-    const [{ data: memberships }, { data: requests }] = await Promise.all([
+    const [{ data: memberships }, { data: requests }, { data: legacyData }] = await Promise.all([
       supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons, members(name, surname, email)').eq('is_current', true),
       supabase.from('membership_requests').select('id').eq('status', 'pending'),
+      supabase.from('members').select('id, name, surname, email, created_at').eq('pending_legacy_setup', true).is('deleted_at', null),
     ])
+    setLegacyRequests(legacyData ?? [])
 
     if ((requests ?? []).length > 0) {
       items.push({ type: 'pending_request', request_count: requests!.length, message: `${requests!.length} bekleyen üyelik talebi var.` })
@@ -82,7 +86,21 @@ export default function NotificationsPage() {
         <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
       ) : (
         <div className="space-y-3">
-          {notifications.length === 0 && (
+          {/* Eski üye talepleri */}
+          {legacyRequests.map(m => (
+            <a key={m.id} href={`/admin/members/${m.id}/settings`}
+              className="rounded-2xl p-4 flex items-start gap-4 active:opacity-70"
+              style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.3)' }}>
+              <span className="text-2xl flex-shrink-0">🕐</span>
+              <div className="min-w-0">
+                <p className="font-bold text-white text-sm">{m.name} {m.surname} — Eski Üye Kaydı</p>
+                <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
+                <p className="text-xs font-bold mt-1" style={{ color: '#a78bfa' }}>Geçmiş bilgileri gir →</p>
+              </div>
+            </a>
+          ))}
+
+          {notifications.length === 0 && legacyRequests.length === 0 && (
             <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#7b93c4' }}>
               Bekleyen bildirim yok.
             </div>

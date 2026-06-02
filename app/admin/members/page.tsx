@@ -161,7 +161,14 @@ export default function MembersPage() {
     <div>
       {/* LİSTE */}
       <div className="mb-6 flex flex-col gap-3">
-        <h1 className="text-2xl font-bold text-white">Üyeler</h1>
+          <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">Üyeler</h1>
+          <a href="/admin/members/new-passive"
+            className="text-xs font-bold px-3 py-2 rounded-xl"
+            style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)' }}>
+            + Pasif Üye
+          </a>
+        </div>
         <input
           type="text"
           placeholder="İsim veya email ara..."

@@ -38,6 +38,7 @@ export default function PackagesPage() {
   const [selected, setSelected]     = useState<Selection | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted]   = useState(false)
+  const [legacyDone, setLegacyDone] = useState(false)
   const [error, setError]           = useState('')
   const router = useRouter()
 
@@ -91,6 +92,31 @@ export default function PackagesPage() {
           <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Paket seç, talep oluştur</p>
         </div>
       </div>
+
+      {/* Kayıtlı üyeyim */}
+      {!legacyDone && (
+        <div className="px-5 mb-4">
+          <button
+            onClick={async () => {
+              const supabase = createClient()
+              const { data: { user } } = await supabase.auth.getUser()
+              if (user) {
+                await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
+                setLegacyDone(true)
+              }
+            }}
+            className="w-full py-3 rounded-2xl text-sm font-bold"
+            style={{ background: 'rgba(255,255,255,0.04)', color: '#7b93c4', border: '1px dashed rgba(255,255,255,0.15)' }}
+          >
+            Daha önce kulübe üye oldum →
+          </button>
+        </div>
+      )}
+      {legacyDone && (
+        <div className="mx-5 mb-4 px-4 py-3 rounded-2xl text-sm" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+          ✓ Talebiniz alındı. Yönetici bilgilerinizi işleyecek.
+        </div>
+      )}
 
       {loading ? (
         <p className="text-center py-12" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
