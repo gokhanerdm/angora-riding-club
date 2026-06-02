@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [name, setName]               = useState('')
   const [surname, setSurname]         = useState('')
   const [phone, setPhone]             = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
 
@@ -67,6 +68,7 @@ export default function SignupPage() {
       const { error: setupError } = await supabase.rpc('complete_signup', {
         p_user_id: data.user.id,
         p_name: name, p_surname: surname, p_email: email, p_phone: phone,
+        p_referral_code: referralCode.trim() || null,
       })
       if (setupError) {
         setError('Kayıt tamamlanamadı. Lütfen tekrar deneyin.')
@@ -124,6 +126,15 @@ export default function SignupPage() {
           <div>
             <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
+              className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+              Referans Kodu <span style={{ color: '#4a6190' }}>(isteğe bağlı)</span>
+            </label>
+            <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())}
+              placeholder="Varsa referans kodunu gir"
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
           </div>
 

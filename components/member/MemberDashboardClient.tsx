@@ -58,13 +58,14 @@ function canCancel(scheduledDate: string, startTime: string) {
 type ModalType = 'total' | 'used' | 'reserved' | null
 
 export default function MemberDashboardClient({
-  stats, userId, memberName, trainerName, profilePhotoUrl
+  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode
 }: {
   stats: Stats
   userId: string
   memberName: string
   trainerName: string
   profilePhotoUrl?: string | null
+  referralCode?: string | null
 }) {
   const router = useRouter()
   const [modal, setModal] = useState<ModalType>(null)
@@ -191,6 +192,15 @@ export default function MemberDashboardClient({
           </button>
         ))}
       </div>
+
+      {/* Referans kodu */}
+      {referralCode && (
+        <div className="mx-5 mb-4 px-4 py-2.5 rounded-2xl flex items-center justify-between"
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+          <p className="text-xs font-bold" style={{ color: '#7b93c4' }}>Referans Kodun</p>
+          <p className="text-sm font-bold tracking-widest" style={{ color: '#f59e0b' }}>{referralCode}</p>
+        </div>
+      )}
 
       {/* Divider */}
       <div className="mx-5 mb-4" style={{ height: '1px', background: 'rgba(255,255,255,0.07)' }} />

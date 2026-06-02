@@ -17,7 +17,7 @@ export default async function MemberDashboard() {
   const [statsResult, memberResult] = await Promise.all([
     supabase.rpc('member_dashboard_stats', { user_id: user.id }),
     supabase.from('members')
-      .select('id, name, profile_completed, profile_photo_url, default_trainer_id')
+      .select('id, name, profile_completed, profile_photo_url, default_trainer_id, referral_code')
       .eq('user_id', user.id)
       .single()
   ])
@@ -33,6 +33,7 @@ export default async function MemberDashboard() {
   const memberId       = memberResult.data?.id
   const memberName     = memberResult.data?.name ?? ''
   const profilePhotoUrl = memberResult.data?.profile_photo_url ?? null
+  const referralCode    = memberResult.data?.referral_code ?? null
 
   let trainerName = ''
   if (memberId) {
@@ -72,6 +73,7 @@ export default async function MemberDashboard() {
       memberName={memberName}
       trainerName={trainerName}
       profilePhotoUrl={profilePhotoUrl}
+      referralCode={referralCode}
     />
   )
 }
