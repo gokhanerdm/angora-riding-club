@@ -195,20 +195,13 @@ export default function MembersPage() {
             <button
               key={member.id}
               onClick={() => loadDetail(member)}
-              className="w-full text-left p-4 rounded-2xl transition-all active:opacity-80"
+              className="w-full rounded-2xl px-4 py-3 flex justify-between items-center text-left active:opacity-70"
               style={selected?.id === member.id ? CARD_ACTIVE : CARD}
             >
-              <div className="flex justify-between items-start gap-3">
-                <div className="min-w-0">
-                  <p className="font-bold text-white truncate">{member.name} {member.surname}</p>
-                  <p className="text-xs mt-0.5 truncate" style={{ color: '#7b93c4' }}>{member.email}</p>
-                  {member.trainer_name && <p className="text-xs mt-0.5" style={{ color: '#4a6190' }}>Eğitmen: {member.trainer_name}</p>}
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs font-bold" style={{ color: statusColor(member.member_status) }}>{statusLabel(member.member_status)}</p>
-                  <p className="text-sm font-bold text-white mt-0.5">{member.remaining_lessons} ders</p>
-                </div>
-              </div>
+              <p className="text-sm font-bold text-white">{member.name} {member.surname}</p>
+              <p className="text-xs font-bold flex-shrink-0" style={{ color: member.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
+                {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
+              </p>
             </button>
           ))}
         </div>

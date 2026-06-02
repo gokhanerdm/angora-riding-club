@@ -78,17 +78,13 @@ export default async function AdminTrainersPage() {
         {cards.map(t => (
           <Link key={t.id} href={`/admin/trainers/${t.id}`}>
             <div
-              className="rounded-2xl p-5 flex items-center justify-between gap-4 active:opacity-80 transition-opacity"
+              className="rounded-2xl px-4 py-3 flex items-center justify-between active:opacity-70"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              <div className="min-w-0">
-                <p className="font-bold text-white text-lg truncate">{t.name} {t.surname}</p>
-                <p className="text-sm mt-0.5" style={{ color: '#7b93c4' }}>Bugün {t.today_lessons} ders</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-xs mb-0.5" style={{ color: '#7b93c4' }}>Bu ay prim</p>
-                <p className="font-bold text-lg" style={{ color: '#f59e0b' }}>{formatPrice(t.monthly_prim)}</p>
-              </div>
+              <p className="text-sm font-bold text-white">{t.name} {t.surname}</p>
+              <p className="text-xs font-bold flex-shrink-0" style={{ color: '#f59e0b' }}>
+                Bugün {t.today_lessons} ders
+              </p>
             </div>
           </Link>
         ))}
