@@ -118,7 +118,13 @@ export default function MembersPage() {
 
   const updateTrainer = async (memberId: string, trainerId: string) => {
     const supabase = createClient()
-    await supabase.from('members').update({ default_trainer_id: trainerId || null }).eq('id', memberId)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.rpc('update_member_trainer', {
+      p_member_id:  memberId,
+      p_trainer_id: trainerId || null,
+      p_admin_id:   user.id,
+    })
     await loadMembers()
   }
 
