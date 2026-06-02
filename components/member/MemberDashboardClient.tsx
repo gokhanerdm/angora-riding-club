@@ -69,11 +69,28 @@ export default function MemberDashboardClient({
   adminMemberId?: string   // sadece admin görüntülerken gelir
 }) {
   const router = useRouter()
-  const [modal, setModal] = useState<ModalType>(null)
+  const [modal, setModal]           = useState<ModalType>(null)
+  const [profileModal, setProfileModal] = useState(false)
+  const [profileData, setProfileData]   = useState<any>(null)
   const [packages, setPackages] = useState<Package[]>([])
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(false)
   const [cancelFeedback, setCancelFeedback] = useState<{ msg: string; ok: boolean } | null>(null)
+
+  const openProfile = async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const targetUserId = adminMemberId
+      ? (await supabase.from('members').select('user_id').eq('id', adminMemberId).single()).data?.user_id
+      : user.id
+    if (!targetUserId) { setProfileData({}); setProfileModal(true); return }
+    const { data } = await supabase.from('members').select(
+      'name, surname, email, phone, date_of_birth, dogum_yeri, adres, emergency_contact_phone, meslek, ogretim_durumu, baba_adi, anne_adi, is_minor, veli_adi_soyadi, veli_telefon, veli_iliskisi, referral_code'
+    ).eq('user_id', targetUserId).single()
+    setProfileData(data ?? {})
+    setProfileModal(true)
+  }
 
   const getMemberId = async (supabase: any) => {
     const { data } = await supabase.from('members').select('id').eq('user_id', userId).single()
@@ -137,8 +154,8 @@ export default function MemberDashboardClient({
       <WelcomeModal />
       {/* Header */}
       <div className="px-5 pt-12 pb-4 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {/* Profil fotoğrafı */}
+        {/* İsme tıklayınca profil bilgileri */}
+        <button className="flex items-center gap-3 text-left active:opacity-70" onClick={openProfile}>
           <div
             className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(245,158,11,0.4)' }}
@@ -149,38 +166,33 @@ export default function MemberDashboardClient({
             }
           </div>
           <div>
-            <p className="text-xs font-medium tracking-widest" style={{ color: '#7b93c4' }}>
-              Hoş geldin
-            </p>
+            <p className="text-xs font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
             <h1 className="text-2xl font-bold text-white mt-0.5">{memberName}</h1>
             {trainerName && (
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>
-                  Eğitmen: {trainerName}
-                </p>
+                <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>Eğitmen: {trainerName}</p>
               </div>
             )}
           </div>
-        </div>
-        {adminMemberId ? (
-          <a
-            href={`/admin/members/${adminMemberId}/settings`}
-            className="text-xs font-bold px-4 py-2.5 rounded-2xl flex items-center gap-1"
-            style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.12)' }}
-          >
+        </button>
+        {/* Üyelik butonu her zaman görünür */}
+        <a href="/member/packages" className="text-xs font-bold px-4 py-2.5 rounded-2xl flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}>
+          Üyelik
+        </a>
+      </div>
+
+      {/* Ayarlar butonu — sadece admin görür, isim ile paketler arasında */}
+      {adminMemberId && (
+        <div className="px-5 mb-3">
+          <a href={`/admin/members/${adminMemberId}/settings`}
+            className="w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
+            style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.10)' }}>
             ⚙️ Ayarlar
           </a>
-        ) : (
-          <a
-            href="/member/packages"
-            className="text-xs font-bold px-4 py-2.5 rounded-2xl"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
-          >
-            Üyelik
-          </a>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2 px-5 mb-5">
@@ -225,6 +237,62 @@ export default function MemberDashboardClient({
       <div className="flex-1 px-2">
         <ReservationCalendar />
       </div>
+
+      {/* Profil bilgileri modalı */}
+      {profileModal && (
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full rounded-t-3xl flex flex-col" style={{ background: '#0d1b4b', maxHeight: '80vh', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex justify-between items-center px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <h3 className="text-base font-bold text-white">Üye Bilgileri</h3>
+              <button onClick={() => setProfileModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
+              {profileData ? (
+                <>
+                  {[
+                    { label: 'Ad Soyad', value: `${profileData.name ?? ''} ${profileData.surname ?? ''}`.trim() },
+                    { label: 'Email', value: profileData.email },
+                    { label: 'Telefon', value: profileData.phone },
+                    { label: 'Doğum Yeri', value: profileData.dogum_yeri },
+                    { label: 'Doğum Tarihi', value: profileData.date_of_birth },
+                    { label: 'Acil İletişim', value: profileData.emergency_contact_phone },
+                    { label: 'Baba Adı', value: profileData.baba_adi },
+                    { label: 'Anne Adı', value: profileData.anne_adi },
+                    { label: 'Meslek', value: profileData.meslek },
+                    { label: 'Öğrenim', value: profileData.ogretim_durumu },
+                    { label: 'Adres', value: profileData.adres },
+                    { label: 'Referans Kodu', value: profileData.referral_code },
+                  ].filter(r => r.value).map(row => (
+                    <div key={row.label} className="flex justify-between items-start gap-4 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <p className="text-xs font-bold flex-shrink-0" style={{ color: '#7b93c4' }}>{row.label}</p>
+                      <p className="text-sm text-white text-right">{row.value}</p>
+                    </div>
+                  ))}
+                  {profileData.is_minor && profileData.veli_adi_soyadi && (
+                    <div className="rounded-2xl p-3 mt-2" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                      <p className="text-xs font-bold mb-2" style={{ color: '#f59e0b' }}>Veli Bilgileri</p>
+                      {[
+                        { label: 'Veli Adı', value: profileData.veli_adi_soyadi },
+                        { label: 'Telefon', value: profileData.veli_telefon },
+                        { label: 'Yakınlık', value: profileData.veli_iliskisi },
+                      ].filter(r => r.value).map(row => (
+                        <div key={row.label} className="flex justify-between py-1">
+                          <p className="text-xs" style={{ color: '#7b93c4' }}>{row.label}</p>
+                          <p className="text-xs font-bold text-white">{row.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Çıkış */}
       <div className="px-5 pb-10 pt-2 flex justify-center">
