@@ -116,16 +116,24 @@ export default function MembersPage() {
     }
   }
 
+  const [trainerMsg, setTrainerMsg] = useState('')
+  const showTrainerMsg = (msg: string) => { setTrainerMsg(msg); setTimeout(() => setTrainerMsg(''), 4000) }
+
   const updateTrainer = async (memberId: string, trainerId: string) => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.rpc('update_member_trainer', {
+    const { error } = await supabase.rpc('update_member_trainer', {
       p_member_id:  memberId,
       p_trainer_id: trainerId || null,
       p_admin_id:   user.id,
     })
-    await loadMembers()
+    if (error) {
+      showTrainerMsg('Eğitmen atanamadı: ' + error.message)
+    } else {
+      showTrainerMsg('Eğitmen güncellendi ✓')
+      await loadMembers()
+    }
   }
 
   const updateStatus = async (memberId: string, status: string) => {
@@ -212,6 +220,16 @@ export default function MembersPage() {
           className="fixed inset-0 z-[100] overflow-y-auto"
           style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
         >
+          {trainerMsg && (
+            <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+              style={{
+                background: trainerMsg.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)',
+                border: trainerMsg.includes('✓') ? '1px solid rgba(52,211,153,0.5)' : '1px solid rgba(248,113,113,0.5)',
+              }}>
+              {trainerMsg}
+            </div>
+          )}
+
           {/* Geri header */}
           <div
             className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0"
