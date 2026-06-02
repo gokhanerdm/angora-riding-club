@@ -33,11 +33,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      options: { persistSession: rememberMe },
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError("Giriş başarısız. Email veya şifre hatalı.");
