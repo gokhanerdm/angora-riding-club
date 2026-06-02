@@ -130,15 +130,6 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
-              Referans Kodu <span style={{ color: '#4a6190' }}>(isteğe bağlı)</span>
-            </label>
-            <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())}
-              placeholder="Varsa referans kodunu gir"
-              className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
-          </div>
-
-          <div>
             <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre Tekrar</label>
             <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} required minLength={6}
               placeholder="Şifrenizi tekrar girin"
@@ -154,6 +145,15 @@ export default function SignupPage() {
             {passwordConfirm && password !== passwordConfirm && (
               <p className="text-xs mt-1" style={{ color: '#f87171' }}>Şifreler eşleşmiyor</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
+              Referans Kodu <span style={{ color: '#4a6190' }}>(isteğe bağlı)</span>
+            </label>
+            <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())}
+              placeholder="Varsa referans kodunu gir"
+              className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
           </div>
 
           {/* Onay kutuları */}
