@@ -346,7 +346,7 @@ export default function MembersPage() {
 
       {/* Eğitmen atama onay modalı */}
       {promoteModal && selected && (
-        <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <h3 className="text-lg font-bold text-white mb-1">Eğitmen Olarak Ata</h3>
