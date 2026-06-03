@@ -343,6 +343,13 @@ export default function AdminMemberSettingsPage() {
             🔗 Eski Hesap Bağla
           </button>
 
+          {/* Geçmiş ders ekle */}
+          <a href={`/admin/members/${memberId}/legacy-lessons`}
+            className="w-full py-2 rounded-xl text-sm font-bold text-center block"
+            style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)' }}>
+            🕐 Geçmiş Ders Ekle
+          </a>
+
           {/* Rezervasyon yap */}
           <button onClick={() => setResModal(true)}
             className="w-full py-2 rounded-xl text-sm font-bold"
