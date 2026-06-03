@@ -30,7 +30,7 @@ export default function LegacyLessonsPage() {
   const [pkgStart,    setPkgStart]   = useState('')
   const [pkgUsed,     setPkgUsed]    = useState('0')
 
-  const DURATION: Record<number, number> = { 8: 2, 12: 3, 20: 5, 30: 8, 60: 12 }
+  const DURATION: Record<number, number> = { 4: 1, 8: 2, 12: 3, 20: 5, 30: 8, 60: 12 }
 
   const calcEndDate = () => {
     if (!pkgStart || !pkgId) return ''
