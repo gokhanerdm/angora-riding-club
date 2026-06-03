@@ -244,7 +244,15 @@ export default function MemberDashboardClient({
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl flex flex-col" style={{ background: '#0d1b4b', maxHeight: '80vh', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="text-base font-bold text-white">Üye Bilgileri</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-base font-bold text-white">Üye Bilgileri</h3>
+                {!adminMemberId && (
+                  <a href="/member/profile-edit" className="text-xs font-bold px-2.5 py-1 rounded-xl"
+                    style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                    Düzenle
+                  </a>
+                )}
+              </div>
               <button onClick={() => setProfileModal(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>

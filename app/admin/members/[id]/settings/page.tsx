@@ -229,7 +229,14 @@ export default function AdminMemberSettingsPage() {
 
       <div className="px-4 py-6 space-y-4 pb-24">
 
-        {/* Hızlı erişim — en üstte */}
+        {/* Profil düzenle — en üstte */}
+        <a href={`/admin/members/${memberId}/profile-edit`}
+          className="w-full py-3 rounded-2xl text-sm font-bold text-center flex items-center justify-center gap-2"
+          style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+          ✏️ Profili Düzenle
+        </a>
+
+        {/* Geçmiş ders ekle */}
         <a href={`/admin/members/${memberId}/legacy-lessons`}
           className="w-full py-3 rounded-2xl text-sm font-bold text-center flex items-center justify-center gap-2"
           style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(124,58,237,0.2))', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)' }}>

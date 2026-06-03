@@ -43,13 +43,16 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
       style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
     >
       {/* Geri oku */}
-      <div className="absolute top-12 left-4 z-10">
-        <Link
-          href="/admin/trainers"
+      <div className="absolute top-12 left-4 z-10 flex gap-2">
+        <Link href="/admin/trainers"
           className="flex items-center gap-2 text-sm font-bold px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
-        >
+          style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
           ←
+        </Link>
+        <Link href={`/admin/trainers/${id}/profile-edit`}
+          className="text-xs font-bold px-3 py-2 rounded-xl"
+          style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+          ✏️ Düzenle
         </Link>
       </div>
 
