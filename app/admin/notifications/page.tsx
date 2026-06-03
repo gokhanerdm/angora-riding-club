@@ -88,7 +88,7 @@ export default function NotificationsPage() {
         <div className="space-y-3">
           {/* Eski üye talepleri */}
           {legacyRequests.map(m => (
-            <a key={m.id} href={`/admin/members/${m.id}/settings`}
+            <a key={m.id} href={`/admin/members/${m.id}/legacy`}
               className="rounded-2xl p-4 flex items-start gap-4 active:opacity-70"
               style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.3)' }}>
               <span className="text-2xl flex-shrink-0">🕐</span>
