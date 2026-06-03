@@ -23,11 +23,24 @@ export default function LegacyLessonsPage() {
 
   // Yeni paket oluşturma state
   const [addPkg,     setAddPkg]     = useState(false)
-  const [pkgId,      setPkgId]      = useState('')
-  const [pkgType,    setPkgType]    = useState<'weekday'|'general'>('weekday')
-  const [pkgAmount,  setPkgAmount]  = useState('')
-  const [pkgMethod,  setPkgMethod]  = useState<'nakit'|'havale'|'kart'>('nakit')
-  const [pkgStart,   setPkgStart]   = useState('')
+  const [pkgId,       setPkgId]      = useState('')
+  const [pkgType,     setPkgType]    = useState<'weekday'|'general'>('weekday')
+  const [pkgAmount,   setPkgAmount]  = useState('')
+  const [pkgMethod,   setPkgMethod]  = useState<'nakit'|'havale'|'kart'>('nakit')
+  const [pkgStart,    setPkgStart]   = useState('')
+  const [pkgUsed,     setPkgUsed]    = useState('0')
+
+  const DURATION: Record<number, number> = { 8: 2, 12: 3, 20: 5, 30: 8, 60: 12 }
+
+  const calcEndDate = () => {
+    if (!pkgStart || !pkgId) return ''
+    const pkg = packages.find(p => p.id === pkgId)
+    if (!pkg) return ''
+    const months = DURATION[pkg.lesson_count] ?? 12
+    const d = new Date(pkgStart)
+    d.setMonth(d.getMonth() + months)
+    return d.toISOString().split('T')[0]
+  }
 
   type LessonStatus = 'completed' | 'no_show'
   type Lesson = { date: string; trainer: string; status: LessonStatus; slot: string }
@@ -72,11 +85,17 @@ export default function LegacyLessonsPage() {
 
     // Yeni paket oluştur
     if (addPkg && pkgId && pkgAmount) {
+      const endDate = calcEndDate()
       const { data: newMsId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
-        p_member_id: memberId, p_admin_id: user.id, p_package_id: pkgId,
-        p_request_type: pkgType, p_payment_amount: parseFloat(pkgAmount),
+        p_member_id:    memberId,
+        p_admin_id:     user.id,
+        p_package_id:   pkgId,
+        p_request_type: pkgType,
+        p_payment_amount: parseFloat(pkgAmount),
         p_payment_method: pkgMethod,
-        p_start_date: pkgStart || new Date().toISOString().split('T')[0],
+        p_start_date:   pkgStart || new Date().toISOString().split('T')[0],
+        p_end_date:     endDate || null,
+        p_used_lessons: parseInt(pkgUsed) || 0,
       })
       if (pkgErr) { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
       if (!newMsId) { showToast('Paket ID alınamadı'); setSaving(false); return }
@@ -193,8 +212,22 @@ export default function LegacyLessonsPage() {
                     style={pkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>{m}</button>
                 ))}
               </div>
-              <input type="date" value={pkgStart} onChange={e => setPkgStart(e.target.value)}
-                placeholder="Başlangıç tarihi" className="w-full px-3 py-2.5 rounded-xl text-xs outline-none" style={INPUT} />
+              <div>
+                <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Başlangıç tarihi</p>
+                <input type="date" value={pkgStart} onChange={e => setPkgStart(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-xs outline-none" style={INPUT} />
+              </div>
+              {pkgStart && pkgId && (
+                <div className="px-3 py-2 rounded-xl text-xs" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  <span style={{ color: '#7b93c4' }}>Bitiş tarihi: </span>
+                  <span className="font-bold" style={{ color: '#34d399' }}>{calcEndDate()}</span>
+                </div>
+              )}
+              <div>
+                <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Kullanılmış ders sayısı</p>
+                <input type="number" min="0" value={pkgUsed} onChange={e => setPkgUsed(e.target.value)}
+                  placeholder="0" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} />
+              </div>
             </div>
           )}
         </div>
