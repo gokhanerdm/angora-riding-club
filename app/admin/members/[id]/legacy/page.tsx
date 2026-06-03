@@ -29,9 +29,10 @@ export default function LegacyRequestPage() {
   const [pkgEnd,    setPkgEnd]    = useState('')
 
   // Dersler
-  const [lessons, setLessons] = useState<{date:string; trainer:string; status:'completed'|'no_show'; slot:string}[]>([
-    { date:'', trainer:'', status:'completed', slot:'10:30' }
-  ])
+  const emptyLesson = () => ({ date:'', trainer:'', status:'completed' as const, slot:'10:30' })
+  const [lessons, setLessons] = useState<{date:string; trainer:string; status:'completed'|'no_show'; slot:string}[]>(
+    Array.from({ length: 10 }, emptyLesson)
+  )
 
   const showToast = (m: string) => { setToast(m); setTimeout(()=>setToast(''), 3000) }
 
@@ -50,8 +51,7 @@ export default function LegacyRequestPage() {
     })
   }, [])
 
-  const addLesson    = () => setLessons(prev => [...prev, { date:'', trainer: trainers[0]?.id ?? '', status:'completed', slot:'10:30' }])
-  const removeLesson = (i: number) => setLessons(prev => prev.filter((_,idx) => idx !== i))
+  const addBlock     = () => setLessons(prev => [...prev, ...Array.from({ length: 10 }, emptyLesson)])
   const updateLesson = (i: number, field: string, val: string) =>
     setLessons(prev => prev.map((l, idx) => idx === i ? {...l, [field]: val} : l))
 
@@ -193,58 +193,63 @@ export default function LegacyRequestPage() {
           </div>
         </div>
 
-        {/* Geçmiş dersler */}
-        <div className="rounded-2xl p-4 space-y-3" style={CARD}>
-          <div className="flex justify-between items-center">
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>
-              Geçmiş Dersler ({lessons.length})
-            </p>
-            <button onClick={addLesson}
-              className="text-xs font-bold px-3 py-1.5 rounded-xl"
-              style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}>
-              + Ders Ekle
-            </button>
+        {/* Geçmiş dersler — tablo formatı */}
+        <div className="rounded-2xl overflow-hidden" style={CARD}>
+          {/* Başlıklar */}
+          <div className="grid px-3 py-2" style={{ gridTemplateColumns: '130px 1fr 90px', gap: 6, background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#f59e0b' }}>Tarih</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#f59e0b' }}>Eğitmen</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-center" style={{ color: '#f59e0b' }}>Durum</p>
           </div>
 
-          {lessons.map((l, i) => (
-            <div key={i} className="rounded-xl p-3 space-y-2"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="flex justify-between items-center">
-                <p className="text-xs font-bold" style={{ color: '#7b93c4' }}>Ders {i + 1}</p>
-                {lessons.length > 1 && (
-                  <button onClick={() => removeLesson(i)} className="text-xs font-bold px-2 py-1 rounded-lg"
-                    style={{ color: '#f87171', background: 'rgba(248,113,113,0.10)' }}>Sil</button>
-                )}
-              </div>
-              <input type="date" value={l.date} onChange={e => updateLesson(i, 'date', e.target.value)}
-                className="w-full px-3 py-2 rounded-xl text-xs outline-none" style={INPUT} />
-              <select value={l.trainer} onChange={e => updateLesson(i, 'trainer', e.target.value)}
-                className="w-full px-3 py-2 rounded-xl text-xs outline-none" style={INPUT}>
-                <option value="">Eğitmen seç</option>
-                {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
-              </select>
-              <div className="flex gap-2">
-                <select value={l.slot} onChange={e => updateLesson(i, 'slot', e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-xl text-xs outline-none" style={INPUT}>
-                  {SLOTS.map(s => <option key={s} value={s}>{s}</option>)}
+          {/* Satırlar */}
+          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+            {lessons.map((l, i) => (
+              <div key={i} className="grid px-3 py-1.5 items-center" style={{ gridTemplateColumns: '130px 1fr 90px', gap: 6 }}>
+                <input
+                  type="date" value={l.date}
+                  onChange={e => updateLesson(i, 'date', e.target.value)}
+                  className="w-full px-2 py-1.5 rounded-lg text-xs outline-none"
+                  style={INPUT}
+                />
+                <select
+                  value={l.trainer}
+                  onChange={e => updateLesson(i, 'trainer', e.target.value)}
+                  className="w-full px-2 py-1.5 rounded-lg text-xs outline-none"
+                  style={INPUT}
+                >
+                  <option value="">Seç</option>
+                  {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
                 </select>
-                <button onClick={() => updateLesson(i, 'status', 'completed')}
-                  className="flex-1 py-2 rounded-xl text-xs font-bold"
-                  style={l.status === 'completed'
-                    ? { background: 'rgba(52,211,153,0.2)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }
-                    : { background: 'rgba(255,255,255,0.05)', color: '#7b93c4' }}>
-                  Yapıldı
-                </button>
-                <button onClick={() => updateLesson(i, 'status', 'no_show')}
-                  className="flex-1 py-2 rounded-xl text-xs font-bold"
-                  style={l.status === 'no_show'
-                    ? { background: 'rgba(245,158,11,0.2)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }
-                    : { background: 'rgba(255,255,255,0.05)', color: '#7b93c4' }}>
-                  Gelmedi
-                </button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => updateLesson(i, 'status', 'completed')}
+                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold"
+                    style={l.status === 'completed'
+                      ? { background: 'rgba(52,211,153,0.25)', color: '#34d399' }
+                      : { background: 'rgba(255,255,255,0.05)', color: '#4a6190' }}>
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => updateLesson(i, 'status', 'no_show')}
+                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold"
+                    style={l.status === 'no_show'
+                      ? { background: 'rgba(245,158,11,0.25)', color: '#f59e0b' }
+                      : { background: 'rgba(255,255,255,0.05)', color: '#4a6190' }}>
+                    ✗
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Liste ekle */}
+          <button
+            onClick={addBlock}
+            className="w-full py-3 text-xs font-bold"
+            style={{ background: 'rgba(52,211,153,0.08)', color: '#34d399', borderTop: '1px solid rgba(52,211,153,0.15)' }}>
+            + 10 Satır Daha Ekle
+          </button>
         </div>
 
         <button onClick={handleSave} disabled={saving || !pkgId || !pkgAmount}
