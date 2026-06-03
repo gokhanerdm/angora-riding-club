@@ -228,6 +228,14 @@ export default function AdminMemberSettingsPage() {
       </div>
 
       <div className="px-4 py-6 space-y-4 pb-24">
+
+        {/* Hızlı erişim — en üstte */}
+        <a href={`/admin/members/${memberId}/legacy-lessons`}
+          className="w-full py-3 rounded-2xl text-sm font-bold text-center flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(124,58,237,0.2))', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)' }}>
+          🕐 Geçmiş Ders Ekle
+        </a>
+
         {/* Bilgiler */}
         <div className="rounded-2xl p-4 space-y-1" style={CARD}>
           <p className="text-sm font-bold text-white">{member?.name} {member?.surname}</p>
