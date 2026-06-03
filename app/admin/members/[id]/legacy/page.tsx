@@ -73,42 +73,50 @@ export default function LegacyRequestPage() {
       p_start_date:     pkgStart || new Date().toISOString().split('T')[0],
     })
     if (pkgErr) { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
-
-    const ms = { id: membershipId as string }
+    if (!membershipId) { showToast('Paket ID alınamadı, tekrar deneyin.'); setSaving(false); return }
 
     // Geçmiş dersleri ekle
     const validLessons = lessons.filter(l => l.date && l.trainer)
-    if (validLessons.length > 0 && ms?.id) {
-      const lessonsData = validLessons.map(l => ({
-        scheduled_date: l.date,
-        trainer_id: l.trainer,
-        status: l.status,
-        start_time: l.slot + ':00',
-        end_time: (() => {
-          const [h,m] = l.slot.split(':').map(Number)
-          const t = h*60+m+30
-          return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}:00`
-        })()
-      }))
-      // JSONB'ye JavaScript array olarak gönder (string değil)
-      const { error: lessonErr } = await supabase.rpc('add_legacy_lessons', {
-        p_member_id:     memberId,
-        p_admin_id:      user.id,
-        p_membership_id: ms.id,
-        p_lessons:       lessonsData,
-      })
-      if (lessonErr) {
-        showToast('Ders ekleme hatası: ' + lessonErr.message)
-        setSaving(false)
-        return
-      }
+
+    if (validLessons.length === 0) {
+      // Ders girilmemiş ama paket kaydedildi
+      await supabase.from('members').update({ pending_legacy_setup: false }).eq('id', memberId)
+      setSaving(false)
+      showToast(`Paket kaydedildi ✓ (${lessons.filter(l=>l.date).length} satırda eğitmen seçili değil)`)
+      setTimeout(() => router.push('/admin/notifications'), 2000)
+      return
+    }
+
+    const lessonsData = validLessons.map(l => ({
+      scheduled_date: l.date,
+      trainer_id: l.trainer,
+      status: l.status,
+      start_time: l.slot + ':00',
+      end_time: (() => {
+        const [h,m] = l.slot.split(':').map(Number)
+        const t = h*60+m+30
+        return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}:00`
+      })()
+    }))
+
+    const { error: lessonErr } = await supabase.rpc('add_legacy_lessons', {
+      p_member_id:     memberId,
+      p_admin_id:      user.id,
+      p_membership_id: membershipId as string,
+      p_lessons:       lessonsData,
+    })
+
+    if (lessonErr) {
+      showToast('Ders ekleme hatası: ' + lessonErr.message)
+      setSaving(false)
+      return
     }
 
     // Talebi tamamlandı olarak işaretle
     await supabase.from('members').update({ pending_legacy_setup: false }).eq('id', memberId)
 
     setSaving(false)
-    showToast('Kayıt tamamlandı ✓')
+    showToast(`Kayıt tamamlandı ✓ — ${validLessons.length} ders eklendi`)
     setTimeout(() => router.push('/admin/notifications'), 1500)
   }
 
@@ -255,6 +263,19 @@ export default function LegacyRequestPage() {
             + 10 Satır Daha Ekle
           </button>
         </div>
+
+        {/* Geçerli ders sayısı göstergesi */}
+        {(() => {
+          const valid = lessons.filter(l => l.date && l.trainer).length
+          const withDate = lessons.filter(l => l.date).length
+          return withDate > 0 ? (
+            <div className="px-4 py-2 rounded-xl text-xs text-center"
+              style={{ background: valid > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)',
+                       color: valid > 0 ? '#34d399' : '#f87171' }}>
+              {valid > 0 ? `✓ ${valid} ders kaydedilecek` : `⚠️ ${withDate} satırda tarih var ama eğitmen seçili değil`}
+            </div>
+          ) : null
+        })()}
 
         <button onClick={handleSave} disabled={saving || !pkgId || !pkgAmount}
           className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
