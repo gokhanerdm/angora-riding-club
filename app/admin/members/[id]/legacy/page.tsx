@@ -62,8 +62,8 @@ export default function LegacyRequestPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Direkt üyelik oluştur
-    const { error: pkgErr } = await supabase.rpc('create_direct_membership', {
+    // Direkt üyelik oluştur — UUID döner
+    const { data: membershipId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
       p_member_id:      memberId,
       p_admin_id:       user.id,
       p_package_id:     pkgId,
@@ -74,10 +74,7 @@ export default function LegacyRequestPage() {
     })
     if (pkgErr) { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
 
-    // Oluşturulan üyeliğin id'sini al
-    const { data: ms } = await supabase
-      .from('memberships').select('id').eq('member_id', memberId)
-      .order('created_at', { ascending: false }).limit(1).single()
+    const ms = { id: membershipId as string }
 
     // Geçmiş dersleri ekle
     const validLessons = lessons.filter(l => l.date && l.trainer)
@@ -109,11 +106,6 @@ export default function LegacyRequestPage() {
 
     // Talebi tamamlandı olarak işaretle
     await supabase.from('members').update({ pending_legacy_setup: false }).eq('id', memberId)
-
-    // Üyelik is_current'ı güncelle (trigger yanlış false yapmış olabilir)
-    if (ms?.id) {
-      await supabase.from('memberships').update({ is_current: true }).eq('id', ms.id)
-    }
 
     setSaving(false)
     showToast('Kayıt tamamlandı ✓')

@@ -159,7 +159,7 @@ export default function AdminMemberSettingsPage() {
     })
     setCreatingPkg(false)
     if (error) showToast('Hata: ' + error.message)
-    else { setPackageModal(false); showToast('Paket oluşturuldu ✓'); loadAll() }
+    else { setPackageModal(false); showToast('Paket oluşturuldu ✓'); await loadAll() }
   }
 
   const handleCreateReservation = async () => {

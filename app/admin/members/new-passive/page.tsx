@@ -65,15 +65,13 @@ export default function NewPassiveMemberPage() {
     // Paket varsa oluştur
     let membershipId: string | null = null
     if (pkgId && pkgAmount) {
-      const { error: e2 } = await supabase.rpc('create_direct_membership', {
+      const { data: createdMsId, error: e2 } = await supabase.rpc('create_direct_membership', {
         p_member_id: memberId, p_admin_id: user.id, p_package_id: pkgId,
         p_request_type: pkgType, p_payment_amount: parseFloat(pkgAmount),
         p_payment_method: pkgMethod, p_start_date: pkgStartDate || new Date().toISOString().split('T')[0]
       })
       if (e2) { showToast('Paket hatası: ' + e2.message); setSaving(false); return }
-
-      const { data: ms } = await supabase.from('memberships').select('id').eq('member_id', memberId).order('created_at', { ascending: false }).limit(1).single()
-      membershipId = ms?.id ?? null
+      membershipId = createdMsId as string
     }
 
     // Dersler varsa ekle
