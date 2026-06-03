@@ -318,6 +318,13 @@ export default function AdminMemberSettingsPage() {
         <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.15)' }}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#38bdf8' }}>Admin İşlemleri</p>
 
+          {/* Geçmiş ders ekle — en üste */}
+          <a href={`/admin/members/${memberId}/legacy-lessons`}
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-center block"
+            style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.35)' }}>
+            🕐 Geçmiş Ders Ekle
+          </a>
+
           {/* Ekstra ders */}
           <div className="flex gap-2 items-center">
             <input type="number" min="1" max="50" value={bonusInput} onChange={e => setBonusInput(e.target.value)}
