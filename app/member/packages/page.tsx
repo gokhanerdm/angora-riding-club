@@ -101,10 +101,6 @@ export default function PackagesPage() {
               const supabase = createClient()
               const { data: { user } } = await supabase.auth.getUser()
               if (!user) return
-              // Önce member kaydını bul
-              const { data: member } = await supabase
-                .from('members').select('id').eq('user_id', user.id).is('deleted_at', null).single()
-              if (!member) { alert('Üye kaydı bulunamadı'); return }
               const { error } = await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
               if (error) {
                 // Hata varsa direkt UPDATE dene
@@ -115,7 +111,7 @@ export default function PackagesPage() {
             className="w-full py-3 rounded-2xl text-sm font-bold"
             style={{ background: 'rgba(255,255,255,0.04)', color: '#7b93c4', border: '1px dashed rgba(255,255,255,0.15)' }}
           >
-            Daha önce kulübe üye oldum →
+            Üyeliğim Var →
           </button>
         </div>
       )}
