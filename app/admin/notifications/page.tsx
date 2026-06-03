@@ -38,6 +38,8 @@ export default function NotificationsPage() {
   useEffect(() => { load() }, [])
 
   const [legacyRequests, setLegacyRequests] = useState<any[]>([])
+  const [dismissed, setDismissed] = useState<Set<number>>(new Set())
+  const dismiss = (i: number) => setDismissed(prev => new Set(prev).add(i))
 
   const load = async () => {
     setLoading(true)
@@ -105,14 +107,14 @@ export default function NotificationsPage() {
               Bekleyen bildirim yok.
             </div>
           )}
-          {notifications.map((n, i) => (
+          {notifications.filter((_, i) => !dismissed.has(i)).map((n, i) => (
             <div
               key={i}
               className="rounded-2xl p-4 flex items-start gap-4"
               style={{ background: BG[n.type], border: `1px solid ${BORDER[n.type]}` }}
             >
               <span className="text-2xl flex-shrink-0">{ICON[n.type]}</span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="font-bold text-white text-sm">{n.message}</p>
                 {n.member_email && <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{n.member_email}</p>}
                 {n.type === 'pending_request' && (
@@ -121,6 +123,11 @@ export default function NotificationsPage() {
                   </Link>
                 )}
               </div>
+              <button onClick={() => dismiss(i)}
+                className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                Tamam
+              </button>
             </div>
           ))}
         </div>
