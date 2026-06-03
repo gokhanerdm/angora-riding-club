@@ -177,7 +177,8 @@ export default function MemberDashboardClient({
           </div>
         </button>
         {/* Üyelik butonu her zaman görünür */}
-        <a href="/member/packages" className="text-xs font-bold px-4 py-2.5 rounded-2xl flex-shrink-0"
+        <a href={adminMemberId ? `/member/packages?uid=${userId}` : '/member/packages'}
+          className="text-xs font-bold px-4 py-2.5 rounded-2xl flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}>
           Üyelik
         </a>
@@ -235,7 +236,7 @@ export default function MemberDashboardClient({
 
       {/* Calendar */}
       <div className="flex-1 px-2">
-        <ReservationCalendar />
+        <ReservationCalendar overrideUserId={adminMemberId ? userId : undefined} />
       </div>
 
       {/* Profil bilgileri modalı */}

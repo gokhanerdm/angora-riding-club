@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Package {
   id: string
@@ -40,7 +40,9 @@ export default function PackagesPage() {
   const [submitted, setSubmitted]   = useState(false)
   const [legacyDone, setLegacyDone] = useState(false)
   const [error, setError]           = useState('')
-  const router = useRouter()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const overrideUid  = searchParams.get('uid') // admin üye adına işlem yaparsa
 
   useEffect(() => { loadPackages() }, [])
 
@@ -101,7 +103,8 @@ export default function PackagesPage() {
               const supabase = createClient()
               const { data: { user } } = await supabase.auth.getUser()
               if (!user) return
-              const { error } = await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
+              const targetUid = overrideUid ?? user.id
+              const { error } = await supabase.rpc('request_legacy_setup', { p_user_id: targetUid })
               if (error) {
                 // Hata varsa direkt UPDATE dene
                 await supabase.from('members').update({ pending_legacy_setup: true }).eq('user_id', user.id)

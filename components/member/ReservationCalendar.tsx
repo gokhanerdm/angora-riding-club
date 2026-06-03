@@ -31,7 +31,7 @@ function formatDisplayDate(dateStr: string): string {
   return `${d} ${MONTHS[m - 1]} ${y} ${DAYS[(date.getDay() + 6) % 7]}`
 }
 
-export default function ReservationCalendar() {
+export default function ReservationCalendar({ overrideUserId }: { overrideUserId?: string }) {
   const router  = useRouter()
   const today   = new Date()
   today.setHours(0, 0, 0, 0)
@@ -76,20 +76,22 @@ export default function ReservationCalendar() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Ders hakkı kontrolü
-    const { data: memberData } = await supabase
-      .from('members').select('id').eq('user_id', user.id).single()
-    if (memberData) {
-      const { data: memberships } = await supabase
-        .from('memberships')
-        .select('total_lessons, used_lessons, reserved_lessons')
-        .eq('member_id', memberData.id).eq('is_current', true)
-      const remaining = (memberships ?? []).reduce(
-        (sum, m) => sum + (m.total_lessons - m.used_lessons - m.reserved_lessons), 0
-      )
-      if (remaining <= 0) {
-        router.push('/member/packages')
-        return
+    // overrideUserId varsa (admin üye adına bakıyor) onu kullan
+    const effectiveUserId = overrideUserId ?? user.id
+
+    // Ders hakkı kontrolü (admin görüntülüyorsa atla)
+    if (!overrideUserId) {
+      const { data: memberData } = await supabase
+        .from('members').select('id').eq('user_id', effectiveUserId).single()
+      if (memberData) {
+        const { data: memberships } = await supabase
+          .from('memberships')
+          .select('total_lessons, used_lessons, reserved_lessons')
+          .eq('member_id', memberData.id).eq('is_current', true)
+        const remaining = (memberships ?? []).reduce(
+          (sum, m) => sum + (m.total_lessons - m.used_lessons - m.reserved_lessons), 0
+        )
+        if (remaining <= 0) { router.push('/member/packages'); return }
       }
     }
 
@@ -102,7 +104,7 @@ export default function ReservationCalendar() {
     setConfirmSlot(null)
 
     const { data, error } = await supabase.rpc('get_available_slots', {
-      user_id: user.id, selected_date: dateStr
+      user_id: effectiveUserId, selected_date: dateStr
     })
     if (!error) setSlots((data ?? []).filter((s: TimeSlot) => s.slot_status !== 'past'))
     setLoading(false)
@@ -123,10 +125,11 @@ export default function ReservationCalendar() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    const effectiveUserId = overrideUserId ?? user.id
     const endTime = slotEnd(confirmSlot.slot_time)
 
     const { error } = await supabase.rpc('create_reservation', {
-      user_id:            user.id,
+      user_id:            effectiveUserId,
       p_trainer_id:       confirmSlot.trainer_id,
       p_scheduled_date:   selectedDate,
       p_start_time:       confirmSlot.slot_time,
@@ -145,7 +148,7 @@ export default function ReservationCalendar() {
       const { data: { user: u } } = await supabase.auth.getUser()
       if (u) {
         const { data } = await supabase.rpc('get_available_slots', {
-          user_id: u.id, selected_date: selectedDate
+          user_id: overrideUserId ?? u.id, selected_date: selectedDate
         })
         if (data) setSlots((data as TimeSlot[]).filter(s => s.slot_status !== 'past'))
       }
