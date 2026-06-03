@@ -15,10 +15,19 @@ export default function LegacyLessonsPage() {
   const [member,     setMember]     = useState<any>(null)
   const [trainers,   setTrainers]   = useState<any[]>([])
   const [memberships, setMemberships] = useState<any[]>([])
+  const [packages,   setPackages]   = useState<any[]>([])
   const [loading,    setLoading]    = useState(true)
   const [saving,     setSaving]     = useState(false)
   const [toast,      setToast]      = useState('')
   const [selectedMs, setSelectedMs] = useState('')
+
+  // Yeni paket oluşturma state
+  const [addPkg,     setAddPkg]     = useState(false)
+  const [pkgId,      setPkgId]      = useState('')
+  const [pkgType,    setPkgType]    = useState<'weekday'|'general'>('weekday')
+  const [pkgAmount,  setPkgAmount]  = useState('')
+  const [pkgMethod,  setPkgMethod]  = useState<'nakit'|'havale'|'kart'>('nakit')
+  const [pkgStart,   setPkgStart]   = useState('')
 
   type LessonStatus = 'completed' | 'no_show'
   type Lesson = { date: string; trainer: string; status: LessonStatus; slot: string }
@@ -33,10 +42,12 @@ export default function LegacyLessonsPage() {
       supabase.from('members').select('name, surname').eq('id', memberId).single(),
       supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
       supabase.from('memberships').select('id, total_lessons, type, start_date, is_current').eq('member_id', memberId).order('created_at', { ascending: false }),
-    ]).then(([{ data: m }, { data: t }, { data: ms }]) => {
+      supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).gt('weekday_price', 0).order('lesson_count'),
+    ]).then(([{ data: m }, { data: t }, { data: ms }, { data: p }]) => {
       setMember(m)
       setTrainers(t ?? [])
       setMemberships(ms ?? [])
+      setPackages(p ?? [])
       if (ms && ms.length > 0) setSelectedMs(ms.find(x => x.is_current)?.id ?? ms[0].id)
       if (t && t.length > 0) setLessons(prev => prev.map(l => ({ ...l, trainer: l.trainer || t[0].id })))
       setLoading(false)
@@ -50,13 +61,34 @@ export default function LegacyLessonsPage() {
 
   const handleSave = async () => {
     const validLessons = lessons.filter(l => l.date && l.trainer)
-    if (validLessons.length === 0) { showToast('En az 1 ders tarihi girin'); return }
-    if (!selectedMs) { showToast('Paket seçin'); return }
+    if (validLessons.length === 0 && !addPkg) { showToast('En az 1 ders tarihi veya yeni paket girin'); return }
 
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+
+    let membershipId = selectedMs
+
+    // Yeni paket oluştur
+    if (addPkg && pkgId && pkgAmount) {
+      const { data: newMsId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
+        p_member_id: memberId, p_admin_id: user.id, p_package_id: pkgId,
+        p_request_type: pkgType, p_payment_amount: parseFloat(pkgAmount),
+        p_payment_method: pkgMethod,
+        p_start_date: pkgStart || new Date().toISOString().split('T')[0],
+      })
+      if (pkgErr) { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
+      if (!newMsId) { showToast('Paket ID alınamadı'); setSaving(false); return }
+      membershipId = newMsId as string
+      // Memberships listesini güncelle
+      const { data: ms } = await supabase.from('memberships').select('id, total_lessons, type, start_date, is_current').eq('member_id', memberId).order('created_at', { ascending: false })
+      setMemberships(ms ?? [])
+      setSelectedMs(membershipId)
+      showToast('Paket oluşturuldu ✓')
+    }
+
+    if (!membershipId) { showToast('Paket seçin veya yeni paket ekleyin'); setSaving(false); return }
 
     const lessonsData = validLessons.map(l => ({
       scheduled_date: l.date,
@@ -73,7 +105,7 @@ export default function LegacyLessonsPage() {
     const { error } = await supabase.rpc('add_legacy_lessons', {
       p_member_id: memberId,
       p_admin_id: user.id,
-      p_membership_id: selectedMs,
+      p_membership_id: membershipId,
       p_lessons: lessonsData,
     })
 
@@ -116,17 +148,55 @@ export default function LegacyLessonsPage() {
 
       <div className="px-4 py-5 space-y-4 pb-32">
 
-        {/* Paket seç */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <p className="text-xs font-bold mb-2" style={{ color: '#f59e0b' }}>Hangi pakete eklensin?</p>
-          <select value={selectedMs} onChange={e => setSelectedMs(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT}>
-            {memberships.map(ms => (
-              <option key={ms.id} value={ms.id}>
-                {ms.total_lessons} Ders · {ms.type === 'weekday' ? 'Hafta İçi' : 'Genel'} · {ms.start_date} {ms.is_current ? '(Aktif)' : ''}
-              </option>
-            ))}
-          </select>
+        {/* Paket seç veya yeni ekle */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Paket</p>
+            <button onClick={() => setAddPkg(p => !p)}
+              className="text-xs font-bold px-3 py-1 rounded-xl"
+              style={addPkg ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' } : { background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
+              {addPkg ? '← Mevcut pakete ekle' : '+ Yeni paket ekle'}
+            </button>
+          </div>
+
+          {!addPkg ? (
+            <select value={selectedMs} onChange={e => setSelectedMs(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT}>
+              {memberships.length === 0
+                ? <option value="">Paket yok — yeni paket ekle</option>
+                : memberships.map(ms => (
+                  <option key={ms.id} value={ms.id}>
+                    {ms.total_lessons} Ders · {ms.type === 'weekday' ? 'Hafta İçi' : 'Genel'} · {ms.start_date} {ms.is_current ? '(Aktif)' : ''}
+                  </option>
+                ))}
+            </select>
+          ) : (
+            <div className="space-y-2">
+              <select value={pkgId} onChange={e => setPkgId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT}>
+                <option value="">Paket seç...</option>
+                {packages.map(p => <option key={p.id} value={p.id}>{p.lesson_count} Ders</option>)}
+              </select>
+              <div className="flex gap-2">
+                {(['weekday','general'] as const).map(t => (
+                  <button key={t} onClick={() => setPkgType(t)} className="flex-1 py-2 rounded-xl text-xs font-bold"
+                    style={pkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                    {t === 'weekday' ? 'Hafta İçi' : 'Genel'}
+                  </button>
+                ))}
+              </div>
+              <input type="number" value={pkgAmount} onChange={e => setPkgAmount(e.target.value)}
+                placeholder="Ödeme tutarı (₺)" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} />
+              <div className="flex gap-2">
+                {(['nakit','havale','kart'] as const).map(m => (
+                  <button key={m} onClick={() => setPkgMethod(m)} className="flex-1 py-2 rounded-xl text-xs font-bold capitalize"
+                    style={pkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>{m}</button>
+                ))}
+              </div>
+              <input type="date" value={pkgStart} onChange={e => setPkgStart(e.target.value)}
+                placeholder="Başlangıç tarihi" className="w-full px-3 py-2.5 rounded-xl text-xs outline-none" style={INPUT} />
+            </div>
+          )}
         </div>
 
         {/* Ders tablosu */}
