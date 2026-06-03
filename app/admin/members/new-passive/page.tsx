@@ -88,7 +88,7 @@ export default function NewPassiveMemberPage() {
       }))
       const { error: e3 } = await supabase.rpc('add_legacy_lessons', {
         p_member_id: memberId, p_admin_id: user.id, p_membership_id: membershipId,
-        p_lessons: JSON.stringify(lessonsData)
+        p_lessons: lessonsData,
       })
       if (e3) showToast('Ders ekleme hatası: ' + e3.message)
     }

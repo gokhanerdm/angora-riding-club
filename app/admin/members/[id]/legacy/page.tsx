@@ -93,15 +93,27 @@ export default function LegacyRequestPage() {
           return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}:00`
         })()
       }))
+      // JSONB'ye JavaScript array olarak gönder (string değil)
       const { error: lessonErr } = await supabase.rpc('add_legacy_lessons', {
-        p_member_id: memberId, p_admin_id: user.id,
-        p_membership_id: ms.id, p_lessons: JSON.stringify(lessonsData)
+        p_member_id:     memberId,
+        p_admin_id:      user.id,
+        p_membership_id: ms.id,
+        p_lessons:       lessonsData,
       })
-      if (lessonErr) showToast('Ders ekleme hatası: ' + lessonErr.message)
+      if (lessonErr) {
+        showToast('Ders ekleme hatası: ' + lessonErr.message)
+        setSaving(false)
+        return
+      }
     }
 
     // Talebi tamamlandı olarak işaretle
     await supabase.from('members').update({ pending_legacy_setup: false }).eq('id', memberId)
+
+    // Üyelik is_current'ı güncelle (trigger yanlış false yapmış olabilir)
+    if (ms?.id) {
+      await supabase.from('memberships').update({ is_current: true }).eq('id', ms.id)
+    }
 
     setSaving(false)
     showToast('Kayıt tamamlandı ✓')
