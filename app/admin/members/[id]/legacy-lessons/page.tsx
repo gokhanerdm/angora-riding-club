@@ -20,8 +20,10 @@ export default function LegacyLessonsPage() {
   const [toast,      setToast]      = useState('')
   const [selectedMs, setSelectedMs] = useState('')
 
-  const emptyLesson = () => ({ date: '', trainer: '', status: 'completed' as const, slot: '10:30' })
-  const [lessons, setLessons] = useState(() => Array.from({ length: 10 }, emptyLesson))
+  type LessonStatus = 'completed' | 'no_show'
+  type Lesson = { date: string; trainer: string; status: LessonStatus; slot: string }
+  const emptyLesson = (): Lesson => ({ date: '', trainer: '', status: 'completed', slot: '10:30' })
+  const [lessons, setLessons] = useState<Lesson[]>(() => Array.from({ length: 10 }, emptyLesson))
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 4000) }
 
