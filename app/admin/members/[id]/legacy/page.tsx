@@ -46,7 +46,7 @@ export default function LegacyRequestPage() {
       setMember(m)
       setTrainers(t ?? [])
       setPackages(p ?? [])
-      if (t && t.length > 0) setLessons([{ date:'', trainer: t[0].id, status:'completed', slot:'10:30' }])
+      if (t && t.length > 0) setLessons(prev => prev.map(l => ({ ...l, trainer: l.trainer || t[0].id })))
       setLoading(false)
     })
   }, [])
