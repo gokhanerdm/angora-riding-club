@@ -38,8 +38,17 @@ export default function NotificationsPage() {
   useEffect(() => { load() }, [])
 
   const [legacyRequests, setLegacyRequests] = useState<any[]>([])
-  const [dismissed, setDismissed] = useState<Set<number>>(new Set())
-  const dismiss = (i: number) => setDismissed(prev => new Set(prev).add(i))
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('dismissed_notifications') ?? '[]')) }
+    catch { return new Set() }
+  })
+  const dismiss = (key: string) => {
+    setDismissed(prev => {
+      const next = new Set(prev).add(key)
+      localStorage.setItem('dismissed_notifications', JSON.stringify([...next]))
+      return next
+    })
+  }
 
   const load = async () => {
     setLoading(true)
@@ -107,7 +116,7 @@ export default function NotificationsPage() {
               Bekleyen bildirim yok.
             </div>
           )}
-          {notifications.filter((_, i) => !dismissed.has(i)).map((n, i) => (
+          {notifications.filter(n => !dismissed.has(n.message)).map((n, i) => (
             <div
               key={i}
               className="rounded-2xl p-4 flex items-start gap-4"
@@ -123,7 +132,7 @@ export default function NotificationsPage() {
                   </Link>
                 )}
               </div>
-              <button onClick={() => dismiss(i)}
+              <button onClick={() => dismiss(n.message)}
                 className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
                 Tamam
