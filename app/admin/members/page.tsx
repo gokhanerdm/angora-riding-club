@@ -177,7 +177,7 @@ export default function MembersPage() {
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
         />
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 flex-nowrap">
           {STATUS_FILTERS.map(f => (
             <button
               key={f}
