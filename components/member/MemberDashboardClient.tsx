@@ -230,10 +230,10 @@ export default function MemberDashboardClient({
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2 px-5 mb-5">
         {[
-          { label: 'Toplam Ders', value: stats.total_lessons, type: 'total' as ModalType, accent: '#7b93c4' },
-          { label: 'Kullanılan Ders', value: stats.used_lessons, type: 'used' as ModalType, accent: '#7b93c4' },
-          { label: 'Kalan Ders', value: stats.remaining_lessons, type: null, accent: '#34d399' },
-          { label: 'Bekleyen Ders', value: stats.reserved_lessons, type: 'reserved' as ModalType, accent: '#38bdf8' },
+          { label: 'Toplam',    value: stats.total_lessons,     type: 'total' as ModalType,    accent: '#7b93c4' },
+          { label: 'Kullanılan', value: stats.used_lessons,     type: 'used' as ModalType,     accent: '#7b93c4' },
+          { label: 'Kalan',     value: stats.remaining_lessons, type: null,                    accent: '#34d399' },
+          { label: 'Bekleyen',  value: stats.reserved_lessons,  type: 'reserved' as ModalType, accent: '#38bdf8' },
         ].map((card) => (
           <button
             key={card.label}
@@ -242,9 +242,9 @@ export default function MemberDashboardClient({
             className="rounded-2xl p-3 text-left"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            <p className="text-[9px] font-medium mb-1.5 uppercase tracking-wide" style={{ color: '#7b93c4' }}>{card.label}</p>
-            <p className="text-2xl font-bold" style={{ color: card.accent }}>{card.value}</p>
-            <p className="text-[8px] mt-0.5" style={{ color: 'rgba(123,147,196,0.6)' }}>ders</p>
+            <p className="text-[9px] font-medium uppercase tracking-wide text-center" style={{ color: '#7b93c4' }}>{card.label}</p>
+            <p className="text-[9px] font-medium uppercase tracking-wide text-center" style={{ color: '#7b93c4' }}>Ders</p>
+            <p className="text-2xl font-bold text-center mt-1" style={{ color: card.accent }}>{card.value}</p>
           </button>
         ))}
       </div>
