@@ -160,9 +160,11 @@ export default function MemberDashboardClient({
   const handleCancel = async (reservationId: string, scheduledDate: string, startTime: string) => {
     const supabase = createClient()
 
-    // Admin ise 12 saat kuralı yok — direkt iptal
+    // Admin ise 12 saat kuralı yok — direkt iptal + reserved_lessons düşür
     if (adminMemberId) {
-      const { error } = await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', reservationId)
+      const { error } = await supabase.rpc('admin_cancel_reservation', {
+        p_reservation_id: reservationId
+      })
       if (!error) {
         setReservations(prev => prev.filter(r => r.id !== reservationId))
         setCancelFeedback({ msg: 'Ders iptal edildi.', ok: true })
