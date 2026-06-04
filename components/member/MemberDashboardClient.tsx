@@ -360,14 +360,36 @@ export default function MemberDashboardClient({
                     >
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold text-white text-sm">{pkg.total_lessons} Ders</span>
-                        <span
-                          className="text-xs px-2 py-0.5 rounded-full font-bold"
-                          style={pkg.is_current
-                            ? { background: '#f59e0b', color: '#fff' }
-                            : { background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
-                        >
-                          {pkg.is_current ? 'Aktif' : 'Geçmiş'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full font-bold"
+                            style={pkg.is_current
+                              ? { background: '#f59e0b', color: '#fff' }
+                              : { background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                          >
+                            {pkg.is_current ? 'Aktif' : 'Geçmiş'}
+                          </span>
+                          {adminMemberId && (
+                            <button
+                              onClick={async () => {
+                                const supabase = createClient()
+                                const { data: { user } } = await supabase.auth.getUser()
+                                if (!user) return
+                                const { error } = await supabase.rpc('delete_membership', {
+                                  p_membership_id: pkg.id,
+                                  p_admin_id: user.id,
+                                })
+                                if (!error) {
+                                  setPackages(prev => prev.filter(p => p.id !== pkg.id))
+                                }
+                              }}
+                              className="text-xs px-2 py-0.5 rounded-xl font-bold"
+                              style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}
+                            >
+                              Sil
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs" style={{ color: '#7b93c4' }}>{pkg.type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
                       <p className="text-xs mt-1" style={{ color: 'rgba(123,147,196,0.6)' }}>{formatDate(pkg.start_date)} — {formatDate(pkg.end_date)}</p>
