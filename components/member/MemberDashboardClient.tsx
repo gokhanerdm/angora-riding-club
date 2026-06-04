@@ -144,7 +144,7 @@ export default function MemberDashboardClient({
       setPackages(data ?? [])
     } else {
       const statusFilter = type === 'used'
-        ? ['completed', 'cancelled', 'no_show']
+        ? ['completed', 'no_show']
         : ['pending', 'approved']
       const { data } = await supabase
         .from('reservations')
