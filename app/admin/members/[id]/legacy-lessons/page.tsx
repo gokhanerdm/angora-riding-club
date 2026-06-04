@@ -10,7 +10,7 @@ const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(25
 type LessonStatus = 'completed' | 'no_show'
 type Lesson = { date: string; trainer: string; status: LessonStatus }
 
-const DURATION: Record<number, number> = { 4: 1, 8: 2, 12: 3, 20: 5, 30: 8, 60: 12 }
+const DURATION: Record<number, number> = { 4: 1, 8: 2, 12: 3, 16: 4, 20: 5, 30: 8, 60: 12 }
 
 export default function LegacyLessonsPage() {
   const params   = useParams()
