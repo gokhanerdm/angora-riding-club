@@ -126,7 +126,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     const { data, error } = await supabase.rpc('get_available_slots', {
       user_id: effectiveUserId, selected_date: dateStr
     })
-    if (!error) setSlots((data ?? []).filter((s: TimeSlot) => isAdmin || s.slot_status !== 'past'))
+    if (!error) setSlots((data ?? []).filter((s: TimeSlot) => isAdmin || s.slot_status !== 'past' || s.slot_status === 'own_reservation'))
     setLoading(false)
   }
 
@@ -170,7 +170,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
         const { data } = await supabase.rpc('get_available_slots', {
           user_id: overrideUserId ?? u.id, selected_date: selectedDate
         })
-        if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
+        if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past' || s.slot_status === 'own_reservation'))
       }
       router.refresh()
     }
