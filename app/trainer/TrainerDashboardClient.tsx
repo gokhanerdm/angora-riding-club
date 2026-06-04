@@ -356,7 +356,7 @@ export default function TrainerDashboardClient({
           { label: `${currentMonth} yapılacak`, value: stats.monthly_reserved, color: '#c8d6f0', clickable: false },
           { label: `${nextMonthName} yapılacak`, value: stats.next_month_reserved, color: '#38bdf8', clickable: false },
           { label: `${currentMonth} yapılan`, value: stats.completed_lessons, color: '#34d399', clickable: false },
-          { label: `${currentMonth} prim`, value: `${(stats.monthly_prim ?? 0).toLocaleString('tr-TR')}₺`, color: '#f59e0b', clickable: false },
+          { label: `${currentMonth} prim`, value: `${Math.round(stats.monthly_prim ?? 0).toLocaleString('tr-TR')}₺`, color: '#f59e0b', clickable: false },
           { label: 'Öğrencilerim', value: members.length, color: '#c8d6f0', clickable: true },
         ].map((card) => (
           <button

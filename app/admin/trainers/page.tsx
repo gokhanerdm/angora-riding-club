@@ -10,7 +10,7 @@ type TrainerCard = {
 }
 
 function formatPrice(p: number) {
-  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(p)
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(p))
 }
 
 function pad(n: number) { return String(n).padStart(2, '0') }
