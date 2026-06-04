@@ -24,12 +24,7 @@ export default function LegacyLessonsPage() {
   const [saving,    setSaving]    = useState(false)
   const [toast,     setToast]     = useState('')
 
-  // Mod seçimi
-  const [mode, setMode] = useState<'existing'|'new'>('existing')
-  const [memberships, setMemberships] = useState<any[]>([])
-  const [selectedMs,  setSelectedMs]  = useState('')
-
-  // Paket bilgileri (yeni paket modu)
+  // Paket bilgileri
   const [pkgId,     setPkgId]    = useState('')
   const [pkgType,   setPkgType]  = useState<'weekday'|'general'>('weekday')
   const [pkgAmount, setPkgAmount] = useState('')
@@ -52,13 +47,10 @@ export default function LegacyLessonsPage() {
       supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).single(),
       supabase.from('trainers').select('id, name, surname').order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).order('lesson_count'),
-      supabase.from('memberships').select('id, total_lessons, used_lessons, type, start_date, end_date, is_current').eq('member_id', memberId).order('created_at', { ascending: false }),
-    ]).then(([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {
+    ]).then(([{ data: m }, { data: t }, { data: p }]) => {
       setMember(m)
       setTrainers(t ?? [])
       setPackages(p ?? [])
-      setMemberships(ms ?? [])
-      if (ms && ms.length > 0) setSelectedMs(ms.find((x: any) => x.is_current)?.id ?? ms[0].id)
 
       // Varsayılan eğitmeni belirle: üyenin atanmış eğitmeni, yoksa ilk eğitmen
       const defT = m?.default_trainer_id || (t && t.length > 0 ? t[0].id : '')
@@ -93,25 +85,19 @@ export default function LegacyLessonsPage() {
   }
 
   const handleSave = async () => {
+    if (!pkgId)     { showToast('Paket seçin'); return }
+    if (!pkgAmount) { showToast('Ödeme tutarı girin'); return }
+    if (!pkgStart)  { showToast('Başlangıç tarihi girin'); return }
+
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    let membershipId: string
+    const endDate = calcEndDate()
 
-    if (mode === 'existing') {
-      // Mevcut pakete ders ekle
-      if (!selectedMs) { showToast('Paket seçin'); setSaving(false); return }
-      membershipId = selectedMs
-    } else {
-      // Yeni paket oluştur
-      if (!pkgId)     { showToast('Paket seçin'); setSaving(false); return }
-      if (!pkgAmount) { showToast('Ödeme tutarı girin'); setSaving(false); return }
-      if (!pkgStart)  { showToast('Başlangıç tarihi girin'); setSaving(false); return }
-
-      const endDate = calcEndDate()
-      const { data: newMsId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
+    // Paketi oluştur
+    const { data: membershipId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
       p_member_id:      memberId,
       p_admin_id:       user.id,
       p_package_id:     pkgId,
@@ -122,10 +108,8 @@ export default function LegacyLessonsPage() {
       p_end_date:       endDate || null,
       p_used_lessons:   0,
     })
-    if (pkgErr)    { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
-    if (!newMsId)  { showToast('Paket ID alınamadı'); setSaving(false); return }
-    membershipId = newMsId as string
-    }
+    if (pkgErr)      { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
+    if (!membershipId) { showToast('Paket ID alınamadı'); setSaving(false); return }
 
     // Geçerli dersleri ekle (tarih + eğitmen dolu olanlar)
     const validLessons = lessons.filter(l => l.date && l.trainer)
@@ -191,36 +175,8 @@ export default function LegacyLessonsPage() {
 
       <div className="px-4 py-5 space-y-4 pb-32">
 
-        {/* MOD SEÇİCİ */}
-        <div className="flex gap-2">
-          <button onClick={() => setMode('existing')} className="flex-1 py-2.5 rounded-2xl text-sm font-bold"
-            style={mode === 'existing' ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Mevcut Pakete Ekle
-          </button>
-          <button onClick={() => setMode('new')} className="flex-1 py-2.5 rounded-2xl text-sm font-bold"
-            style={mode === 'new' ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Yeni Paket Ekle
-          </button>
-        </div>
-
-        {/* MEVCUT PAKET SEÇİCİ */}
-        {mode === 'existing' && (
-          <div className="rounded-2xl p-4" style={CARD}>
-            <p className="text-xs font-bold mb-2" style={{ color: '#f59e0b' }}>Paket Seç</p>
-            <select value={selectedMs} onChange={e => setSelectedMs(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
-              <option value="">Paket seç...</option>
-              {memberships.map((ms: any) => (
-                <option key={ms.id} value={ms.id}>
-                  {ms.total_lessons} Ders · {ms.type === 'weekday' ? 'Hafta İçi' : 'Genel'} · {ms.start_date} {ms.is_current ? '(Aktif)' : '(Geçmiş)'}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         {/* PAKET BİLGİLERİ */}
-        {mode === 'new' && <div className="rounded-2xl p-4 space-y-3" style={CARD}>
+        <div className="rounded-2xl p-4 space-y-3" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>Paket</p>
 
           {/* Paket seç */}
@@ -272,7 +228,7 @@ export default function LegacyLessonsPage() {
               <span className="text-sm font-bold" style={{ color: '#34d399' }}>{endDate}</span>
             </div>
           )}
-        </div>}
+        </div>
 
         {/* DERS TABLOSU */}
         <div className="rounded-2xl overflow-hidden" style={CARD}>
@@ -328,21 +284,11 @@ export default function LegacyLessonsPage() {
           </div>
         )}
 
-        {(() => {
-          const canSave = !saving && (
-            mode === 'existing' ? (!!selectedMs && validCnt > 0) :
-            (!!pkgId && !!pkgAmount && !!pkgStart)
-          )
-          return (
-            <button onClick={handleSave} disabled={!canSave}
-              className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff' }}>
-              {saving ? 'Kaydediliyor...' :
-               mode === 'existing' ? `✓ ${validCnt} Dersi Kaydet` :
-               validCnt > 0 ? `✓ Paket + ${validCnt} Dersi Kaydet` : '✓ Paketi Kaydet'}
-            </button>
-          )
-        })()}
+        <button onClick={handleSave} disabled={saving || !pkgId || !pkgAmount || !pkgStart}
+          className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff' }}>
+          {saving ? 'Kaydediliyor...' : validCnt > 0 ? `✓ Paket + ${validCnt} Dersi Kaydet` : '✓ Paketi Kaydet'}
+        </button>
       </div>
     </div>
   )
