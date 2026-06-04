@@ -239,12 +239,12 @@ export default function MemberDashboardClient({
             key={card.label}
             onClick={() => card.type && openModal(card.type)}
             disabled={!card.type}
-            className="rounded-2xl p-3 text-left"
+            className="rounded-2xl p-3 flex flex-col items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            <p className="text-[9px] font-medium uppercase tracking-wide text-center" style={{ color: '#7b93c4' }}>{card.label}</p>
-            <p className="text-[9px] font-medium uppercase tracking-wide text-center" style={{ color: '#7b93c4' }}>Ders</p>
-            <p className="text-2xl font-bold text-center mt-1" style={{ color: card.accent }}>{card.value}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: '#7b93c4' }}>{card.label}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: '#7b93c4' }}>Ders</p>
+            <p className="text-2xl font-bold mt-1" style={{ color: card.accent }}>{card.value}</p>
           </button>
         ))}
       </div>
