@@ -177,12 +177,12 @@ export default function MembersPage() {
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
         />
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
           {STATUS_FILTERS.map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="px-3 py-1 rounded-full text-xs font-bold transition-colors"
+              className="px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0"
               style={filter === f
                 ? { background: '#f59e0b', color: '#0a0f2e' }
                 : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
