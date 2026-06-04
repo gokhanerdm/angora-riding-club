@@ -272,11 +272,17 @@ export default function LegacyLessonsPage() {
           </div>
         )}
 
-        <button onClick={handleSave} disabled={saving || validCount === 0 || !selectedMs}
-          className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
-          style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff' }}>
-          {saving ? 'Kaydediliyor...' : `✓ ${validCount} Dersi Kaydet`}
-        </button>
+        {(() => {
+          const pkgReady = addPkg ? (pkgId && pkgAmount) : !!selectedMs
+          const canSave  = !saving && (validCount > 0 || (addPkg && pkgId && pkgAmount)) && pkgReady
+          return (
+            <button onClick={handleSave} disabled={!canSave}
+              className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
+              style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff' }}>
+              {saving ? 'Kaydediliyor...' : validCount > 0 ? `✓ ${validCount} Dersi Kaydet` : '✓ Paketi Kaydet'}
+            </button>
+          )
+        })()}
       </div>
     </div>
   )
