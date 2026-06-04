@@ -131,7 +131,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   }
 
   const handleSlotClick = (slot: TimeSlot) => {
-    if (slot.slot_status !== 'available') return
+    if (slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) return
     setConfirmSlot(slot)
     setBookingState('idle')
     setBookingMsg('')
@@ -206,6 +206,13 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           border: '1px solid rgba(255,255,255,0.04)',
           color:  '#2d3a55',
           label:  'Kapalı',
+        }
+      case 'past':
+        return {
+          bg:     'rgba(52,211,153,0.07)',
+          border: '1px solid rgba(52,211,153,0.18)',
+          color:  '#34d399',
+          label:  'Geçmiş / Ekle',
         }
       default:
         return { bg: 'transparent', border: 'none', color: '#4a6190', label: '' }
@@ -321,7 +328,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                       <button
                         key={idx}
                         onClick={() => handleSlotClick(slot)}
-                        disabled={slot.slot_status !== 'available' || bookingState === 'loading'}
+                        disabled={(slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) || bookingState === 'loading'}
                         className="rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
                         style={{ background: st.bg, border: st.border }}
                       >
