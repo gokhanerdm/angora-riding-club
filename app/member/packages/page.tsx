@@ -66,6 +66,7 @@ export default function PackagesPage() {
       .from('membership_packages')
       .select('id, lesson_count, weekday_price, general_price')
       .eq('is_active', true)
+      .eq('is_family', false)
       .gt('weekday_price', 0)
       .order('lesson_count', { ascending: true })
     if (data) setPackages(data)
