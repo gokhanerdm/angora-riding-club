@@ -13,6 +13,12 @@ const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','A
 const DAYS_TR = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi']
 
 const SHIFT_SLOTS: Record<string, string[]> = {
+  weekend: [
+    "10:30:00","11:00:00","11:30:00","12:00:00","12:30:00",
+    "13:00:00","13:30:00","14:00:00","14:30:00","15:00:00",
+    "15:30:00","16:00:00","16:30:00","17:00:00","17:30:00",
+    "18:00:00","18:30:00","19:00:00","19:30:00","20:00:00",
+  ],
   morning: [
     "10:30:00","11:00:00","11:30:00","12:00:00","12:30:00",
     "13:00:00","13:30:00","14:00:00","14:30:00","15:00:00",
@@ -681,9 +687,10 @@ export default function TrainerDashboardClient({
             <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır. İstediğin günü günlük olarak değiştirebilirsin.</p>
             <div className="space-y-2">
               {[
-                { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 19:30' },
+                { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
                 { key: 'evening', label: '🌙 Akşam', desc: '14:00 — 21:30' },
                 { key: 'fullday', label: '🌅 Tam Gün', desc: '10:30 — 21:30' },
+                { key: 'weekend', label: '📅 Hafta Sonu', desc: 'Cmt & Paz' },
               ].map(opt => (
                 <button
                   key={opt.key}

@@ -9,6 +9,7 @@ const SHIFT_OPTIONS = [
   { value: 'morning', label: 'Sabah (10:30–20:00)' },
   { value: 'evening', label: 'Akşam (14:00–21:30)' },
   { value: 'fullday', label: 'Tam Gün' },
+  { value: 'weekend', label: 'Hafta Sonu (Cmt-Paz)' },
 ]
 
 export default function TrainerProfileEditPage() {
