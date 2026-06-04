@@ -40,7 +40,7 @@ export default function LegacyRequestPage() {
     const supabase = createClient()
     Promise.all([
       supabase.from('members').select('id, name, surname, email').eq('id', memberId).single(),
-      supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
+      supabase.from('trainers').select('id, name, surname').order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).gt('weekday_price', 0).order('lesson_count'),
     ]).then(([{data:m},{data:t},{data:p}]) => {
       setMember(m)

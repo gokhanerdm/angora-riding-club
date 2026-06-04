@@ -53,9 +53,9 @@ export default function LegacyLessonsPage() {
     const supabase = createClient()
     Promise.all([
       supabase.from('members').select('name, surname').eq('id', memberId).single(),
-      supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
+      supabase.from('trainers').select('id, name, surname').order('name'),
       supabase.from('memberships').select('id, total_lessons, type, start_date, is_current').eq('member_id', memberId).order('created_at', { ascending: false }),
-      supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).gt('weekday_price', 0).order('lesson_count'),
+      supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).order('lesson_count'),
     ]).then(([{ data: m }, { data: t }, { data: ms }, { data: p }]) => {
       setMember(m)
       setTrainers(t ?? [])
