@@ -63,7 +63,7 @@ export default function MembersPage() {
 
     const memberIds = membersData.map(m => m.id)
     const [{ data: memberships }, { data: trainers }] = await Promise.all([
-      supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons').in('member_id', memberIds).eq('is_current', true),
+      supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons').in('member_id', memberIds),
       supabase.from('trainers').select('id, name, surname'),
     ])
     const remainingMap = new Map<string, number>()
