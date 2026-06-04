@@ -27,6 +27,7 @@ export default async function AdminTrainersPage() {
     .from('trainers')
     .select('id, name, surname, bonus_rate')
     .is('deleted_at', null)
+    .neq('name', 'Diğer')
     .order('name', { ascending: true })
 
   if (!trainers || trainers.length === 0) {
