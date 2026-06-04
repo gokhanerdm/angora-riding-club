@@ -240,22 +240,17 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
             <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>
               {attendanceModal.date} — {attendanceModal.time.substring(0,5)}
             </p>
-            <div className="flex gap-3 mb-3">
-              <button
-                onClick={() => markAttendance('completed')}
-                disabled={attendanceLoading}
-                className="flex-1 py-3 rounded-2xl font-bold disabled:opacity-50"
-                style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}
-              >
-                Tamamlandı
-              </button>
+            <div className="mb-3">
+              <p className="text-xs mb-3 text-center" style={{ color: '#7b93c4' }}>
+                Ders otomatik tamamlandı olarak işlenir. Üye gelmediyse işaretleyin.
+              </p>
               <button
                 onClick={() => markAttendance('no_show')}
                 disabled={attendanceLoading}
-                className="flex-1 py-3 rounded-2xl font-bold disabled:opacity-50"
+                className="w-full py-3 rounded-2xl font-bold disabled:opacity-50"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}
               >
-                Gelmedi
+                Üye Gelmedi
               </button>
             </div>
             <button
