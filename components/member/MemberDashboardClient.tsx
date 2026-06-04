@@ -76,6 +76,38 @@ export default function MemberDashboardClient({
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(false)
   const [cancelFeedback, setCancelFeedback] = useState<{ msg: string; ok: boolean } | null>(null)
+  const [editRes, setEditRes]       = useState<Reservation | null>(null)
+  const [editDate, setEditDate]     = useState('')
+  const [editStatus, setEditStatus] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [trainers, setTrainers]     = useState<{id:string; name:string; surname:string}[]>([])
+
+  const openEditRes = async (res: Reservation) => {
+    if (!adminMemberId) return
+    setEditRes(res)
+    setEditDate(res.scheduled_date)
+    setEditStatus(res.status)
+    if (trainers.length === 0) {
+      const supabase = createClient()
+      const { data } = await supabase.from('trainers').select('id, name, surname').order('name')
+      setTrainers(data ?? [])
+    }
+  }
+
+  const saveEditRes = async () => {
+    if (!editRes) return
+    setEditSaving(true)
+    const supabase = createClient()
+    await supabase.from('reservations').update({
+      scheduled_date: editDate,
+      status: editStatus,
+    }).eq('id', editRes.id)
+    setEditSaving(false)
+    setEditRes(null)
+    setReservations(prev => prev.map(r =>
+      r.id === editRes.id ? { ...r, scheduled_date: editDate, status: editStatus } : r
+    ))
+  }
 
   const openProfile = async () => {
     const supabase = createClient()
@@ -303,6 +335,50 @@ export default function MemberDashboardClient({
         </div>
       )}
 
+      {/* Ders düzenleme modalı (sadece admin) */}
+      {editRes && (
+        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="text-base font-bold text-white mb-4">Ders Düzenle</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Tarih</p>
+                <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+              </div>
+              <div>
+                <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Durum</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 'completed', label: 'Tamamlandı', color: '#34d399' },
+                    { val: 'no_show',   label: 'Gelmedi',    color: '#f59e0b' },
+                    { val: 'cancelled', label: 'İptal',      color: '#f87171' },
+                  ].map(s => (
+                    <button key={s.val} onClick={() => setEditStatus(s.val)}
+                      className="py-2.5 rounded-xl text-xs font-bold"
+                      style={editStatus === s.val
+                        ? { background: `${s.color}22`, color: s.color, border: `1px solid ${s.color}55` }
+                        : { background: 'rgba(255,255,255,0.05)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setEditRes(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={saveEditRes} disabled={editSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f2e' }}>
+                {editSaving ? '...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Çıkış */}
       <div className="px-5 pb-10 pt-2 flex justify-center">
         <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-2 rounded-xl transition-opacity hover:text-amber-300" />
@@ -405,8 +481,12 @@ export default function MemberDashboardClient({
                   {reservations.map(res => (
                     <div
                       key={res.id}
+                      onClick={() => adminMemberId && openEditRes(res)}
                       className="p-3 rounded-2xl flex justify-between items-center"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                      style={{
+                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                        cursor: adminMemberId ? 'pointer' : 'default'
+                      }}
                     >
                       <div>
                         <p className="font-bold text-white text-sm">{formatDate(res.scheduled_date)}</p>
