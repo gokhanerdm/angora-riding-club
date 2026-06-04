@@ -183,6 +183,18 @@ export default function AdminDashboard() {
         </Link>
       )}
 
+      {/* Aile Grupları linki */}
+      <Link href="/admin/families">
+        <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80 mb-3"
+          style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+          <div>
+            <p className="font-bold text-white text-sm">Aile Grupları</p>
+            <p className="text-xs mt-0.5" style={{ color: '#a78bfa' }}>Aile üyeliklerini yönet →</p>
+          </div>
+          <span className="text-2xl">👨‍👩‍👧‍👦</span>
+        </div>
+      </Link>
+
       {/* Modal */}
       {activeCard && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
