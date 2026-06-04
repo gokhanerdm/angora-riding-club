@@ -241,10 +241,7 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
               {attendanceModal.date} — {attendanceModal.time.substring(0,5)}
             </p>
             <div className="mb-3">
-              <p className="text-xs mb-3 text-center" style={{ color: '#7b93c4' }}>
-                Ders otomatik tamamlandı olarak işlenir. Üye gelmediyse işaretleyin.
-              </p>
-              <button
+<button
                 onClick={() => markAttendance('no_show')}
                 disabled={attendanceLoading}
                 className="w-full py-3 rounded-2xl font-bold disabled:opacity-50"
