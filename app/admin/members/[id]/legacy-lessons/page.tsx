@@ -19,7 +19,8 @@ export default function LegacyLessonsPage() {
 
   const [member,    setMember]    = useState<any>(null)
   const [trainers,  setTrainers]  = useState<any[]>([])
-  const [packages,  setPackages]  = useState<any[]>([])
+  const [packages,    setPackages]    = useState<any[]>([])
+  const [memberships, setMemberships] = useState<any[]>([])
   const [loading,   setLoading]   = useState(true)
   const [saving,    setSaving]    = useState(false)
   const [toast,     setToast]     = useState('')
@@ -47,10 +48,12 @@ export default function LegacyLessonsPage() {
       supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).single(),
       supabase.from('trainers').select('id, name, surname').order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price').eq('is_active', true).order('lesson_count'),
-    ]).then(([{ data: m }, { data: t }, { data: p }]) => {
+      supabase.from('memberships').select('id').eq('member_id', memberId).eq('is_current', true).limit(1).single(),
+    ]).then(([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {
       setMember(m)
       setTrainers(t ?? [])
       setPackages(p ?? [])
+      setMemberships(ms ? [ms] : [])
 
       // Varsayılan eğitmeni belirle: üyenin atanmış eğitmeni, yoksa ilk eğitmen
       const defT = m?.default_trainer_id || (t && t.length > 0 ? t[0].id : '')
@@ -85,19 +88,20 @@ export default function LegacyLessonsPage() {
   }
 
   const handleSave = async () => {
-    if (!pkgId)     { showToast('Paket seçin'); return }
-    if (!pkgAmount) { showToast('Ödeme tutarı girin'); return }
-    if (!pkgStart)  { showToast('Başlangıç tarihi girin'); return }
+    const validLessons = lessons.filter(l => l.date && l.trainer)
+    const hasNewPkg = pkgId && pkgAmount && pkgStart
+    if (!hasNewPkg && validLessons.length === 0) { showToast('Ders veya paket bilgisi girin'); return }
 
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const endDate = calcEndDate()
+    let membershipId: string | null = memberships[0]?.id ?? null
 
-    // Paketi oluştur
-    const { data: membershipId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
+    if (hasNewPkg) {
+      const endDate = calcEndDate()
+      const { data: newId, error: pkgErr } = await supabase.rpc('create_direct_membership', {
       p_member_id:      memberId,
       p_admin_id:       user.id,
       p_package_id:     pkgId,
@@ -105,15 +109,16 @@ export default function LegacyLessonsPage() {
       p_payment_amount: parseFloat(pkgAmount),
       p_payment_method: pkgMethod,
       p_start_date:     pkgStart,
-      p_end_date:       endDate || null,
-      p_used_lessons:   0,
-    })
-    if (pkgErr)      { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
-    if (!membershipId) { showToast('Paket ID alınamadı'); setSaving(false); return }
+        p_end_date:       endDate || null,
+        p_used_lessons:   0,
+      })
+      if (pkgErr) { showToast('Paket hatası: ' + pkgErr.message); setSaving(false); return }
+      if (!newId)  { showToast('Paket ID alınamadı'); setSaving(false); return }
+      membershipId = newId as string
+    }
 
-    // Geçerli dersleri ekle (tarih + eğitmen dolu olanlar)
-    const validLessons = lessons.filter(l => l.date && l.trainer)
-    if (validLessons.length > 0) {
+    // Geçerli dersleri ekle
+    if (validLessons.length > 0 && membershipId) {
       const lessonsData = validLessons.map(l => ({
         scheduled_date: l.date,
         trainer_id:     l.trainer,
@@ -284,7 +289,7 @@ export default function LegacyLessonsPage() {
           </div>
         )}
 
-        <button onClick={handleSave} disabled={saving || !pkgId || !pkgAmount || !pkgStart}
+        <button onClick={handleSave} disabled={saving || (validCnt === 0 && !(pkgId && pkgAmount && pkgStart))}
           className="w-full py-4 rounded-2xl font-bold text-sm disabled:opacity-40"
           style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff' }}>
           {saving ? 'Kaydediliyor...' : validCnt > 0 ? `✓ Paket + ${validCnt} Dersi Kaydet` : '✓ Paketi Kaydet'}
