@@ -41,6 +41,22 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const [selectedDate, setSelectedDate] = useState('')
   const [slots, setSlots]         = useState<TimeSlot[]>([])
   const [loading, setLoading]     = useState(false)
+  const [isWeekdayPkg, setIsWeekdayPkg] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      const uid = overrideUserId ?? user.id
+      supabase.from('members').select('id').eq('user_id', uid).single().then(({ data: m }) => {
+        if (!m) return
+        supabase.from('memberships').select('type').eq('member_id', m.id)
+          .order('created_at', { ascending: false }).limit(1).single().then(({ data: ms }) => {
+          setIsWeekdayPkg(ms?.type === 'weekday')
+        })
+      })
+    })
+  }, [overrideUserId])
   const [modalOpen, setModalOpen] = useState(false)
 
   // Rezervasyon onay state
@@ -70,6 +86,9 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const days: (number | null)[] = []
   for (let i = 0; i < startDow; i++) days.push(null)
   for (let i = 1; i <= lastDay.getDate(); i++) days.push(i)
+
+  // Hafta içi paketi için Cmt/Paz kontrolü (isWeekdayPkg prop'u yoksa API'den gelir)
+  const isWeekend = (date: Date) => { const d = date.getDay(); return d === 0 || d === 6 }
 
   const handleSelectDate = async (dateStr: string) => {
     const supabase = createClient()
@@ -224,20 +243,21 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           if (!day) return <div key={i} />
           const date     = new Date(viewYear, viewMonth, day)
           const past     = date < today
+          const blocked  = isWeekdayPkg && isWeekend(date)
           const dateStr  = toDateStr(date)
           const sel      = dateStr === selectedDate
           const isToday  = dateStr === toDateStr(today)
           return (
             <button
               key={i}
-              disabled={past}
+              disabled={past || blocked}
               onClick={() => handleSelectDate(dateStr)}
               className="flex items-center justify-center mx-auto transition-all"
               style={{
                 width: 40, height: 40, borderRadius: 12,
                 fontSize: 15,
                 fontWeight: sel || isToday ? 700 : 500,
-                color:   past ? 'rgba(74,97,144,0.4)' : sel ? '#0a0f2e' : isToday ? '#f59e0b' : '#c8d6f0',
+                color:   (past || blocked) ? 'rgba(74,97,144,0.4)' : sel ? '#0a0f2e' : isToday ? '#f59e0b' : '#c8d6f0',
                 background: sel ? '#fff' : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
                 border: isToday && !sel ? '1px solid rgba(245,158,11,0.4)' : 'none',
                 cursor: past ? 'default' : 'pointer',
