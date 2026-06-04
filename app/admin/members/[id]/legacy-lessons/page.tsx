@@ -123,8 +123,6 @@ export default function LegacyLessonsPage() {
         scheduled_date: l.date,
         trainer_id:     l.trainer,
         status:         l.status,
-        start_time:     '10:00:00',
-        end_time:       '10:30:00',
       }))
       const { error: lessonErr } = await supabase.rpc('add_legacy_lessons', {
         p_member_id:     memberId,
