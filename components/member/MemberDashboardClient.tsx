@@ -230,10 +230,10 @@ export default function MemberDashboardClient({
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2 px-5 mb-5">
         {[
-          { label: 'Toplam', value: stats.total_lessons, type: 'total' as ModalType, accent: '#7b93c4' },
-          { label: 'Kullanılan', value: stats.used_lessons, type: 'used' as ModalType, accent: '#7b93c4' },
-          { label: 'Kalan', value: stats.remaining_lessons, type: null, accent: '#34d399' },
-          { label: 'Bekleyen', value: stats.reserved_lessons, type: 'reserved' as ModalType, accent: '#38bdf8' },
+          { label: 'Toplam Ders', value: stats.total_lessons, type: 'total' as ModalType, accent: '#7b93c4' },
+          { label: 'Kullanılan Ders', value: stats.used_lessons, type: 'used' as ModalType, accent: '#7b93c4' },
+          { label: 'Kalan Ders', value: stats.remaining_lessons, type: null, accent: '#34d399' },
+          { label: 'Bekleyen Ders', value: stats.reserved_lessons, type: 'reserved' as ModalType, accent: '#38bdf8' },
         ].map((card) => (
           <button
             key={card.label}
