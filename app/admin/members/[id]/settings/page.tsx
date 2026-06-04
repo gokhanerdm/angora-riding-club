@@ -236,13 +236,6 @@ export default function AdminMemberSettingsPage() {
           ✏️ Profili Düzenle
         </a>
 
-        {/* Geçmiş ders ekle */}
-        <a href={`/admin/members/${memberId}/legacy-lessons`}
-          className="w-full py-3 rounded-2xl text-sm font-bold text-center flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(124,58,237,0.2))', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)' }}>
-          🕐 Geçmiş Ders Ekle
-        </a>
-
         {/* Bilgiler */}
         <div className="rounded-2xl p-4 space-y-1" style={CARD}>
           <p className="text-sm font-bold text-white">{member?.name} {member?.surname}</p>
@@ -332,13 +325,6 @@ export default function AdminMemberSettingsPage() {
         {/* Admin işlemleri */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.15)' }}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#38bdf8' }}>Admin İşlemleri</p>
-
-          {/* Geçmiş ders ekle — en üste */}
-          <a href={`/admin/members/${memberId}/legacy-lessons`}
-            className="w-full py-2.5 rounded-xl text-sm font-bold text-center block"
-            style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.35)' }}>
-            🕐 Geçmiş Ders Ekle
-          </a>
 
           {/* Ekstra ders */}
           <div className="flex gap-2 items-center">
