@@ -76,12 +76,13 @@ function addHalfHour(t: string) {
 }
 
 export default function TrainerDashboardClient({
-  trainerId, trainerName, stats, initialShift
+  trainerId, trainerName, stats, initialShift, isAdminView
 }: {
   trainerId: string
   trainerName: string
   stats: Stats
   initialShift: string | null
+  isAdminView?: boolean
 }) {
   const today = new Date()
   const [currentDate, setCurrentDate] = useState(toDateKey(today))
@@ -403,7 +404,7 @@ export default function TrainerDashboardClient({
                 const res = reservations[slot]
                 const isClosed = closedSlots.has(slot)
                 const isExtra = openExtraSlots.has(slot)
-                const past = isPastSlot(currentDate, slot)
+                const past = !isAdminView && isPastSlot(currentDate, slot)
                 const currentStatus = localStatuses[slot] ?? res?.status
                 const isSelected = selectedSlot === slot
 

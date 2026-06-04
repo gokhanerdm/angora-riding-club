@@ -66,7 +66,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
   const maxMonth = (today.getMonth() + 3) % 12
   const maxYear  = today.getFullYear() + Math.floor((today.getMonth() + 3) / 12)
-  const isAtMin  = viewYear === today.getFullYear() && viewMonth <= today.getMonth()
+  const isAdmin  = !!overrideUserId
+  const isAtMin  = !isAdmin && viewYear === today.getFullYear() && viewMonth <= today.getMonth()
   const isAtMax  = viewYear === maxYear && viewMonth >= maxMonth
 
   const prevMonth = () => {
@@ -125,7 +126,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     const { data, error } = await supabase.rpc('get_available_slots', {
       user_id: effectiveUserId, selected_date: dateStr
     })
-    if (!error) setSlots((data ?? []).filter((s: TimeSlot) => s.slot_status !== 'past'))
+    if (!error) setSlots((data ?? []).filter((s: TimeSlot) => isAdmin || s.slot_status !== 'past'))
     setLoading(false)
   }
 
@@ -169,7 +170,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
         const { data } = await supabase.rpc('get_available_slots', {
           user_id: overrideUserId ?? u.id, selected_date: selectedDate
         })
-        if (data) setSlots((data as TimeSlot[]).filter(s => s.slot_status !== 'past'))
+        if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
       }
       router.refresh()
     }
@@ -243,21 +244,21 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           if (!day) return <div key={i} />
           const date     = new Date(viewYear, viewMonth, day)
           const past     = date < today
-          const blocked  = isWeekdayPkg && isWeekend(date)
+          const blocked  = !isAdmin && isWeekdayPkg && isWeekend(date)
           const dateStr  = toDateStr(date)
           const sel      = dateStr === selectedDate
           const isToday  = dateStr === toDateStr(today)
           return (
             <button
               key={i}
-              disabled={past || blocked}
+              disabled={(!isAdmin && past) || blocked}
               onClick={() => handleSelectDate(dateStr)}
               className="flex items-center justify-center mx-auto transition-all"
               style={{
                 width: 40, height: 40, borderRadius: 12,
                 fontSize: 15,
                 fontWeight: sel || isToday ? 700 : 500,
-                color:   (past || blocked) ? 'rgba(74,97,144,0.4)' : sel ? '#0a0f2e' : isToday ? '#f59e0b' : '#c8d6f0',
+                color:   ((!isAdmin && past) || blocked) ? 'rgba(74,97,144,0.4)' : sel ? '#0a0f2e' : isToday ? '#f59e0b' : '#c8d6f0',
                 background: sel ? '#fff' : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
                 border: isToday && !sel ? '1px solid rgba(245,158,11,0.4)' : 'none',
                 cursor: past ? 'default' : 'pointer',

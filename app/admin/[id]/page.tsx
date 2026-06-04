@@ -55,6 +55,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}
         initialShift={trainer.shift ?? 'fullday'}
+        isAdminView={true}
         stats={{
           today_lessons:       stats.today_lessons,
           completed_lessons:   stats.completed_lessons,
