@@ -159,7 +159,8 @@ export default function ReservationsPage() {
     if (!cancelTarget) return
     setActionLoading(true)
     const supabase = createClient()
-    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', cancelTarget)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget, p_admin_id: user?.id })
     setCancelTarget(null)
     await loadCalendar()
     setActionLoading(false)
@@ -167,7 +168,14 @@ export default function ReservationsPage() {
 
   const handleStatusChange = async (id: string, status: string) => {
     const supabase = createClient()
-    await supabase.from('reservations').update({ status }).eq('id', id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (status === 'cancelled') {
+      await supabase.rpc('admin_cancel_reservation', { p_reservation_id: id, p_admin_id: user?.id })
+    } else if (status === 'completed' || status === 'no_show') {
+      await supabase.rpc('mark_attendance', { p_reservation_id: id, p_status: status, p_marked_by: user?.id })
+    } else {
+      await supabase.from('reservations').update({ status }).eq('id', id)
+    }
     await loadReservations()
   }
 
@@ -358,8 +366,7 @@ export default function ReservationsPage() {
                     </p>
                     <select value={selectedRes.status}
                       onChange={async e => {
-                        const supabase = createClient()
-                        await supabase.from('reservations').update({ status: e.target.value }).eq('id', selectedRes.id)
+                        await handleStatusChange(selectedRes.id, e.target.value)
                         await loadCalendar()
                       }}
                       className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT_STYLE}>

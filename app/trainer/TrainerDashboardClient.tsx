@@ -221,7 +221,8 @@ export default function TrainerDashboardClient({
     if (!cancelTarget) return
     setActionLoading(true)
     const supabase = createClient()
-    await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', cancelTarget)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget, p_admin_id: user?.id })
     setCancelTarget(null)
     setSelectedSlot(null)
     setSlotAction(null)
@@ -268,8 +269,7 @@ export default function TrainerDashboardClient({
   const markLesson = async (reservationId: string, slot: string, status: 'completed' | 'no_show') => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('attendance').insert({ reservation_id: reservationId, status, marked_by: user?.id })
-    await supabase.from('reservations').update({ status }).eq('id', reservationId)
+    await supabase.rpc('mark_attendance', { p_reservation_id: reservationId, p_status: status, p_marked_by: user?.id })
     setLocalStatuses(prev => ({ ...prev, [slot]: status }))
     setSelectedSlot(null)
     setSlotAction(null)
