@@ -158,12 +158,25 @@ export default function MemberDashboardClient({
   }
 
   const handleCancel = async (reservationId: string, scheduledDate: string, startTime: string) => {
+    const supabase = createClient()
+
+    // Admin ise 12 saat kuralı yok — direkt iptal
+    if (adminMemberId) {
+      const { error } = await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', reservationId)
+      if (!error) {
+        setReservations(prev => prev.filter(r => r.id !== reservationId))
+        setCancelFeedback({ msg: 'Ders iptal edildi.', ok: true })
+        setTimeout(() => setCancelFeedback(null), 3000)
+        router.refresh()
+      }
+      return
+    }
+
     if (!canCancel(scheduledDate, startTime)) {
       setCancelFeedback({ msg: 'Ders başlamadan en az 12 saat önce iptal yapılabilir.', ok: false })
       setTimeout(() => setCancelFeedback(null), 3000)
       return
     }
-    const supabase = createClient()
     const { error } = await supabase.rpc('cancel_reservation', {
       p_reservation_id: reservationId, p_user_id: userId
     })
@@ -530,7 +543,7 @@ export default function MemberDashboardClient({
                           {statusLabel(res.status)}
                         </span>
                       </div>
-                      {canCancel(res.scheduled_date, res.start_time) ? (
+                      {(canCancel(res.scheduled_date, res.start_time) || adminMemberId) ? (
                         <button
                           onClick={() => handleCancel(res.id, res.scheduled_date, res.start_time)}
                           className="w-full py-2 rounded-xl text-xs font-bold"
