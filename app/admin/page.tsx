@@ -42,9 +42,41 @@ export default function AdminDashboard() {
   const dateLabel = `${DAYS_TR[now.getDay()]}, ${now.getDate()} ${MONTHS_TR[now.getMonth()]}`
 
   const [stats, setStats] = useState({ total: 0, completed: 0, remaining: 0, newMembers: 0, pending: 0 })
-  const [activeCard, setActiveCard]   = useState<CardKey | null>(null)
-  const [modalData, setModalData]     = useState<any[]>([])
+  const [activeCard, setActiveCard]     = useState<CardKey | null>(null)
+  const [modalData, setModalData]       = useState<any[]>([])
   const [modalLoading, setModalLoading] = useState(false)
+
+  // Düzenleme
+  const [editItem,    setEditItem]    = useState<any>(null)
+  const [editDate,    setEditDate]    = useState('')
+  const [editStatus,  setEditStatus]  = useState('')
+  const [editSaving,  setEditSaving]  = useState(false)
+
+  const INPUT_S = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+
+  const handleEditRes = async () => {
+    if (!editItem) return
+    setEditSaving(true)
+    const supabase = createClient()
+    await supabase.from('reservations').update({ scheduled_date: editDate, status: editStatus }).eq('id', editItem.id)
+    setModalData(prev => prev.map(r => r.id === editItem.id ? { ...r, status: editStatus } : r))
+    setEditItem(null)
+    setEditSaving(false)
+  }
+
+  const handleDeleteRes = async (id: string) => {
+    const supabase = createClient()
+    await supabase.from('reservations').delete().eq('id', id)
+    setModalData(prev => prev.filter(r => r.id !== id))
+    setEditItem(null)
+  }
+
+  const handleDeleteMember = async (id: string) => {
+    const supabase = createClient()
+    await supabase.from('members').update({ deleted_at: new Date().toISOString() }).eq('id', id)
+    setModalData(prev => prev.filter((m: any) => m.id !== id))
+    setEditItem(null)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -173,7 +205,8 @@ export default function AdminDashboard() {
 
               {/* Ders listesi */}
               {!modalLoading && activeCard !== 'new_members' && modalData.map((r, i) => (
-                <div key={i} className="rounded-2xl p-3 flex justify-between items-center"
+                <button key={i} onClick={() => { setEditItem(r); setEditDate(today); setEditStatus(r.status) }}
+                  className="w-full rounded-2xl p-3 flex justify-between items-center text-left active:opacity-70"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div>
                     <p className="text-sm font-bold text-white">{r.member}</p>
@@ -182,19 +215,84 @@ export default function AdminDashboard() {
                   <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_COLOR[r.status] ?? '#c8d6f0' }}>
                     {STATUS_LABEL[r.status] ?? r.status}
                   </span>
-                </div>
+                </button>
               ))}
 
               {/* Yeni üye listesi */}
               {!modalLoading && activeCard === 'new_members' && modalData.map((m: any, i: number) => (
-                <div key={i} className="rounded-2xl p-3"
+                <button key={i} onClick={() => setEditItem({ ...m, _type: 'member' })}
+                  className="w-full rounded-2xl p-3 text-left active:opacity-70"
                   style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
                   <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
                   <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
                   <p className="text-xs" style={{ color: '#4a6190' }}>{fmtDate(m.created_at?.substring(0,10))}</p>
-                </div>
+                </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Düzenleme / Silme modalı */}
+      {editItem && (
+        <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+
+            {editItem._type === 'member' ? (
+              <>
+                <h3 className="text-base font-bold text-white mb-1">{editItem.name} {editItem.surname}</h3>
+                <p className="text-xs mb-5" style={{ color: '#7b93c4' }}>{editItem.email}</p>
+                <div className="flex gap-3">
+                  <button onClick={() => setEditItem(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                    style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Kapat</button>
+                  <a href={`/admin/members/${editItem.id}/settings`} className="flex-1 py-3 rounded-2xl font-bold text-sm text-center"
+                    style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                    Ayarlar →
+                  </a>
+                  <button onClick={() => handleDeleteMember(editItem.id)}
+                    className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                    style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                    Sil
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-base font-bold text-white mb-1">{editItem.member}</h3>
+                <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>{editItem.time} · {editItem.trainer}</p>
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Tarih</p>
+                    <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT_S} />
+                  </div>
+                  <div>
+                    <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Durum</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[{v:'completed',l:'Tamamlandı',c:'#34d399'},{v:'no_show',l:'Gelmedi',c:'#f59e0b'},{v:'cancelled',l:'İptal',c:'#f87171'}].map(s => (
+                        <button key={s.v} onClick={() => setEditStatus(s.v)} className="py-2.5 rounded-xl text-xs font-bold"
+                          style={editStatus===s.v ? {background:`${s.c}22`,color:s.c,border:`1px solid ${s.c}55`} : {background:'rgba(255,255,255,0.05)',color:'#7b93c4'}}>
+                          {s.l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setEditItem(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                    style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                  <button onClick={() => handleDeleteRes(editItem.id)} className="py-3 px-4 rounded-2xl font-bold text-sm"
+                    style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                    Sil
+                  </button>
+                  <button onClick={handleEditRes} disabled={editSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f2e' }}>
+                    {editSaving ? '...' : 'Kaydet'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
