@@ -26,7 +26,7 @@ type Member = {
 
 type MemberDetail = { memberships: any[]; reservations: any[]; trainers: any[] }
 
-const STATUS_FILTERS = ['Tümü', 'Aktif', 'Pasif', 'Paketi Bitti', 'Paket Bitiyor']
+const STATUS_FILTERS = ['Tümü', 'Aktif', 'Pasif', 'Bitti', 'Bitiyor']
 const SHIFT_OPTIONS  = [
   { value: 'morning',  label: 'Sabah' },
   { value: 'evening',  label: 'Akşam' },
@@ -147,8 +147,8 @@ export default function MembersPage() {
     const matchFilter =
       filter === 'Aktif' ? m.member_status === 'active' && m.remaining_lessons > 0 :
       filter === 'Pasif' ? m.member_status !== 'active' :
-      filter === 'Paketi Bitti' ? m.total_lessons > 0 && m.remaining_lessons <= 0 :
-      filter === 'Paket Bitiyor' ? m.remaining_lessons > 0 && m.remaining_lessons <= 3 : true
+      filter === 'Bitti' ? m.total_lessons > 0 && m.remaining_lessons <= 0 :
+      filter === 'Bitiyor' ? m.remaining_lessons > 0 && m.remaining_lessons <= 3 : true
     return matchSearch && matchFilter
   })
 
