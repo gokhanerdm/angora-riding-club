@@ -38,13 +38,27 @@ export default function PackagesPage() {
   const [selected, setSelected]     = useState<Selection | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted]   = useState(false)
-  const [legacyDone, setLegacyDone] = useState(false)
+  const [legacyDone,  setLegacyDone]  = useState(false)
+  const [hasPackage,  setHasPackage]  = useState(true) // varsayılan gizli, kontrol sonrası gösterilir
   const [error, setError]           = useState('')
   const router       = useRouter()
   const searchParams = useSearchParams()
   const overrideUid  = searchParams.get('uid') // admin üye adına işlem yaparsa
 
-  useEffect(() => { loadPackages() }, [])
+  useEffect(() => {
+    loadPackages()
+    // Üyenin aktif paketi var mı kontrol et
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('members').select('id').eq('user_id', user.id).single().then(({ data: m }) => {
+        if (!m) return
+        supabase.from('memberships').select('id').eq('member_id', m.id).limit(1).then(({ data: ms }) => {
+          setHasPackage((ms ?? []).length > 0)
+        })
+      })
+    })
+  }, [])
 
   const loadPackages = async () => {
     const supabase = createClient()
@@ -73,7 +87,7 @@ export default function PackagesPage() {
     })
     setSubmitting(false)
     if (rpcError) setError(rpcError.message)
-    else { setSelected(null); setSubmitted(true) }
+    else { setSelected(null); setSubmitted(true); setHasPackage(true) }
   }
 
   const price = (s: Selection) =>
@@ -95,8 +109,8 @@ export default function PackagesPage() {
         </div>
       </div>
 
-      {/* Kayıtlı üyeyim */}
-      {!legacyDone && (
+      {/* Kayıtlı üyeyim — sadece hiç paketi olmayan üyelere göster */}
+      {!hasPackage && !legacyDone && (
         <div className="px-5 mb-4">
           <button
             onClick={async () => {
@@ -110,6 +124,7 @@ export default function PackagesPage() {
                 await supabase.from('members').update({ pending_legacy_setup: true }).eq('user_id', user.id)
               }
               setLegacyDone(true)
+              setHasPackage(true)
             }}
             className="w-full py-3 rounded-2xl text-sm font-bold"
             style={{ background: 'rgba(255,255,255,0.04)', color: '#7b93c4', border: '1px dashed rgba(255,255,255,0.15)' }}
