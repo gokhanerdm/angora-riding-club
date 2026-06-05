@@ -56,9 +56,9 @@ export default function PaymentsPage() {
       { data: allowedTrainers },
       { data: endingSoon },
     ] = await Promise.all([
-      supabase.from('payment_transactions').select('amount').is('deleted_at', null).eq('payment_date', todayStr),
-      supabase.from('payment_transactions').select('amount').is('deleted_at', null).eq('payment_date', yestStr),
-      supabase.from('payment_transactions').select('amount, payment_date').is('deleted_at', null).gte('payment_date', monthStart).lt('payment_date', monthEnd),
+      supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).eq('memberships.start_date', todayStr),
+      supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).eq('memberships.start_date', yestStr),
+      supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).gte('memberships.start_date', monthStart).lt('memberships.start_date', monthEnd),
       supabase.from('reservations').select('id, trainer_id, memberships(lesson_price_snapshot, member_id, trainers(bonus_rate))').in('status',['completed','no_show']).eq('scheduled_date', todayStr),
       supabase.from('reservations').select('id').in('status',['completed','no_show']).eq('scheduled_date', yestStr),
       supabase.from('reservations').select('id, trainer_id, memberships(lesson_price_snapshot)').in('status',['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
@@ -84,7 +84,8 @@ export default function PaymentsPage() {
     // Grafik — kümülatif gelir
     const dailyMap = new Map<number, number>()
     for (const pt of ptMonth ?? []) {
-      const d = parseInt((pt.payment_date as string).split('-')[2])
+      const ms = Array.isArray((pt as any).memberships) ? (pt as any).memberships[0] : (pt as any).memberships
+      const d = parseInt((ms?.start_date as string ?? '').split('-')[2] || '0')
       dailyMap.set(d, (dailyMap.get(d) ?? 0) + (pt.amount ?? 0))
     }
     let cum = 0
@@ -328,8 +329,8 @@ function DetailTable() {
 
     const [{ data: ptAll }, { data: ptDay }, { data: ptMonth }, { data: resAll }, { data: resDay }, { data: resMonth }, { data: msAll }, { data: msDay }, { data: msMonth }, { data: trainers }] = await Promise.all([
       supabase.from('payment_transactions').select('amount').is('deleted_at', null),
-      supabase.from('payment_transactions').select('amount').is('deleted_at', null).eq('payment_date', dayStr),
-      supabase.from('payment_transactions').select('amount').is('deleted_at', null).gte('payment_date', monthStart).lt('payment_date', monthEnd),
+      supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).eq('memberships.start_date', dayStr),
+      supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).gte('memberships.start_date', monthStart).lt('memberships.start_date', monthEnd),
       supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']),
       supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).eq('scheduled_date', dayStr),
       supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
