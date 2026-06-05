@@ -97,6 +97,7 @@ export default function TrainerDashboardClient({
   const [slotAction, setSlotAction] = useState<'menu' | 'addLesson' | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [membersLoading, setMembersLoading] = useState(false)
+  const [allMembers, setAllMembers] = useState<Member[]>([])
   const [actionLoading, setActionLoading] = useState(false)
   const [scheduleLoading, setScheduleLoading] = useState(false)
   const [shift, setShift] = useState<string>(initialShift ?? 'fullday')
@@ -156,14 +157,10 @@ export default function TrainerDashboardClient({
     setMembersLoading(true)
     const supabase = createClient()
 
+    // Her zaman sadece atanmış öğrenciler
     let memberIds: string[] = []
-    if (isAdminView) {
-      const { data } = await supabase.from('members').select('id').is('deleted_at', null)
-      memberIds = (data ?? []).map((r: any) => r.id)
-    } else {
-      const { data } = await supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId)
-      memberIds = (data ?? []).map((r: any) => r.member_id)
-    }
+    const { data: assignedData } = await supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId)
+    memberIds = (assignedData ?? []).map((r: any) => r.member_id)
     if (memberIds.length === 0) { setMembers([]); setMembersLoading(false); return }
 
     const { data: membersData } = await supabase
@@ -187,13 +184,21 @@ export default function TrainerDashboardClient({
     const memberFamMap = new Map<string, string>()
     for (const fm of famMemberRows ?? []) memberFamMap.set(fm.member_id, fm.family_id)
 
-    setMembers((membersData ?? []).map((m: any) => {
+    const mapped = (membersData ?? []).map((m: any) => {
       const famId = memberFamMap.get(m.id)
       const total = (ownTotalMap.get(m.id) ?? 0) + (famId ? (famTotalMap.get(famId) ?? 0) : 0)
       const used = usedMap.get(m.id) ?? 0
       const res = resMap.get(m.id) ?? 0
       return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: total - used - res }
-    }))
+    })
+    setMembers(mapped)
+
+    // Admin ders ekleme için tüm üyeleri de yükle
+    if (isAdminView) {
+      const { data: allData } = await supabase.from('members').select('id, user_id, name, surname').is('deleted_at', null).order('name')
+      setAllMembers((allData ?? []).map((m: any) => ({ id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: 0 })))
+    }
+
     setMembersLoading(false)
   }
 
@@ -597,11 +602,11 @@ export default function TrainerDashboardClient({
                 <p className="text-sm font-bold text-white mb-3">Öğrenci seç:</p>
                 {membersLoading
                   ? <p className="text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
-                  : members.length === 0
+                  : (isAdminView ? allMembers : members).length === 0
                     ? <p className="text-sm" style={{ color: '#7b93c4' }}>Atanmış öğrenci yok.</p>
                     : (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {members.map(member => (
+                        {(isAdminView ? allMembers : members).map(member => (
                           <button key={member.id}
                             onClick={() => handleBookMember(member)}
                             disabled={actionLoading}
