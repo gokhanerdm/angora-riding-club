@@ -62,31 +62,32 @@ export default function MembersPage() {
     if (!membersData) { setLoading(false); return }
 
     const memberIds = membersData.map(m => m.id)
-    const [{ data: ownMemberships }, { data: trainers }, { data: familyMemberships }, { data: familyMemberRows }, { data: reservationCounts }] = await Promise.all([
-      supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons').in('member_id', memberIds).is('family_id', null),
+    const [{ data: ownMemberships }, { data: trainers }, { data: familyMemberships }, { data: familyMemberRows }, { data: usedRes }, { data: reservedRes }] = await Promise.all([
+      supabase.from('memberships').select('member_id, total_lessons').in('member_id', memberIds).is('family_id', null),
       supabase.from('trainers').select('id, name, surname'),
-      supabase.from('memberships').select('family_id, total_lessons, reserved_lessons').not('family_id', 'is', null),
+      supabase.from('memberships').select('family_id, total_lessons').not('family_id', 'is', null),
       supabase.from('family_members').select('family_id, member_id'),
-      supabase.from('reservations').select('member_id').in('member_id', memberIds).in('status', ['completed','no_show']),
+      supabase.from('reservations').select('member_id').in('status', ['completed','no_show']),
+      supabase.from('reservations').select('member_id').in('status', ['pending','approved']),
     ])
 
+    // Rezervasyon sayıları per member (tüm üyeler)
+    const usedMap = new Map<string, number>()
+    for (const r of usedRes ?? []) usedMap.set(r.member_id, (usedMap.get(r.member_id) ?? 0) + 1)
+    const reservedMap = new Map<string, number>()
+    for (const r of reservedRes ?? []) reservedMap.set(r.member_id, (reservedMap.get(r.member_id) ?? 0) + 1)
+
     // Aile haritaları
-    const memberFamilyMap = new Map<string, string>() // member_id → family_id
-    const familyMembersMap = new Map<string, string[]>() // family_id → member_ids[]
+    const memberFamilyMap = new Map<string, string>()
+    const familyMembersMap = new Map<string, string[]>()
     for (const fm of familyMemberRows ?? []) {
       memberFamilyMap.set(fm.member_id, fm.family_id)
       if (!familyMembersMap.has(fm.family_id)) familyMembersMap.set(fm.family_id, [])
       familyMembersMap.get(fm.family_id)!.push(fm.member_id)
     }
-    const familyMsMap = new Map<string, { total: number; reserved: number }>()
+    const familyTotalMap = new Map<string, number>()
     for (const fm of familyMemberships ?? []) {
-      const prev = familyMsMap.get(fm.family_id) ?? { total: 0, reserved: 0 }
-      familyMsMap.set(fm.family_id, { total: prev.total + fm.total_lessons, reserved: prev.reserved + fm.reserved_lessons })
-    }
-    // Rezervasyon sayıları per member
-    const resCountMap = new Map<string, number>()
-    for (const r of reservationCounts ?? []) {
-      resCountMap.set(r.member_id, (resCountMap.get(r.member_id) ?? 0) + 1)
+      familyTotalMap.set(fm.family_id, (familyTotalMap.get(fm.family_id) ?? 0) + fm.total_lessons)
     }
 
     const remainingMap = new Map<string, number>()
@@ -95,18 +96,16 @@ export default function MembersPage() {
     for (const member of membersData) {
       const familyId = memberFamilyMap.get(member.id)
       if (familyId) {
-        // Aile üyesi: total = aile paketi, remaining = aile toplam - tüm aile kullanılanı
-        const fms = familyMsMap.get(familyId) ?? { total: 0, reserved: 0 }
-        const allFamilyUsed = (familyMembersMap.get(familyId) ?? [])
-          .reduce((sum, mid) => sum + (resCountMap.get(mid) ?? 0), 0)
-        totalMap.set(member.id, fms.total)
-        remainingMap.set(member.id, fms.total - allFamilyUsed - fms.reserved)
+        const total = familyTotalMap.get(familyId) ?? 0
+        const allUsed = (familyMembersMap.get(familyId) ?? []).reduce((s, mid) => s + (usedMap.get(mid) ?? 0), 0)
+        const allReserved = (familyMembersMap.get(familyId) ?? []).reduce((s, mid) => s + (reservedMap.get(mid) ?? 0), 0)
+        totalMap.set(member.id, total)
+        remainingMap.set(member.id, total - allUsed - allReserved)
       } else {
-        // Normal üye: kendi paketleri
         const myMs = (ownMemberships ?? []).filter(m => m.member_id === member.id)
         const total = myMs.reduce((s, m) => s + m.total_lessons, 0)
-        const used  = myMs.reduce((s, m) => s + m.used_lessons, 0)
-        const res   = myMs.reduce((s, m) => s + m.reserved_lessons, 0)
+        const used = usedMap.get(member.id) ?? 0
+        const res = reservedMap.get(member.id) ?? 0
         totalMap.set(member.id, total)
         remainingMap.set(member.id, total - used - res)
       }
