@@ -9,7 +9,7 @@ interface TimeSlot {
   trainer_name: string
   slot_time:    string
   is_available: boolean
-  slot_status:  'available' | 'own_reservation' | 'closed' | 'reserved' | 'past'
+  slot_status:  'available' | 'own_reservation' | 'own_completed' | 'own_no_show' | 'closed' | 'reserved' | 'past'
 }
 
 const DAYS   = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
@@ -237,6 +237,20 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           border: '1px solid rgba(245,158,11,0.35)',
           color:  '#f59e0b',
           label:  'Alınan Ders',
+        }
+      case 'own_completed':
+        return {
+          bg:     'rgba(52,211,153,0.10)',
+          border: '1px solid rgba(52,211,153,0.30)',
+          color:  '#34d399',
+          label:  'Tamamlandı',
+        }
+      case 'own_no_show':
+        return {
+          bg:     'rgba(248,113,113,0.10)',
+          border: '1px solid rgba(248,113,113,0.25)',
+          color:  '#f87171',
+          label:  'Gelmedi',
         }
       case 'reserved':
         return {
