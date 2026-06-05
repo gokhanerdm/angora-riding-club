@@ -518,7 +518,7 @@ export default function TrainerDashboardClient({
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => { setSelectedSlot(null); setSlotAction(null) }}>
           <div
-            className="w-full rounded-t-3xl px-5 pt-5 pb-10"
+            className="w-full rounded-t-3xl px-5 pt-5 pb-24"
             style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={e => e.stopPropagation()}
           >
@@ -597,12 +597,15 @@ export default function TrainerDashboardClient({
 
                 {!selectedRes && !selectedClosed && !openExtraSlots.has(selectedSlot) && (!isSlotPast(currentDate, selectedSlot) || isAdminView) && (
                   <div className="space-y-2">
-                    <button onClick={() => handleToggleClosed(selectedSlot, false)}
-                      disabled={actionLoading}
-                      className="w-full py-3 rounded-2xl text-sm font-bold"
-                      style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      Slotu Kapat
-                    </button>
+                    {/* Geçmiş slotta Slotu Kapat çıkmasın */}
+                    {!isSlotPast(currentDate, selectedSlot) && (
+                      <button onClick={() => handleToggleClosed(selectedSlot, false)}
+                        disabled={actionLoading}
+                        className="w-full py-3 rounded-2xl text-sm font-bold"
+                        style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        Slotu Kapat
+                      </button>
+                    )}
                     <button onClick={() => setSlotAction('addLesson')}
                       className="w-full py-3 rounded-2xl text-sm font-bold"
                       style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.25)' }}>
@@ -651,7 +654,7 @@ export default function TrainerDashboardClient({
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => { setShowStudents(false); setSelectedMember(null) }}>
           <div
-            className="w-full rounded-t-3xl px-5 pt-5 pb-10"
+            className="w-full rounded-t-3xl px-5 pt-5 pb-24"
             style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '75vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
@@ -727,7 +730,7 @@ export default function TrainerDashboardClient({
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowShiftPicker(false)}>
           <div
-            className="w-full rounded-t-3xl px-5 pt-5 pb-10"
+            className="w-full rounded-t-3xl px-5 pt-5 pb-24"
             style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={e => e.stopPropagation()}
           >
