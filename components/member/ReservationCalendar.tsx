@@ -323,7 +323,10 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               {!loading && slots.length > 0 && (
                 <div className="grid grid-cols-3 gap-1.5">
                   {slots.map((slot, idx) => {
-                    const st = slotStyle(slot.slot_status)
+                    const isPast = slot.slot_status === 'past' || (isAdmin && slot.slot_status === 'available' && new Date(`${selectedDate}T${slot.slot_time}+03:00`) < new Date())
+                    const st = isPast && isAdmin
+                      ? { bg: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a6190', label: '' }
+                      : slotStyle(slot.slot_status)
                     return (
                       <button
                         key={idx}
