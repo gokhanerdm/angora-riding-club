@@ -428,7 +428,7 @@ export default function TrainerDashboardClient({
                 const res = reservations[slot]
                 const isClosed = closedSlots.has(slot)
                 const isExtra = openExtraSlots.has(slot)
-                const past = !isAdminView && isSlotPast(currentDate, slot)
+                const past = isSlotPast(currentDate, slot)
                 const currentStatus = localStatuses[slot] ?? res?.status
                 const isSelected = selectedSlot === slot
 
@@ -461,13 +461,13 @@ export default function TrainerDashboardClient({
                 return (
                   <button
                     key={slot}
-                    onClick={() => (!past || res || isClosed || isExtra) ? handleSlotClick(slot) : undefined}
-                    disabled={past && !res && !isClosed && !isExtra}
+                    onClick={() => (!past || isAdminView || res || isClosed || isExtra) ? handleSlotClick(slot) : undefined}
+                    disabled={past && !isAdminView && !res && !isClosed && !isExtra}
                     className="flex items-center justify-between px-3 rounded-lg transition-all text-left"
                     style={{
                       background: isSelected ? 'rgba(255,255,255,0.14)' : bg,
                       border: `1px solid ${isSelected ? 'rgba(255,255,255,0.35)' : borderColor}`,
-                      cursor: past && !res && !isClosed && !isExtra ? 'default' : 'pointer',
+                      cursor: past && !isAdminView && !res && !isClosed && !isExtra ? 'default' : 'pointer',
                       height: 32,
                     }}
                   >
