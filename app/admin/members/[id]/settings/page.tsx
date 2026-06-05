@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 const BTN = {
   base: 'w-full rounded-2xl px-5 py-4 text-left text-sm font-bold transition-opacity active:opacity-70',
@@ -342,6 +343,7 @@ export default function AdminMemberSettingsPage() {
           </div>
         </div>
       )}
+      <AdminBottomNav />
     </div>
   )
 }

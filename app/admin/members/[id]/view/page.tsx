@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import MemberDashboardClient from '@/components/member/MemberDashboardClient'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 interface MemberStats {
   total_lessons: number
@@ -71,6 +72,7 @@ export default async function AdminMemberViewPage({
         referralCode={member.referral_code}
         adminMemberId={id}
       />
+      <AdminBottomNav />
     </div>
   )
 }

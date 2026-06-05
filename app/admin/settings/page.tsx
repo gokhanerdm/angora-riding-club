@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import LogoutButton from '@/components/logout-button'
 
 type Package = { id: string; lesson_count: number; weekday_price: number; general_price: number; is_active: boolean }
 
@@ -70,7 +71,14 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Ayarlar</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#7b93c4' }}>Angora Admin Paneli</p>
+          <h1 className="text-2xl font-bold text-white">Ayarlar</h1>
+        </div>
+        <LogoutButton className="text-xs font-bold px-4 py-2 rounded-xl"
+          style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }} />
+      </div>
 
       <p className="text-sm font-bold mb-4" style={{ color: '#7b93c4' }}>Paket Fiyatları</p>
 

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import TrainerDashboardClient from '@/app/trainer/TrainerDashboardClient'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 export default async function AdminTrainerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -42,21 +42,6 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
       className="fixed inset-0 z-[100] overflow-y-auto"
       style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
     >
-      {/* Geri + Düzenle — status bar altında, dashboard header'ının üstünde */}
-      <div className="flex gap-2 px-4 pt-14 pb-1 sticky top-0 z-20"
-        style={{ background: 'rgba(10,15,46,0.95)' }}>
-        <Link href="/admin/trainers"
-          className="text-sm font-bold px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
-          ←
-        </Link>
-        <Link href={`/admin/trainers/${id}/profile-edit`}
-          className="text-xs font-bold px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
-          ✏️ Düzenle
-        </Link>
-      </div>
-
       <TrainerDashboardClient
         trainerId={trainer.id}
         trainerName={`${trainer.name} ${trainer.surname}`}
@@ -70,6 +55,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
           monthly_prim:        monthlyPrim,
         }}
       />
+      <AdminBottomNav />
     </div>
   )
 }

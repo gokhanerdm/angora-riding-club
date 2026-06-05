@@ -1,6 +1,5 @@
 import { requireAdmin } from '@/lib/auth/server-protection'
 import AdminBottomNav from '@/components/admin/AdminBottomNav'
-import LogoutButton from '@/components/logout-button'
 import Link from 'next/link'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,11 +22,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </main>
 
       <AdminBottomNav />
-
-      {/* Çıkış — alt navigasyonun üstünde */}
-      <div className="fixed bottom-16 left-0 right-0 flex justify-center z-[55] pb-1">
-        <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-1.5 rounded-xl transition-opacity hover:text-amber-300 opacity-50 hover:opacity-80" />
-      </div>
     </div>
   )
 }
