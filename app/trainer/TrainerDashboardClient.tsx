@@ -512,12 +512,20 @@ export default function TrainerDashboardClient({
                           </button>
                         </>
                       )}
-                      {future && !done && (
+                      {(future || isAdminView) && !done && (
                         <button onClick={() => setCancelTarget(selectedRes.id)}
                           disabled={actionLoading}
                           className="w-full py-3 rounded-2xl text-sm font-bold"
                           style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
                           İptal Et
+                        </button>
+                      )}
+                      {isAdminView && done && (
+                        <button onClick={() => setCancelTarget(selectedRes.id)}
+                          disabled={actionLoading}
+                          className="w-full py-3 rounded-2xl text-sm font-bold"
+                          style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
+                          Sil
                         </button>
                       )}
                     </div>
@@ -542,7 +550,7 @@ export default function TrainerDashboardClient({
                   </button>
                 )}
 
-                {!selectedRes && !selectedClosed && !openExtraSlots.has(selectedSlot) && !isPastSlot(currentDate, selectedSlot) && (
+                {!selectedRes && !selectedClosed && !openExtraSlots.has(selectedSlot) && (!isPastSlot(currentDate, selectedSlot) || isAdminView) && (
                   <div className="space-y-2">
                     <button onClick={() => handleToggleClosed(selectedSlot, false)}
                       disabled={actionLoading}
