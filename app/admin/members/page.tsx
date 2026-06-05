@@ -246,7 +246,7 @@ export default function MembersPage() {
               className="w-full rounded-2xl px-4 py-3 flex justify-between items-center active:opacity-70"
               style={CARD}
             >
-              <p className="text-sm font-bold text-white">{member.name} {member.surname}</p>
+              <p className="text-sm font-bold" style={{ color: member.default_trainer_id ? '#fff' : '#f59e0b' }}>{member.name} {member.surname}</p>
               <p className="text-xs font-bold flex-shrink-0" style={{ color: member.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
                 {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
               </p>
