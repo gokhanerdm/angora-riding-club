@@ -232,7 +232,7 @@ export default function TrainerDashboardClient({
       p_end_time: endTime.toTimeString().substring(0, 8),
     })
     if (error) showFeedback('Hata: ' + error.message, false)
-    else { await loadSchedule(currentDate); await loadMembers() }
+    else { showFeedback(`${member.name} için ders eklendi ✓`, true); await loadSchedule(currentDate); await loadMembers() }
     setActionLoading(false)
   }
 

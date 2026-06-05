@@ -176,6 +176,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
       if (newRes && status === 'no_show') {
         await supabase.rpc('mark_attendance', { p_reservation_id: newRes.id, p_status: 'no_show', p_marked_by: memberRow.id })
       }
+      setBookingState('success')
+      setBookingMsg(status === 'completed' ? `${pastSlot.slot_time.substring(0,5)} tamamlandı ✓` : `${pastSlot.slot_time.substring(0,5)} gelmedi ✓`)
       const { data } = await supabase.rpc('get_available_slots', { user_id: overrideUserId, selected_date: selectedDate })
       if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
     }
@@ -208,7 +210,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
       setBookingMsg(error.message)
     } else {
       setBookingState('success')
-      setBookingMsg(`${confirmSlot.slot_time.substring(0,5)} rezervasyonunuz alındı!`)
+      setBookingMsg(`${confirmSlot.slot_time.substring(0,5)} dersiniz alındı ✓`)
       setConfirmSlot(null)
       // Slot listesini güncelle
       const { data: { user: u } } = await supabase.auth.getUser()
@@ -237,7 +239,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           bg:     'rgba(245,158,11,0.12)',
           border: '1px solid rgba(245,158,11,0.35)',
           color:  '#f59e0b',
-          label:  'Rezervasyonunuz',
+          label:  'Alınan Ders',
         }
       case 'reserved':
         return {
@@ -430,7 +432,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
             style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}
           >
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-4">Rezervasyon Onayla</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Ders Al</h3>
 
             <div className="rounded-2xl p-4 mb-5 space-y-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-center gap-3">
@@ -450,7 +452,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
             </div>
 
             <p className="text-sm mb-6 text-center" style={{ color: '#7b93c4' }}>
-              Bu dersi rezerve etmek istiyor musunuz?
+              Bu dersi almak istiyor musunuz?
             </p>
 
             <div className="flex gap-3">
@@ -467,7 +469,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
               >
-                {bookingState === 'loading' ? 'Rezervasyon yapılıyor...' : 'Rezervasyon Yap'}
+                {bookingState === 'loading' ? 'Alınıyor...' : 'Dersi Al'}
               </button>
             </div>
           </div>
