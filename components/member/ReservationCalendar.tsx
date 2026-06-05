@@ -130,8 +130,36 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     setLoading(false)
   }
 
-  const handleSlotClick = (slot: TimeSlot) => {
+  const isPastDate = (dateStr: string) => new Date(dateStr + 'T23:59:59') < new Date()
+
+  const handleSlotClick = async (slot: TimeSlot) => {
     if (slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) return
+
+    // Admin + geçmiş tarih + boş slot → direkt ekle, onay modal açma
+    if (isAdmin && isPastDate(selectedDate) && slot.slot_status === 'available') {
+      setBookingState('loading')
+      const supabase = createClient()
+      const { data: memberRow } = await supabase.from('members')
+        .select('id').eq('user_id', overrideUserId!).single()
+      if (!memberRow) { setBookingState('error'); setBookingMsg('Üye bulunamadı'); return }
+      const endTime = slotEnd(slot.slot_time)
+      const { error } = await supabase.rpc('trainer_create_reservation', {
+        p_member_id: memberRow.id,
+        p_trainer_id: slot.trainer_id,
+        p_scheduled_date: selectedDate,
+        p_start_time: slot.slot_time,
+        p_end_time: endTime + ':00',
+      })
+      if (error) { setBookingState('error'); setBookingMsg(error.message) }
+      else {
+        setBookingState('success')
+        setBookingMsg(`${slot.slot_time.substring(0,5)} dersi eklendi ✓`)
+        const { data } = await supabase.rpc('get_available_slots', { user_id: overrideUserId!, selected_date: selectedDate })
+        if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
+      }
+      return
+    }
+
     setConfirmSlot(slot)
     setBookingState('idle')
     setBookingMsg('')
@@ -323,9 +351,9 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               {!loading && slots.length > 0 && (
                 <div className="grid grid-cols-3 gap-1.5">
                   {slots.map((slot, idx) => {
-                    const isPast = slot.slot_status === 'past' || (isAdmin && slot.slot_status === 'available' && new Date(`${selectedDate}T${slot.slot_time}+03:00`) < new Date())
-                    const st = isPast && isAdmin
-                      ? { bg: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a6190', label: '' }
+                    const isPastSlotItem = isAdmin && isPastDate(selectedDate) && slot.slot_status === 'available'
+                    const st = isPastSlotItem
+                      ? { bg: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)', color: '#38bdf8', label: 'Ders Ekle' }
                       : slotStyle(slot.slot_status)
                     return (
                       <button
