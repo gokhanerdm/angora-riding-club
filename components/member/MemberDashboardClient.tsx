@@ -398,6 +398,19 @@ export default function MemberDashboardClient({
             <div className="flex gap-3 mt-5">
               <button onClick={() => setEditRes(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={async () => {
+                if (!editRes) return
+                setEditSaving(true)
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
+                await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editRes.id, p_admin_id: user?.id })
+                setEditSaving(false)
+                setEditRes(null)
+                setReservations(prev => prev.filter(r => r.id !== editRes.id))
+              }} disabled={editSaving} className="py-3 px-4 rounded-2xl font-bold text-sm disabled:opacity-50"
+                style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+                Sil
+              </button>
               <button onClick={saveEditRes} disabled={editSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f2e' }}>
                 {editSaving ? '...' : 'Kaydet'}
