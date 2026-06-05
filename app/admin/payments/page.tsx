@@ -61,11 +61,11 @@ export default function PaymentsPage() {
       // Aylık işlenen dersler
       supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
       // Tüm paketler
-      supabase.from('memberships').select('total_lessons, created_at'),
+      supabase.from('memberships').select('total_lessons, start_date'),
       // Günlük paketler
-      supabase.from('memberships').select('total_lessons').gte('created_at', dayStr + 'T00:00:00').lt('created_at', dayStr + 'T23:59:59'),
+      supabase.from('memberships').select('total_lessons').eq('start_date', dayStr),
       // Aylık paketler
-      supabase.from('memberships').select('total_lessons').gte('created_at', monthStart + 'T00:00:00').lt('created_at', monthEnd + 'T00:00:00'),
+      supabase.from('memberships').select('total_lessons').gte('start_date', monthStart).lt('start_date', monthEnd),
       // Eğitmenler
       supabase.from('trainers').select('id, name, surname, bonus_rate').is('deleted_at', null).order('name'),
     ])
