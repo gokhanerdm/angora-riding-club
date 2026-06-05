@@ -193,10 +193,29 @@ export default function TrainerDashboardClient({
     })
     setMembers(mapped)
 
-    // Admin ders ekleme için tüm üyeleri de yükle
+    // Admin ders ekleme için tüm üyeleri de yükle (kalan ders hesaplı)
     if (isAdminView) {
       const { data: allData } = await supabase.from('members').select('id, user_id, name, surname').is('deleted_at', null).order('name')
-      setAllMembers((allData ?? []).map((m: any) => ({ id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: 0 })))
+      const allIds = (allData ?? []).map((m: any) => m.id)
+      if (allIds.length > 0) {
+        const [{ data: aUsed }, { data: aRes }, { data: aMs }, { data: aFamMs }, { data: aFamRows }] = await Promise.all([
+          supabase.from('reservations').select('member_id').in('member_id', allIds).in('status', ['completed','no_show']),
+          supabase.from('reservations').select('member_id').in('member_id', allIds).in('status', ['pending','approved']),
+          supabase.from('memberships').select('member_id, total_lessons').in('member_id', allIds).is('family_id', null),
+          supabase.from('memberships').select('family_id, total_lessons').not('family_id', 'is', null),
+          supabase.from('family_members').select('family_id, member_id').in('member_id', allIds),
+        ])
+        const aUsedMap = new Map<string, number>(); for (const r of aUsed ?? []) aUsedMap.set(r.member_id, (aUsedMap.get(r.member_id) ?? 0) + 1)
+        const aResMap  = new Map<string, number>(); for (const r of aRes  ?? []) aResMap.set(r.member_id, (aResMap.get(r.member_id) ?? 0) + 1)
+        const aTotalMap = new Map<string, number>(); for (const m of aMs ?? []) aTotalMap.set(m.member_id, (aTotalMap.get(m.member_id) ?? 0) + m.total_lessons)
+        const aFamTotalMap = new Map<string, number>(); for (const m of aFamMs ?? []) aFamTotalMap.set(m.family_id, (aFamTotalMap.get(m.family_id) ?? 0) + m.total_lessons)
+        const aFamMap = new Map<string, string>(); for (const fm of aFamRows ?? []) aFamMap.set(fm.member_id, fm.family_id)
+        setAllMembers((allData ?? []).map((m: any) => {
+          const famId = aFamMap.get(m.id)
+          const total = (aTotalMap.get(m.id) ?? 0) + (famId ? (aFamTotalMap.get(famId) ?? 0) : 0)
+          return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: total - (aUsedMap.get(m.id) ?? 0) - (aResMap.get(m.id) ?? 0) }
+        }))
+      }
     }
 
     setMembersLoading(false)
