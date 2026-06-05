@@ -75,7 +75,7 @@ export default function TrainerProfileEditPage() {
         <h2 className="font-bold text-white">Eğitmen Profili Düzenle</h2>
       </div>
 
-      <div className="px-4 py-5 space-y-4 pb-20">
+      <div className="px-4 py-5 space-y-4 pb-24">
         <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="grid grid-cols-2 gap-3">
             <div><p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ad</p>

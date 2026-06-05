@@ -101,7 +101,7 @@ export default function AdminMemberProfileEdit() {
         <h2 className="font-bold text-white">Profil Düzenle</h2>
       </div>
 
-      <div className="px-4 py-5 space-y-4 pb-20">
+      <div className="px-4 py-5 space-y-4 pb-24">
         <div className="rounded-2xl p-4 space-y-3" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>Kişisel Bilgiler</p>
           <div className="grid grid-cols-2 gap-3">

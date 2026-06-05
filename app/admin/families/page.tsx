@@ -202,7 +202,7 @@ export default function FamiliesPage() {
                       <span className="text-sm" style={{ color: '#c8d6f0' }}>{m.name} {m.surname}</span>
                       {m.is_leader && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                          style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Lider</span>
+                          style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Ana Üye</span>
                       )}
                     </div>
                     {!m.is_leader && (
@@ -233,7 +233,7 @@ export default function FamiliesPage() {
               placeholder="Aile adı (örn. Yılmaz Ailesi)"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT} />
             <div>
-              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Aile Lideri</p>
+              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ana Üye</p>
               <select value={newLeader} onChange={e => setNewLeader(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
                 <option value="">Üye seç...</option>
@@ -283,7 +283,7 @@ export default function FamiliesPage() {
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl p-6 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h3 className="font-bold text-white text-lg">Üyelik Bağla</h3>
-            <p className="text-xs" style={{ color: '#7b93c4' }}>Aile liderinin aktif üyeliğini seçin</p>
+            <p className="text-xs" style={{ color: '#7b93c4' }}>Ana üyenin aktif üyeliğini seçin</p>
             <select value={addMs} onChange={e => setAddMs(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
                       <option value="">Üyelik seç...</option>
