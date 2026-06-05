@@ -23,6 +23,7 @@ interface Package {
   start_date: string
   end_date: string
   is_current: boolean
+  _isFamily?: boolean
 }
 
 interface Reservation {
@@ -136,12 +137,24 @@ export default function MemberDashboardClient({
     const memberId = await getMemberId(supabase)
 
     if (type === 'total') {
-      const { data } = await supabase
+      // Kendi paketleri
+      const { data: ownPkgs } = await supabase
         .from('memberships')
         .select('id, type, total_lessons, used_lessons, reserved_lessons, start_date, end_date, is_current')
-        .eq('member_id', memberId)
+        .eq('member_id', memberId).is('family_id', null)
         .order('created_at', { ascending: false })
-      setPackages(data ?? [])
+      // Aile paketi
+      const { data: fm } = await supabase
+        .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
+      let familyPkgs: any[] = []
+      if (fm?.family_id) {
+        const { data: fp } = await supabase
+          .from('memberships')
+          .select('id, type, total_lessons, used_lessons, reserved_lessons, start_date, end_date, is_current')
+          .eq('family_id', fm.family_id).order('created_at', { ascending: false })
+        familyPkgs = (fp ?? []).map(p => ({ ...p, _isFamily: true }))
+      }
+      setPackages([...(ownPkgs ?? []), ...familyPkgs])
     } else {
       const statusFilter = type === 'used'
         ? ['completed', 'no_show']
@@ -450,7 +463,7 @@ export default function MemberDashboardClient({
                       }}
                     >
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-white text-sm">{pkg.total_lessons} Ders</span>
+                        <span className="font-bold text-white text-sm">{pkg.total_lessons} Ders{pkg._isFamily ? ' (Aile)' : ''}</span>
                         <div className="flex items-center gap-2">
                           <span
                             className="text-xs px-2 py-0.5 rounded-full font-bold"
