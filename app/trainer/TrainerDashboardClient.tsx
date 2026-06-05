@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LogoutButton from '@/components/logout-button'
+import { isSlotPast } from '@/lib/lessons/time'
 
 type Stats = { today_lessons: number; completed_lessons: number; monthly_reserved: number; next_month_reserved: number; monthly_prim: number }
 type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string }
@@ -54,11 +55,7 @@ function formatDayLabel(dateKey: string) {
 function formatTime(t: string) { return t.substring(0,5) }
 
 function isFinished(dateKey: string, endTime: string) {
-  return new Date() >= new Date(`${dateKey}T${endTime}+03:00`)
-}
-
-function isPastSlot(dateKey: string, slotTime: string) {
-  return new Date() > new Date(`${dateKey}T${slotTime}+03:00`)
+  return isSlotPast(dateKey, endTime)
 }
 
 function statusLabel(s: string) {
@@ -431,7 +428,7 @@ export default function TrainerDashboardClient({
                 const res = reservations[slot]
                 const isClosed = closedSlots.has(slot)
                 const isExtra = openExtraSlots.has(slot)
-                const past = !isAdminView && isPastSlot(currentDate, slot)
+                const past = !isAdminView && isSlotPast(currentDate, slot)
                 const currentStatus = localStatuses[slot] ?? res?.status
                 const isSelected = selectedSlot === slot
 
@@ -510,7 +507,7 @@ export default function TrainerDashboardClient({
                 {selectedRes && (() => {
                   const done = selectedCurrentStatus === 'completed' || selectedCurrentStatus === 'no_show'
                   const finished = isFinished(currentDate, selectedRes.end_time)
-                  const future = !isPastSlot(currentDate, selectedSlot)
+                  const future = !isSlotPast(currentDate, selectedSlot)
                   return (
                     <div className="space-y-2">
                       <p className="font-bold text-white">{selectedRes.member_name}</p>
@@ -571,7 +568,7 @@ export default function TrainerDashboardClient({
                   </button>
                 )}
 
-                {!selectedRes && !selectedClosed && !openExtraSlots.has(selectedSlot) && (!isPastSlot(currentDate, selectedSlot) || isAdminView) && (
+                {!selectedRes && !selectedClosed && !openExtraSlots.has(selectedSlot) && (!isSlotPast(currentDate, selectedSlot) || isAdminView) && (
                   <div className="space-y-2">
                     <button onClick={() => handleToggleClosed(selectedSlot, false)}
                       disabled={actionLoading}

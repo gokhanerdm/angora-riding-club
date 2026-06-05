@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isSlotPast, isDatePast } from '@/lib/lessons/time'
 
 interface TimeSlot {
   trainer_id:   string
@@ -131,10 +132,6 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     if (!error) setSlots((data ?? []).filter((s: TimeSlot) => isAdmin || s.slot_status !== 'past'))
     setLoading(false)
   }
-
-  // Slot geçmişte mi? Tarih + saat birlikte kontrol
-  const isSlotPast = (dateStr: string, slotTime: string) =>
-    new Date(`${dateStr}T${slotTime}+03:00`) < new Date()
 
   const handleSlotClick = (slot: TimeSlot) => {
     const slotIsPast = isSlotPast(selectedDate, slot.slot_time)
