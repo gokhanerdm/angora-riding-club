@@ -84,12 +84,14 @@ export default function MemberDashboardClient({
   const [trainers, setTrainers]     = useState<{id:string; name:string; surname:string}[]>([])
 
   // Paket düzenleme
-  const [editPkg, setEditPkg]           = useState<Package | null>(null)
-  const [editPkgStart, setEditPkgStart] = useState('')
-  const [editPkgEnd, setEditPkgEnd]     = useState('')
-  const [editPkgType, setEditPkgType]   = useState('')
-  const [editPkgTotal, setEditPkgTotal] = useState('')
-  const [editPkgSaving, setEditPkgSaving] = useState(false)
+  const [editPkg, setEditPkg]               = useState<Package | null>(null)
+  const [editPkgStart, setEditPkgStart]     = useState('')
+  const [editPkgEnd, setEditPkgEnd]         = useState('')
+  const [editPkgType, setEditPkgType]       = useState('')
+  const [editPkgTotal, setEditPkgTotal]     = useState('')
+  const [editPkgAmount, setEditPkgAmount]   = useState('')
+  const [editPkgMethod, setEditPkgMethod]   = useState('')
+  const [editPkgSaving, setEditPkgSaving]   = useState(false)
 
   const openEditRes = async (res: Reservation) => {
     if (!adminMemberId) return
@@ -484,6 +486,26 @@ export default function MemberDashboardClient({
               </div>
             </div>
 
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ödeme Tutarı (₺)</p>
+              <input type="number" value={editPkgAmount} onChange={e => setEditPkgAmount(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+            </div>
+
+            <div>
+              <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Ödeme Yöntemi</p>
+              <div className="flex gap-2">
+                {(['nakit','havale','kart'] as const).map(m => (
+                  <button key={m} onClick={() => setEditPkgMethod(m)}
+                    className="flex-1 py-2 rounded-xl text-xs font-bold capitalize"
+                    style={editPkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex gap-3 pt-2">
               <button onClick={() => setEditPkg(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
@@ -491,14 +513,20 @@ export default function MemberDashboardClient({
                 if (!editPkg) return
                 setEditPkgSaving(true)
                 const supabase = createClient()
-                const { error } = await supabase.from('memberships').update({
-                  total_lessons: parseInt(editPkgTotal),
-                  type: editPkgType,
-                  start_date: editPkgStart || null,
-                  end_date: editPkgEnd || null,
-                }).eq('id', editPkg.id)
+                const [msRes, ptRes] = await Promise.all([
+                  supabase.from('memberships').update({
+                    total_lessons: parseInt(editPkgTotal),
+                    type: editPkgType,
+                    start_date: editPkgStart || null,
+                    end_date: editPkgEnd || null,
+                  }).eq('id', editPkg.id),
+                  editPkgAmount ? supabase.from('payment_transactions').update({
+                    amount: parseFloat(editPkgAmount),
+                    payment_method: editPkgMethod,
+                  }).eq('membership_id', editPkg.id).is('deleted_at', null) : Promise.resolve({ error: null }),
+                ])
                 setEditPkgSaving(false)
-                if (error) { alert('Hata: ' + error.message); return }
+                if (msRes.error) { alert('Hata: ' + msRes.error.message); return }
                 setPackages(prev => prev.map(p => p.id === editPkg.id
                   ? { ...p, total_lessons: parseInt(editPkgTotal), type: editPkgType, start_date: editPkgStart, end_date: editPkgEnd }
                   : p))
@@ -561,7 +589,13 @@ export default function MemberDashboardClient({
                   {packages.map(pkg => (
                     <div
                       key={pkg.id}
-                      onClick={() => { if (adminMemberId) { setEditPkg(pkg); setEditPkgStart(pkg.start_date ?? ''); setEditPkgEnd(pkg.end_date ?? ''); setEditPkgType(pkg.type ?? 'weekday'); setEditPkgTotal(String(pkg.total_lessons)) } }}
+                      onClick={async () => {
+                        if (!adminMemberId) return
+                        setEditPkg(pkg); setEditPkgStart(pkg.start_date ?? ''); setEditPkgEnd(pkg.end_date ?? ''); setEditPkgType(pkg.type ?? 'weekday'); setEditPkgTotal(String(pkg.total_lessons)); setEditPkgAmount(''); setEditPkgMethod('nakit')
+                        const supabase = createClient()
+                        const { data: pt } = await supabase.from('payment_transactions').select('amount, payment_method').eq('membership_id', pkg.id).is('deleted_at', null).limit(1).maybeSingle()
+                        if (pt) { setEditPkgAmount(String(pt.amount ?? '')); setEditPkgMethod(pt.payment_method ?? 'nakit') }
+                      }}
                       className="p-4 rounded-2xl"
                       style={{
                         background: pkg.is_current ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.04)',
