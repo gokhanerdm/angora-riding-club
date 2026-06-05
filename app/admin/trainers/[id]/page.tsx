@@ -42,10 +42,11 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
       className="fixed inset-0 z-[100] overflow-y-auto"
       style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
     >
-      {/* Geri oku */}
-      <div className="absolute top-12 left-4 z-10 flex gap-2">
+      {/* Geri + Düzenle — status bar altında, dashboard header'ının üstünde */}
+      <div className="flex gap-2 px-4 pt-14 pb-1 sticky top-0 z-20"
+        style={{ background: 'rgba(10,15,46,0.95)' }}>
         <Link href="/admin/trainers"
-          className="flex items-center gap-2 text-sm font-bold px-3 py-2 rounded-xl"
+          className="text-sm font-bold px-3 py-2 rounded-xl"
           style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
           ←
         </Link>

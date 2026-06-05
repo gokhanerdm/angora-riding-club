@@ -340,7 +340,7 @@ export default function TrainerDashboardClient({
       style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)' }}
     >
       {/* Header */}
-      <div className="px-5 pt-12 pb-2 flex items-center justify-between flex-shrink-0">
+      <div className="px-5 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <div
             className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
@@ -357,13 +357,15 @@ export default function TrainerDashboardClient({
             </div>
           </div>
         </div>
-        <button
-          onClick={() => setShowShiftPicker(true)}
-          className="text-xs font-bold px-3 py-2 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.12)' }}
-        >
-          Slotlar
-        </button>
+        {!isAdminView && (
+          <button
+            onClick={() => setShowShiftPicker(true)}
+            className="text-xs font-bold px-3 py-2 rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            Slotlar
+          </button>
+        )}
       </div>
 
       {/* Toast */}
