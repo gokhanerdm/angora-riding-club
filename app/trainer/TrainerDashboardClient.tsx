@@ -158,24 +158,45 @@ export default function TrainerDashboardClient({
   const loadMembers = async () => {
     setMembersLoading(true)
     const supabase = createClient()
-    const { data: allowedData } = await supabase
-      .from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId)
-    const memberIds = (allowedData ?? []).map((r: any) => r.member_id)
+
+    let memberIds: string[] = []
+    if (isAdminView) {
+      const { data } = await supabase.from('members').select('id').is('deleted_at', null)
+      memberIds = (data ?? []).map((r: any) => r.id)
+    } else {
+      const { data } = await supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId)
+      memberIds = (data ?? []).map((r: any) => r.member_id)
+    }
     if (memberIds.length === 0) { setMembers([]); setMembersLoading(false); return }
 
-    const [{ data: membersData }, { data: memberships }] = await Promise.all([
-      supabase.from('members').select('id, user_id, name, surname').in('id', memberIds).is('deleted_at', null),
-      supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons').in('member_id', memberIds).eq('is_current', true)
-    ])
+    const { data: membersData } = await supabase
+      .from('members').select('id, user_id, name, surname').in('id', memberIds).is('deleted_at', null).order('name')
 
-    const remainingMap = new Map<string, number>()
-    for (const m of memberships ?? []) {
-      remainingMap.set(m.member_id, (remainingMap.get(m.member_id) ?? 0) + (m.total_lessons - m.used_lessons - m.reserved_lessons))
-    }
-    setMembers((membersData ?? []).map((m: any) => ({
-      id: m.id, user_id: m.user_id, name: m.name, surname: m.surname,
-      remaining_lessons: remainingMap.get(m.id) ?? 0
-    })))
+    // Kalan ders: gerçek rezervasyon sayısına göre
+    const { data: usedRes } = await supabase.from('reservations').select('member_id').in('member_id', memberIds).in('status', ['completed','no_show'])
+    const { data: reservedRes } = await supabase.from('reservations').select('member_id').in('member_id', memberIds).in('status', ['pending','approved'])
+    const { data: ownMs } = await supabase.from('memberships').select('member_id, total_lessons').in('member_id', memberIds).is('family_id', null)
+    const { data: famMs } = await supabase.from('memberships').select('family_id, total_lessons').not('family_id', 'is', null)
+    const { data: famMemberRows } = await supabase.from('family_members').select('family_id, member_id').in('member_id', memberIds)
+
+    const usedMap = new Map<string, number>()
+    for (const r of usedRes ?? []) usedMap.set(r.member_id, (usedMap.get(r.member_id) ?? 0) + 1)
+    const resMap = new Map<string, number>()
+    for (const r of reservedRes ?? []) resMap.set(r.member_id, (resMap.get(r.member_id) ?? 0) + 1)
+    const ownTotalMap = new Map<string, number>()
+    for (const m of ownMs ?? []) ownTotalMap.set(m.member_id, (ownTotalMap.get(m.member_id) ?? 0) + m.total_lessons)
+    const famTotalMap = new Map<string, number>()
+    for (const m of famMs ?? []) famTotalMap.set(m.family_id, (famTotalMap.get(m.family_id) ?? 0) + m.total_lessons)
+    const memberFamMap = new Map<string, string>()
+    for (const fm of famMemberRows ?? []) memberFamMap.set(fm.member_id, fm.family_id)
+
+    setMembers((membersData ?? []).map((m: any) => {
+      const famId = memberFamMap.get(m.id)
+      const total = (ownTotalMap.get(m.id) ?? 0) + (famId ? (famTotalMap.get(famId) ?? 0) : 0)
+      const used = usedMap.get(m.id) ?? 0
+      const res = resMap.get(m.id) ?? 0
+      return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: total - used - res }
+    }))
     setMembersLoading(false)
   }
 
