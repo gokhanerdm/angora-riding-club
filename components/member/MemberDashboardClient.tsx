@@ -387,7 +387,7 @@ export default function MemberDashboardClient({
 
       {/* Ders düzenleme modalı (sadece admin) */}
       {editRes && (
-        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+        <div className="fixed inset-0 z-[90] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <h3 className="text-base font-bold text-white mb-4">Ders Düzenle</h3>
