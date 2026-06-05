@@ -48,12 +48,28 @@ export default function LegacyLessonsPage() {
       supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).single(),
       supabase.from('trainers').select('id, name, surname').order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_family').eq('is_active', true).order('lesson_count'),
-      supabase.from('memberships').select('id').eq('member_id', memberId).eq('is_current', true).limit(1).single(),
-    ]).then(([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {
+      supabase.from('memberships').select('id').eq('member_id', memberId).eq('is_current', true).limit(1).maybeSingle(),
+    ]).then(async ([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {
       setMember(m)
       setTrainers(t ?? [])
       setPackages(p ?? [])
-      setMemberships(ms ? [ms] : [])
+
+      // Kendi üyeliği yoksa aile üyeliğine bak
+      let activeMembership = ms
+      if (!activeMembership) {
+        const supabase2 = createClient()
+        const { data: memberRow } = await supabase2.from('members').select('id').eq('id', memberId).single()
+        if (memberRow) {
+          const { data: fm } = await supabase2
+            .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
+          if (fm) {
+            const { data: fms } = await supabase2
+              .from('memberships').select('id').eq('family_id', fm.family_id).eq('is_current', true).limit(1).maybeSingle()
+            activeMembership = fms ?? null
+          }
+        }
+      }
+      setMemberships(activeMembership ? [activeMembership] : [])
 
       // Varsayılan eğitmeni belirle: üyenin atanmış eğitmeni, yoksa ilk eğitmen
       const defT = m?.default_trainer_id || (t && t.length > 0 ? t[0].id : '')
