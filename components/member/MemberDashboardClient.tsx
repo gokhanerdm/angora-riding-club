@@ -540,10 +540,12 @@ export default function MemberDashboardClient({
         </div>
       )}
 
-      {/* Çıkış */}
-      <div className="px-5 pb-10 pt-2 flex justify-center">
-        <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-2 rounded-xl transition-opacity hover:text-amber-300" />
-      </div>
+      {/* Çıkış — sadece üye kendi sayfasında görür */}
+      {!adminMemberId && (
+        <div className="px-5 pb-10 pt-2 flex justify-center">
+          <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-2 rounded-xl transition-opacity hover:text-amber-300" />
+        </div>
+      )}
 
       {/* Modal */}
       {modal && (
