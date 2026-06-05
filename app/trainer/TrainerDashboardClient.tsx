@@ -222,7 +222,7 @@ export default function TrainerDashboardClient({
     setActionLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget, p_admin_id: user?.id })
+    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget })
     setCancelTarget(null)
     setSelectedSlot(null)
     setSlotAction(null)

@@ -160,7 +160,7 @@ export default function ReservationsPage() {
     setActionLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget, p_admin_id: user?.id })
+    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: cancelTarget })
     setCancelTarget(null)
     await loadCalendar()
     setActionLoading(false)
@@ -170,7 +170,7 @@ export default function ReservationsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (status === 'cancelled') {
-      await supabase.rpc('admin_cancel_reservation', { p_reservation_id: id, p_admin_id: user?.id })
+      await supabase.rpc('admin_cancel_reservation', { p_reservation_id: id })
     } else if (status === 'completed' || status === 'no_show') {
       await supabase.rpc('mark_attendance', { p_reservation_id: id, p_status: status, p_marked_by: user?.id })
     } else {

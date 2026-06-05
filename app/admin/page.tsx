@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (editStatus === 'cancelled') {
-      await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editItem.id, p_admin_id: user?.id })
+      await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editItem.id })
     } else if (editStatus === 'completed' || editStatus === 'no_show') {
       await supabase.rpc('mark_attendance', { p_reservation_id: editItem.id, p_status: editStatus, p_marked_by: user?.id })
     } else {
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
   const handleDeleteRes = async (id: string) => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: id, p_admin_id: user?.id })
+    await supabase.rpc('admin_cancel_reservation', { p_reservation_id: id })
     setModalData(prev => prev.filter(r => r.id !== id))
     setEditItem(null)
   }

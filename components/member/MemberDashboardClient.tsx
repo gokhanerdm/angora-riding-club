@@ -403,7 +403,7 @@ export default function MemberDashboardClient({
                 setEditSaving(true)
                 const supabase = createClient()
                 const { data: { user } } = await supabase.auth.getUser()
-                await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editRes.id, p_admin_id: user?.id })
+                await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editRes.id })
                 setEditSaving(false)
                 setEditRes(null)
                 setReservations(prev => prev.filter(r => r.id !== editRes.id))
