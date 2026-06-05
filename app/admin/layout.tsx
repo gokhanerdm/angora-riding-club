@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Link>
       </header>
 
-      <main className="px-4 py-6 pb-40">
+      <main className="px-4 py-6 pb-44">
         {children}
       </main>
 

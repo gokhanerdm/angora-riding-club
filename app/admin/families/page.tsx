@@ -227,7 +227,7 @@ export default function FamiliesPage() {
       {/* Yeni Aile Modal */}
       {creating && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-24 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h3 className="font-bold text-white text-lg">Yeni Aile Grubu</h3>
             <input value={newName} onChange={e => setNewName(e.target.value)}
               placeholder="Aile adı (örn. Yılmaz Ailesi)"
@@ -256,7 +256,7 @@ export default function FamiliesPage() {
       {/* Üye Ekle Modal */}
       {addModal && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-24 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h3 className="font-bold text-white text-lg">Aile Üyesi Ekle</h3>
             <select value={addMember} onChange={e => setAddMember(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
@@ -281,7 +281,7 @@ export default function FamiliesPage() {
       {/* Üyelik Bağla Modal */}
       {msModal && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-24 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h3 className="font-bold text-white text-lg">Üyelik Bağla</h3>
             <p className="text-xs" style={{ color: '#7b93c4' }}>Ana üyenin aktif üyeliğini seçin</p>
             <select value={addMs} onChange={e => setAddMs(e.target.value)}
