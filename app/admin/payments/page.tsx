@@ -4,144 +4,178 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
+const DAYS_TR   = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt']
 
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return `${d.getDate()} ${MONTHS_TR[d.getMonth()]} ${d.getFullYear()}`
+function toDateStr(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
-function formatPrice(p: number) {
-  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(p)
+function fmt(n: number) {
+  if (n >= 1000) return new Intl.NumberFormat('tr-TR').format(Math.round(n)) + '₺'
+  return String(Math.round(n))
 }
 
-type Payment = { id: string; member_name: string; amount: number; payment_method: string; payment_date: string }
-
-const METHOD_FILTERS = ['Tümü', 'Nakit', 'Havale', 'Kart']
-
-const METHOD_COLOR: Record<string, string> = {
-  nakit:  '#34d399',
-  havale: '#38bdf8',
-  kart:   '#a78bfa',
-}
-
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+const ROW = { borderBottom: '1px solid rgba(255,255,255,0.05)' }
+const HDR = { color: '#7b93c4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1 }
 
 export default function PaymentsPage() {
-  const [payments, setPayments] = useState<Payment[]>([])
+  const today = new Date()
+  const [day,  setDay]  = useState(new Date(today))
+  const [month, setMonth] = useState({ y: today.getFullYear(), m: today.getMonth() })
+  const [data,  setData]  = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [methodFilter, setMethodFilter] = useState('Tümü')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [day, month])
 
   const load = async () => {
     setLoading(true)
     const supabase = createClient()
-    const { data } = await supabase
-      .from('payment_transactions')
-      .select('id, amount, payment_method, payment_date, members(name, surname)')
-      .is('deleted_at', null)
-      .order('payment_date', { ascending: false })
-    setPayments((data ?? []).map((p: any) => {
-      const m = Array.isArray(p.members) ? p.members[0] : p.members
-      return { id: p.id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', amount: p.amount, payment_method: p.payment_method, payment_date: p.payment_date }
-    }))
+
+    const dayStr   = toDateStr(day)
+    const monthStr = `${month.y}-${String(month.m+1).padStart(2,'0')}`
+    const monthStart = `${monthStr}-01`
+    const monthEnd   = new Date(month.y, month.m+1, 1).toISOString().split('T')[0]
+
+    const [
+      { data: ptAll },
+      { data: ptDay },
+      { data: ptMonth },
+      { data: resAll },
+      { data: resDay },
+      { data: resMonth },
+      { data: msAll },
+      { data: msDay },
+      { data: msMonth },
+      { data: trainers },
+    ] = await Promise.all([
+      // Tüm ödemeler
+      supabase.from('payment_transactions').select('amount').is('deleted_at', null),
+      // Günlük ödemeler
+      supabase.from('payment_transactions').select('amount').is('deleted_at', null).eq('payment_date', dayStr),
+      // Aylık ödemeler
+      supabase.from('payment_transactions').select('amount').is('deleted_at', null).gte('payment_date', monthStart).lt('payment_date', monthEnd),
+      // Tüm işlenen dersler
+      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']),
+      // Günlük işlenen dersler
+      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).eq('scheduled_date', dayStr),
+      // Aylık işlenen dersler
+      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
+      // Tüm paketler
+      supabase.from('memberships').select('total_lessons, created_at'),
+      // Günlük paketler
+      supabase.from('memberships').select('total_lessons').gte('created_at', dayStr + 'T00:00:00').lt('created_at', dayStr + 'T23:59:59'),
+      // Aylık paketler
+      supabase.from('memberships').select('total_lessons').gte('created_at', monthStart + 'T00:00:00').lt('created_at', monthEnd + 'T00:00:00'),
+      // Eğitmenler
+      supabase.from('trainers').select('id, name, surname, bonus_rate').is('deleted_at', null).order('name'),
+    ])
+
+    // Gelir toplamları
+    const gelirAll   = (ptAll   ?? []).reduce((s: number, p: any) => s + (p.amount ?? 0), 0)
+    const gelirDay   = (ptDay   ?? []).reduce((s: number, p: any) => s + (p.amount ?? 0), 0)
+    const gelirMonth = (ptMonth ?? []).reduce((s: number, p: any) => s + (p.amount ?? 0), 0)
+
+    // İşlenen ders sayıları
+    const dersAll   = (resAll   ?? []).length
+    const dersDay   = (resDay   ?? []).length
+    const dersMonth = (resMonth ?? []).length
+
+    // Paket sayıları
+    const paketAll   = (msAll   ?? []).length
+    const paketDay   = (msDay   ?? []).length
+    const paketMonth = (msMonth ?? []).length
+
+    // Satılan ders (paket içindeki toplam ders)
+    const satisAll   = (msAll   ?? []).reduce((s: number, m: any) => s + (m.total_lessons ?? 0), 0)
+    const satisDay   = (msDay   ?? []).reduce((s: number, m: any) => s + (m.total_lessons ?? 0), 0)
+    const satisMonth = (msMonth ?? []).reduce((s: number, m: any) => s + (m.total_lessons ?? 0), 0)
+
+    // Eğitmen bazlı ders sayısı
+    const trainerRows = (trainers ?? []).map((t: any) => {
+      const countRes = (res: any[]) => (res ?? []).filter((r: any) => r.trainer_id === t.id).length
+      return {
+        id: t.id,
+        name: `${t.name} ${t.surname}`,
+        bonusRate: t.bonus_rate ?? 0,
+        dersAll:   countRes(resAll   ?? []),
+        dersDay:   countRes(resDay   ?? []),
+        dersMonth: countRes(resMonth ?? []),
+      }
+    }).filter((t: any) => t.dersAll > 0 || t.dersDay > 0 || t.dersMonth > 0)
+
+    setData({ gelirAll, gelirDay, gelirMonth, dersAll, dersDay, dersMonth, paketAll, paketDay, paketMonth, satisAll, satisDay, satisMonth, trainerRows })
     setLoading(false)
   }
 
-  const filtered = payments.filter(p => {
-    const matchSearch = p.member_name.toLowerCase().includes(search.toLowerCase())
-    const matchMethod = methodFilter === 'Tümü' || p.payment_method === methodFilter.toLowerCase()
-    const matchFrom = !dateFrom || p.payment_date >= dateFrom
-    const matchTo = !dateTo || p.payment_date <= dateTo
-    return matchSearch && matchMethod && matchFrom && matchTo
-  })
+  const prevDay  = () => { const d = new Date(day); d.setDate(d.getDate()-1); setDay(d) }
+  const nextDay  = () => { const d = new Date(day); d.setDate(d.getDate()+1); setDay(d) }
+  const prevMonth = () => { if (month.m === 0) setMonth({ y: month.y-1, m: 11 }); else setMonth({ y: month.y, m: month.m-1 }) }
+  const nextMonth = () => { if (month.m === 11) setMonth({ y: month.y+1, m: 0 }); else setMonth({ y: month.y, m: month.m+1 }) }
 
-  const total       = filtered.reduce((s, p) => s + p.amount, 0)
-  const totalNakit  = filtered.filter(p => p.payment_method === 'nakit').reduce((s, p) => s + p.amount, 0)
-  const totalHavale = filtered.filter(p => p.payment_method === 'havale').reduce((s, p) => s + p.amount, 0)
-  const totalKart   = filtered.filter(p => p.payment_method === 'kart').reduce((s, p) => s + p.amount, 0)
-
-  const summaryCards = [
-    { label: 'Toplam',  value: total,       color: '#c8d6f0' },
-    { label: 'Nakit',   value: totalNakit,  color: '#34d399' },
-    { label: 'Havale',  value: totalHavale, color: '#38bdf8' },
-    { label: 'Kart',    value: totalKart,   color: '#a78bfa' },
-  ]
+  const dayLabel = `${day.getDate()} ${MONTHS_TR[day.getMonth()]} ${DAYS_TR[day.getDay()]}`
+  const monthLabel = `${MONTHS_TR[month.m]} ${month.y}`
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Hesaplamalar</h1>
-
-      {/* Özet */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {summaryCards.map(c => (
-          <div key={c.label} className="rounded-2xl p-4" style={CARD}>
-            <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>{c.label}</p>
-            <p className="text-xl font-bold" style={{ color: c.color }}>{formatPrice(c.value)}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filtreler */}
-      <div className="space-y-3 mb-6">
-        <input
-          type="text"
-          placeholder="Üye ara..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
-        />
-        <div className="flex gap-2 flex-wrap">
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            className="flex-1 min-w-32 px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            className="flex-1 min-w-32 px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
-          {(dateFrom || dateTo) && (
-            <button onClick={() => { setDateFrom(''); setDateTo('') }}
-              className="px-3 py-2 rounded-xl text-xs font-bold"
-              style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>
-              Temizle
-            </button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {METHOD_FILTERS.map(f => (
-            <button key={f} onClick={() => setMethodFilter(f)}
-              className="px-3 py-1 rounded-full text-xs font-bold"
-              style={methodFilter === f
-                ? { background: '#f59e0b', color: '#0a0f2e' }
-                : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-white mb-5">Hesaplamalar</h1>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+        <p className="text-center py-12" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
       ) : (
-        <div className="space-y-2">
-          {filtered.length === 0 && <p style={{ color: '#7b93c4' }}>Ödeme bulunamadı.</p>}
-          {filtered.map(p => (
-            <div key={p.id} className="rounded-2xl p-4 flex items-center justify-between gap-3" style={CARD}>
-              <div className="min-w-0">
-                <p className="font-bold text-white truncate">{p.member_name}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{formatDate(p.payment_date)}</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="font-bold text-white">{formatPrice(p.amount)}</p>
-                <p className="text-xs font-bold mt-0.5 capitalize" style={{ color: METHOD_COLOR[p.payment_method] ?? '#7b93c4' }}>
-                  {p.payment_method}
-                </p>
-              </div>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+          {/* Başlık satırı */}
+          <div className="grid px-4 py-3" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4, background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <p style={HDR}>Bilgi</p>
+
+            {/* Gün başlığı */}
+            <div className="flex items-center gap-1">
+              <button onClick={prevDay} className="text-xs px-1.5 py-0.5 rounded" style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>‹</button>
+              <p style={{ ...HDR, fontSize: 9 }}>{dayLabel}</p>
+              <button onClick={nextDay} className="text-xs px-1.5 py-0.5 rounded" style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>›</button>
+            </div>
+
+            {/* Ay başlığı */}
+            <div className="flex items-center gap-1">
+              <button onClick={prevMonth} className="text-xs px-1.5 py-0.5 rounded" style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>‹</button>
+              <p style={{ ...HDR, fontSize: 9 }}>{monthLabel}</p>
+              <button onClick={nextMonth} className="text-xs px-1.5 py-0.5 rounded" style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>›</button>
+            </div>
+
+            <p style={HDR}>Toplam</p>
+          </div>
+
+          {/* Satırlar */}
+          {[
+            { label: 'Gelir',          day: data.gelirDay,   month: data.gelirMonth,   all: data.gelirAll,   color: '#34d399', isMoney: true },
+            { label: 'Satılan Paket',  day: data.paketDay,   month: data.paketMonth,   all: data.paketAll,   color: '#38bdf8', isMoney: false },
+            { label: 'Satılan Ders',   day: data.satisDay,   month: data.satisMonth,   all: data.satisAll,   color: '#a78bfa', isMoney: false },
+            { label: 'İşlenen Ders',   day: data.dersDay,    month: data.dersMonth,    all: data.dersAll,    color: '#f59e0b', isMoney: false },
+          ].map(row => (
+            <div key={row.label} className="grid px-4 py-3 items-center" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4, ...ROW }}>
+              <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{row.label}</p>
+              <p className="text-sm font-bold" style={{ color: row.color }}>{row.isMoney ? fmt(row.day) : row.day}</p>
+              <p className="text-sm font-bold" style={{ color: row.color }}>{row.isMoney ? fmt(row.month) : row.month}</p>
+              <p className="text-sm font-bold" style={{ color: row.color }}>{row.isMoney ? fmt(row.all) : row.all}</p>
             </div>
           ))}
+
+          {/* Eğitmen satırları */}
+          {data.trainerRows.length > 0 && (
+            <>
+              <div className="px-4 py-2" style={{ background: 'rgba(167,139,250,0.06)', borderTop: '1px solid rgba(167,139,250,0.15)' }}>
+                <p style={{ ...HDR, color: '#a78bfa' }}>Eğitmen Dersleri</p>
+              </div>
+              {data.trainerRows.map((t: any) => (
+                <div key={t.id} className="grid px-4 py-3 items-center" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4, ...ROW }}>
+                  <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.name}</p>
+                  <p className="text-sm font-bold" style={{ color: '#c8d6f0' }}>{t.dersDay}</p>
+                  <p className="text-sm font-bold" style={{ color: '#c8d6f0' }}>{t.dersMonth}</p>
+                  <p className="text-sm font-bold" style={{ color: '#c8d6f0' }}>{t.dersAll}</p>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
