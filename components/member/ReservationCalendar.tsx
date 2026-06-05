@@ -133,7 +133,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const isPastDate = (dateStr: string) => new Date(dateStr + 'T23:59:59') < new Date()
 
   const handleSlotClick = async (slot: TimeSlot) => {
-    if (slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) return
+    const isClickable = slot.slot_status === 'available' || (isAdmin && (slot.slot_status === 'past' || slot.slot_status === 'own_reservation'))
+    if (!isClickable) return
 
     // Admin + geçmiş tarih + boş slot → direkt ekle, onay modal açma
     if (isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')) {
@@ -353,13 +354,13 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                   {slots.map((slot, idx) => {
                     const isPastSlotItem = isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')
                     const st = isPastSlotItem
-                      ? { bg: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)', color: '#38bdf8', label: 'Ders Ekle' }
+                      ? { bg: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', color: '#a78bfa', label: '+ Ders Ekle' }
                       : slotStyle(slot.slot_status)
                     return (
                       <button
                         key={idx}
                         onClick={() => handleSlotClick(slot)}
-                        disabled={(slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) || bookingState === 'loading'}
+                        disabled={(!['available','own_reservation'].includes(slot.slot_status) && !(isAdmin && ['past','available'].includes(slot.slot_status))) || bookingState === 'loading'}
                         className="rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
                         style={{ background: st.bg, border: st.border }}
                       >
