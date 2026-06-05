@@ -97,16 +97,28 @@ export default function MemberDashboardClient({
 
   const saveEditRes = async () => {
     if (!editRes) return
+    const resId = editRes.id
     setEditSaving(true)
     const supabase = createClient()
-    await supabase.from('reservations').update({
-      scheduled_date: editDate,
-      status: editStatus,
-    }).eq('id', editRes.id)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    let error: any = null
+    if (editStatus === 'cancelled') {
+      const res = await supabase.rpc('admin_cancel_reservation', { p_reservation_id: resId })
+      error = res.error
+    } else if (editStatus === 'completed' || editStatus === 'no_show') {
+      const res = await supabase.rpc('mark_attendance', { p_reservation_id: resId, p_status: editStatus, p_marked_by: user?.id })
+      error = res.error
+    } else {
+      const res = await supabase.from('reservations').update({ scheduled_date: editDate, status: editStatus }).eq('id', resId)
+      error = res.error
+    }
+
     setEditSaving(false)
+    if (error) { alert('Hata: ' + error.message); return }
     setEditRes(null)
     setReservations(prev => prev.map(r =>
-      r.id === editRes.id ? { ...r, scheduled_date: editDate, status: editStatus } : r
+      r.id === resId ? { ...r, scheduled_date: editDate, status: editStatus } : r
     ))
   }
 
@@ -400,13 +412,15 @@ export default function MemberDashboardClient({
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
               <button onClick={async () => {
                 if (!editRes) return
+                const resId = editRes.id
                 setEditSaving(true)
                 const supabase = createClient()
-                const { data: { user } } = await supabase.auth.getUser()
-                await supabase.rpc('admin_cancel_reservation', { p_reservation_id: editRes.id })
+                const { error } = await supabase.rpc('admin_cancel_reservation', { p_reservation_id: resId })
                 setEditSaving(false)
+                if (error) { alert('Hata: ' + error.message); return }
                 setEditRes(null)
-                setReservations(prev => prev.filter(r => r.id !== editRes.id))
+                setReservations(prev => prev.filter(r => r.id !== resId))
+                setModal(null)
               }} disabled={editSaving} className="py-3 px-4 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
                 Sil
