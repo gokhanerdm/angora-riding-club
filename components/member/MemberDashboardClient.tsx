@@ -83,6 +83,14 @@ export default function MemberDashboardClient({
   const [editSaving, setEditSaving] = useState(false)
   const [trainers, setTrainers]     = useState<{id:string; name:string; surname:string}[]>([])
 
+  // Paket düzenleme
+  const [editPkg, setEditPkg]           = useState<Package | null>(null)
+  const [editPkgStart, setEditPkgStart] = useState('')
+  const [editPkgEnd, setEditPkgEnd]     = useState('')
+  const [editPkgType, setEditPkgType]   = useState('')
+  const [editPkgTotal, setEditPkgTotal] = useState('')
+  const [editPkgSaving, setEditPkgSaving] = useState(false)
+
   const openEditRes = async (res: Reservation) => {
     if (!adminMemberId) return
     setEditRes(res)
@@ -434,6 +442,76 @@ export default function MemberDashboardClient({
         </div>
       )}
 
+      {/* Paket düzenleme modalı */}
+      {editPkg && adminMemberId && (
+        <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <h3 className="font-bold text-white text-base">Paket Düzenle</h3>
+
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Toplam Ders</p>
+              <input type="number" value={editPkgTotal} onChange={e => setEditPkgTotal(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+            </div>
+
+            <div>
+              <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Tip</p>
+              <div className="flex gap-2">
+                {(['weekday','general'] as const).map(t => (
+                  <button key={t} onClick={() => setEditPkgType(t)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+                    style={editPkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                    {t === 'weekday' ? 'Hafta İçi' : 'Genel'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Başlangıç</p>
+                <input type="date" value={editPkgStart} onChange={e => setEditPkgStart(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+              </div>
+              <div>
+                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Bitiş</p>
+                <input type="date" value={editPkgEnd} onChange={e => setEditPkgEnd(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setEditPkg(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={async () => {
+                if (!editPkg) return
+                setEditPkgSaving(true)
+                const supabase = createClient()
+                const { error } = await supabase.from('memberships').update({
+                  total_lessons: parseInt(editPkgTotal),
+                  type: editPkgType,
+                  start_date: editPkgStart || null,
+                  end_date: editPkgEnd || null,
+                }).eq('id', editPkg.id)
+                setEditPkgSaving(false)
+                if (error) { alert('Hata: ' + error.message); return }
+                setPackages(prev => prev.map(p => p.id === editPkg.id
+                  ? { ...p, total_lessons: parseInt(editPkgTotal), type: editPkgType, start_date: editPkgStart, end_date: editPkgEnd }
+                  : p))
+                setEditPkg(null)
+              }} disabled={editPkgSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f2e' }}>
+                {editPkgSaving ? '...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Çıkış */}
       <div className="px-5 pb-10 pt-2 flex justify-center">
         <LogoutButton className="text-xs font-bold text-amber-400 px-4 py-2 rounded-xl transition-opacity hover:text-amber-300" />
@@ -483,10 +561,12 @@ export default function MemberDashboardClient({
                   {packages.map(pkg => (
                     <div
                       key={pkg.id}
+                      onClick={() => { if (adminMemberId) { setEditPkg(pkg); setEditPkgStart(pkg.start_date ?? ''); setEditPkgEnd(pkg.end_date ?? ''); setEditPkgType(pkg.type ?? 'weekday'); setEditPkgTotal(String(pkg.total_lessons)) } }}
                       className="p-4 rounded-2xl"
                       style={{
                         background: pkg.is_current ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${pkg.is_current ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.08)'}`
+                        border: `1px solid ${pkg.is_current ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                        cursor: adminMemberId ? 'pointer' : 'default'
                       }}
                     >
                       <div className="flex justify-between items-center mb-1">
