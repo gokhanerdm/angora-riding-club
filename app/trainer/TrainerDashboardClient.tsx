@@ -427,7 +427,7 @@ export default function TrainerDashboardClient({
       </div>
 
       {/* Slot grid */}
-      <div className="flex-1 px-5 pb-4">
+      <div className="flex-1 px-5 pb-24">
         {scheduleLoading
           ? <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
           : (

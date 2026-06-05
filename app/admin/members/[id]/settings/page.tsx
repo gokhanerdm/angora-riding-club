@@ -172,7 +172,7 @@ export default function AdminMemberSettingsPage() {
         </div>
       </div>
 
-      <div className="px-4 py-5 space-y-2.5 pb-32">
+      <div className="px-4 py-5 space-y-2.5 pb-40">
 
         {/* 1. Profili Düzenle */}
         <a href={`/admin/members/${memberId}/profile-edit`}

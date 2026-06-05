@@ -231,7 +231,7 @@ export default function MemberDashboardClient({
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)' }}
+      style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)', paddingBottom: adminMemberId ? 80 : 0 }}
     >
       <WelcomeModal />
       {/* Header */}
