@@ -549,10 +549,10 @@ export default function MemberDashboardClient({
 
       {/* Modal */}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
+        <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div
             className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#0d1b4b', maxHeight: '80vh', paddingBottom: 80, border: '1px solid rgba(255,255,255,0.1)' }}
           >
             <div
               className="flex justify-between items-center px-5 py-4"
