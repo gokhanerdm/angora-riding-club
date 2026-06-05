@@ -42,6 +42,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const [slots, setSlots]         = useState<TimeSlot[]>([])
   const [loading, setLoading]     = useState(false)
   const [isWeekdayPkg, setIsWeekdayPkg] = useState(false)
+  const [pastSlot, setPastSlot]   = useState<TimeSlot | null>(null)
+  const [pastSaving, setPastSaving] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -130,40 +132,55 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     setLoading(false)
   }
 
-  const isPastDate = (dateStr: string) => new Date(dateStr + 'T23:59:59') < new Date()
+  // Slot geçmişte mi? Tarih + saat birlikte kontrol
+  const isSlotPast = (dateStr: string, slotTime: string) =>
+    new Date(`${dateStr}T${slotTime}+03:00`) < new Date()
 
-  const handleSlotClick = async (slot: TimeSlot) => {
-    const isClickable = slot.slot_status === 'available' || (isAdmin && (slot.slot_status === 'past' || slot.slot_status === 'own_reservation'))
-    if (!isClickable) return
+  const handleSlotClick = (slot: TimeSlot) => {
+    const slotIsPast = isSlotPast(selectedDate, slot.slot_time)
 
-    // Admin + geçmiş tarih + boş slot → direkt ekle, onay modal açma
-    if (isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')) {
-      setBookingState('loading')
-      const supabase = createClient()
-      const { data: memberRow } = await supabase.from('members')
-        .select('id').eq('user_id', overrideUserId!).single()
-      if (!memberRow) { setBookingState('error'); setBookingMsg('Üye bulunamadı'); return }
-      const endTime = slotEnd(slot.slot_time)
-      const { error } = await supabase.rpc('trainer_create_reservation', {
-        p_member_id: memberRow.id,
-        p_trainer_id: slot.trainer_id,
-        p_scheduled_date: selectedDate,
-        p_start_time: slot.slot_time,
-        p_end_time: endTime + ':00',
-      })
-      if (error) { setBookingState('error'); setBookingMsg(error.message) }
-      else {
-        setBookingState('success')
-        setBookingMsg(`${slot.slot_time.substring(0,5)} dersi eklendi ✓`)
-        const { data } = await supabase.rpc('get_available_slots', { user_id: overrideUserId!, selected_date: selectedDate })
-        if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
-      }
+    // Admin + geçmiş slot + boş → Tamamlandı/Gelmedi seçimi
+    if (isAdmin && slotIsPast && (slot.slot_status === 'available' || slot.slot_status === 'past')) {
+      setPastSlot(slot)
       return
     }
+
+    // Tıklanamaz
+    if (slot.slot_status !== 'available') return
 
     setConfirmSlot(slot)
     setBookingState('idle')
     setBookingMsg('')
+  }
+
+  const savePastLesson = async (status: 'completed' | 'no_show') => {
+    if (!pastSlot || !overrideUserId) return
+    setPastSaving(true)
+    const supabase = createClient()
+    const { data: memberRow } = await supabase.from('members')
+      .select('id').eq('user_id', overrideUserId).single()
+    if (!memberRow) { setPastSaving(false); return }
+    const endTime = slotEnd(pastSlot.slot_time)
+    const { error } = await supabase.rpc('trainer_create_reservation', {
+      p_member_id:      memberRow.id,
+      p_trainer_id:     pastSlot.trainer_id,
+      p_scheduled_date: selectedDate,
+      p_start_time:     pastSlot.slot_time,
+      p_end_time:       endTime + ':00',
+    })
+    if (!error) {
+      // Oluşan rezervasyonu direkt status'a çek
+      const { data: newRes } = await supabase.from('reservations')
+        .select('id').eq('member_id', memberRow.id).eq('scheduled_date', selectedDate)
+        .eq('start_time', pastSlot.slot_time).eq('status', 'completed').maybeSingle()
+      if (newRes && status === 'no_show') {
+        await supabase.rpc('mark_attendance', { p_reservation_id: newRes.id, p_status: 'no_show', p_marked_by: memberRow.id })
+      }
+      const { data } = await supabase.rpc('get_available_slots', { user_id: overrideUserId, selected_date: selectedDate })
+      if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
+    }
+    setPastSlot(null)
+    setPastSaving(false)
   }
 
   const handleConfirmBooking = async () => {
@@ -352,8 +369,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               {!loading && slots.length > 0 && (
                 <div className="grid grid-cols-3 gap-1.5">
                   {slots.map((slot, idx) => {
-                    const isPastSlotItem = isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')
-                    const st = isPastSlotItem
+                    const slotIsPastItem = isAdmin && isSlotPast(selectedDate, slot.slot_time) && (slot.slot_status === 'available' || slot.slot_status === 'past')
+                    const st = slotIsPastItem
                       ? { bg: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', color: '#a78bfa', label: '+ Ders Ekle' }
                       : slotStyle(slot.slot_status)
                     return (
@@ -373,6 +390,33 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Geçmiş ders ekleme seçimi */}
+      {pastSlot && (
+        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <p className="text-white font-bold text-base mb-1">{pastSlot.trainer_name}</p>
+            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>
+              {selectedDate && formatDisplayDate(selectedDate)} · {pastSlot.slot_time.substring(0,5)} – {slotEnd(pastSlot.slot_time)}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setPastSlot(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={() => savePastLesson('no_show')} disabled={pastSaving}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
+                style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                ✗ Gelmedi
+              </button>
+              <button onClick={() => savePastLesson('completed')} disabled={pastSaving}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
+                style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                ✓ Tamamlandı
+              </button>
             </div>
           </div>
         </div>
