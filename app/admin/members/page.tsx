@@ -95,19 +95,22 @@ export default function MembersPage() {
 
     for (const member of membersData) {
       const familyId = memberFamilyMap.get(member.id)
+      // Kendi paketleri her zaman sayılır
+      const myMs = (ownMemberships ?? []).filter(m => m.member_id === member.id)
+      const ownTotal = myMs.reduce((s, m) => s + m.total_lessons, 0)
+
       if (familyId) {
-        const total = familyTotalMap.get(familyId) ?? 0
+        const famTotal = familyTotalMap.get(familyId) ?? 0
+        const total = ownTotal + famTotal
         const allUsed = (familyMembersMap.get(familyId) ?? []).reduce((s, mid) => s + (usedMap.get(mid) ?? 0), 0)
         const allReserved = (familyMembersMap.get(familyId) ?? []).reduce((s, mid) => s + (reservedMap.get(mid) ?? 0), 0)
         totalMap.set(member.id, total)
         remainingMap.set(member.id, total - allUsed - allReserved)
       } else {
-        const myMs = (ownMemberships ?? []).filter(m => m.member_id === member.id)
-        const total = myMs.reduce((s, m) => s + m.total_lessons, 0)
         const used = usedMap.get(member.id) ?? 0
         const res = reservedMap.get(member.id) ?? 0
-        totalMap.set(member.id, total)
-        remainingMap.set(member.id, total - used - res)
+        totalMap.set(member.id, ownTotal)
+        remainingMap.set(member.id, ownTotal - used - res)
       }
     }
     const trainerMap = new Map((trainers ?? []).map(t => [t.id, `${t.name} ${t.surname}`]))
