@@ -136,7 +136,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     if (slot.slot_status !== 'available' && !(isAdmin && slot.slot_status === 'past')) return
 
     // Admin + geçmiş tarih + boş slot → direkt ekle, onay modal açma
-    if (isAdmin && isPastDate(selectedDate) && slot.slot_status === 'available') {
+    if (isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')) {
       setBookingState('loading')
       const supabase = createClient()
       const { data: memberRow } = await supabase.from('members')
@@ -351,7 +351,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               {!loading && slots.length > 0 && (
                 <div className="grid grid-cols-3 gap-1.5">
                   {slots.map((slot, idx) => {
-                    const isPastSlotItem = isAdmin && isPastDate(selectedDate) && slot.slot_status === 'available'
+                    const isPastSlotItem = isAdmin && isPastDate(selectedDate) && (slot.slot_status === 'available' || slot.slot_status === 'past')
                     const st = isPastSlotItem
                       ? { bg: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)', color: '#38bdf8', label: 'Ders Ekle' }
                       : slotStyle(slot.slot_status)
