@@ -32,8 +32,6 @@ export default function PaymentsPage() {
   const [pending, setPending]     = useState<PendingMember[]>([])
   const [loading, setLoading]     = useState(true)
 
-  const [showDetail, setShowDetail] = useState(false)
-  const [detailData, setDetailData] = useState<any>(null)
 
   useEffect(() => { load() }, [viewMonth])
 
@@ -291,129 +289,151 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      {/* Detaylı Tablo Aç/Kapat */}
-      <button onClick={() => setShowDetail(p => !p)}
-        className="w-full p-4 flex items-center justify-between rounded-2xl"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🧮</span>
-          <div className="text-left">
-            <p className="text-sm font-bold text-white">Detaylı Hesaplamalar</p>
-            <p className="text-xs" style={{ color: '#7b93c4' }}>Gelir, paket, ders ve eğitmen detayları</p>
-          </div>
-        </div>
-        <span style={{ color: '#7b93c4' }}>{showDetail ? '↑' : '→'}</span>
-      </button>
-
-      {showDetail && <DetailTable />}
+      <StatsTable />
     </div>
   )
 }
 
-function DetailTable() {
+function StatsTable() {
   const today = new Date()
-  const [day, setDay]     = useState(new Date(today))
+  const [day,   setDay]   = useState(new Date(today))
   const [month, setMonth] = useState({ y: today.getFullYear(), m: today.getMonth() })
-  const [data, setData]   = useState<any>(null)
+  const [data,  setData]  = useState<any>(null)
 
-  const MONTHS_S2 = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
-  const DAYS_TR2  = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt']
+  const MS = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
+  const DS = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt']
 
-  useEffect(() => { loadDetail() }, [day, month])
+  function ds(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
+  function fmt(n: number, money?: boolean) {
+    return money ? new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n)) : String(n)
+  }
 
-  const loadDetail = async () => {
+  useEffect(() => { load() }, [day, month])
+
+  const load = async () => {
     const supabase   = createClient()
-    const dayStr     = `${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`
+    const dayStr     = ds(day)
     const monthStart = `${month.y}-${String(month.m+1).padStart(2,'0')}-01`
-    const monthEnd   = toDateStr(new Date(month.y, month.m+1, 1))
+    const monthEnd   = ds(new Date(month.y, month.m+1, 1))
 
-    const [{ data: ptAll }, { data: ptDay }, { data: ptMonth }, { data: resAll }, { data: resDay }, { data: resMonth }, { data: msAll }, { data: msDay }, { data: msMonth }, { data: trainers }] = await Promise.all([
+    const [
+      { data: ptAll }, { data: ptDay }, { data: ptMonth },
+      { data: resAll }, { data: resDay }, { data: resMonth },
+      { data: msAll }, { data: msDay }, { data: msMonth },
+      { data: trainers },
+    ] = await Promise.all([
       supabase.from('payment_transactions').select('amount').is('deleted_at', null),
       supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).eq('memberships.start_date', dayStr),
       supabase.from('payment_transactions').select('amount, memberships!inner(start_date)').is('deleted_at', null).gte('memberships.start_date', monthStart).lt('memberships.start_date', monthEnd),
-      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']),
-      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).eq('scheduled_date', dayStr),
-      supabase.from('reservations').select('trainer_id, trainers(name,surname)').in('status', ['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
-      supabase.from('memberships').select('total_lessons, start_date'),
+      supabase.from('reservations').select('trainer_id').in('status', ['completed','no_show']),
+      supabase.from('reservations').select('trainer_id').in('status', ['completed','no_show']).eq('scheduled_date', dayStr),
+      supabase.from('reservations').select('trainer_id').in('status', ['completed','no_show']).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd),
+      supabase.from('memberships').select('total_lessons'),
       supabase.from('memberships').select('total_lessons').eq('start_date', dayStr),
       supabase.from('memberships').select('total_lessons').gte('start_date', monthStart).lt('start_date', monthEnd),
-      supabase.from('trainers').select('id, name, surname, bonus_rate').is('deleted_at', null).order('name'),
+      supabase.from('trainers').select('id, name, surname').is('deleted_at', null).order('name'),
     ])
 
-    const gelirAll = (ptAll??[]).reduce((s:number,p:any)=>s+(p.amount??0),0)
-    const gelirDay = (ptDay??[]).reduce((s:number,p:any)=>s+(p.amount??0),0)
-    const gelirMonth = (ptMonth??[]).reduce((s:number,p:any)=>s+(p.amount??0),0)
+    const sum = (arr: any[], key='amount') => (arr??[]).reduce((s:number,r:any)=>s+(r[key]??0),0)
     const trainerRows = (trainers??[]).map((t:any) => ({
       id: t.id, name: `${t.name} ${t.surname}`,
-      dersAll: (resAll??[]).filter((r:any)=>r.trainer_id===t.id).length,
-      dersDay: (resDay??[]).filter((r:any)=>r.trainer_id===t.id).length,
-      dersMonth: (resMonth??[]).filter((r:any)=>r.trainer_id===t.id).length,
-    })).filter((t:any)=>t.dersAll>0)
+      all:   (resAll??[]).filter((r:any)=>r.trainer_id===t.id).length,
+      day:   (resDay??[]).filter((r:any)=>r.trainer_id===t.id).length,
+      month: (resMonth??[]).filter((r:any)=>r.trainer_id===t.id).length,
+    })).filter((t:any)=>t.all>0)
 
     setData({
-      gelirAll, gelirDay, gelirMonth,
-      dersAll: (resAll??[]).length, dersDay: (resDay??[]).length, dersMonth: (resMonth??[]).length,
-      paketAll: (msAll??[]).length, paketDay: (msDay??[]).length, paketMonth: (msMonth??[]).length,
-      satisAll: (msAll??[]).reduce((s:number,m:any)=>s+(m.total_lessons??0),0),
-      satisDay: (msDay??[]).reduce((s:number,m:any)=>s+(m.total_lessons??0),0),
-      satisMonth: (msMonth??[]).reduce((s:number,m:any)=>s+(m.total_lessons??0),0),
+      rows: [
+        { label: 'Gelir',         color: '#34d399', money: true,  day: sum(ptDay??[]), month: sum(ptMonth??[]), all: sum(ptAll??[]) },
+        { label: 'Satılan Paket', color: '#38bdf8', money: false, day: (msDay??[]).length, month: (msMonth??[]).length, all: (msAll??[]).length },
+        { label: 'Satılan Ders',  color: '#a78bfa', money: false, day: sum(msDay??[],'total_lessons'), month: sum(msMonth??[],'total_lessons'), all: sum(msAll??[],'total_lessons') },
+        { label: 'İşlenen Ders',  color: '#f59e0b', money: false, day: (resDay??[]).length, month: (resMonth??[]).length, all: (resAll??[]).length },
+      ],
       trainerRows,
     })
   }
 
-  function toDateStr(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
-  function fmt(n: number, money?: boolean) { return money ? new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n)) : String(n) }
+  const dayLabel   = `${day.getDate()} ${MS[day.getMonth()]} ${DS[day.getDay()]}`
+  const monthLabel = `${MS[month.m]} ${month.y}`
+  const HDR = { color: '#7b93c4', fontSize: 9, fontWeight: 700, letterSpacing: 1 }
+  const COL = 'flex flex-col items-center justify-center text-center'
 
-  const HDR = { color: '#7b93c4', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1 }
-  const ROW = { borderBottom: '1px solid rgba(255,255,255,0.04)' }
-  const dayLabel = `${day.getDate()} ${MONTHS_S2[day.getMonth()]} ${DAYS_TR2[day.getDay()]}`
-  const monthLabel = `${MONTHS_S2[month.m]} ${month.y}`
+  const NavBtn = ({ onClick, children }: { onClick: () => void; children: React.ReactNode }) => (
+    <button onClick={onClick} className="w-5 h-5 flex items-center justify-center rounded-md text-xs flex-shrink-0"
+      style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.08)' }}>{children}</button>
+  )
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <div className="grid px-4 py-3" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <p style={HDR}>Bilgi</p>
-        <div className="flex items-center gap-1">
-          <button onClick={() => { const d = new Date(day); d.setDate(d.getDate()-1); setDay(d) }} className="text-xs px-1 rounded" style={{ color:'#7b93c4',background:'rgba(255,255,255,0.06)'}}>‹</button>
-          <p style={{ ...HDR, fontSize: 8 }}>{dayLabel}</p>
-          <button onClick={() => { const d = new Date(day); d.setDate(d.getDate()+1); setDay(d) }} className="text-xs px-1 rounded" style={{ color:'#7b93c4',background:'rgba(255,255,255,0.06)'}}>›</button>
+
+      {/* Başlık satırı */}
+      <div className="grid" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+        <div className="px-3 py-3" />
+
+        {/* Bugün */}
+        <div className="flex items-center justify-center gap-1.5 py-3 px-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+          <NavBtn onClick={() => { const d = new Date(day); d.setDate(d.getDate()-1); setDay(d) }}>‹</NavBtn>
+          <div className={COL}>
+            <p style={{ ...HDR, color: '#f59e0b', fontSize: 8 }}>BUGÜN</p>
+            <p className="text-[9px] font-bold text-white">{dayLabel}</p>
+          </div>
+          <NavBtn onClick={() => { const d = new Date(day); d.setDate(d.getDate()+1); setDay(d) }}>›</NavBtn>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={() => month.m===0?setMonth({y:month.y-1,m:11}):setMonth({y:month.y,m:month.m-1})} className="text-xs px-1 rounded" style={{ color:'#7b93c4',background:'rgba(255,255,255,0.06)'}}>‹</button>
-          <p style={{ ...HDR, fontSize: 8 }}>{monthLabel}</p>
-          <button onClick={() => month.m===11?setMonth({y:month.y+1,m:0}):setMonth({y:month.y,m:month.m+1})} className="text-xs px-1 rounded" style={{ color:'#7b93c4',background:'rgba(255,255,255,0.06)'}}>›</button>
+
+        {/* Bu Ay */}
+        <div className="flex items-center justify-center gap-1.5 py-3 px-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+          <NavBtn onClick={() => month.m===0?setMonth({y:month.y-1,m:11}):setMonth({y:month.y,m:month.m-1})}>‹</NavBtn>
+          <div className={COL}>
+            <p style={{ ...HDR, color: '#38bdf8', fontSize: 8 }}>BU AY</p>
+            <p className="text-[9px] font-bold text-white">{monthLabel}</p>
+          </div>
+          <NavBtn onClick={() => month.m===11?setMonth({y:month.y+1,m:0}):setMonth({y:month.y,m:month.m+1})}>›</NavBtn>
         </div>
-        <p style={HDR}>Toplam</p>
+
+        {/* Toplam */}
+        <div className={`${COL} py-3`} style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+          <p style={{ ...HDR, color: '#a78bfa', fontSize: 8 }}>TOPLAM</p>
+          <p className="text-[9px] font-bold text-white">Tüm Zaman</p>
+        </div>
       </div>
 
-      {!data ? <p className="text-center py-6 text-xs" style={{color:'#7b93c4'}}>Yükleniyor...</p> : <>
-        {[
-          { label: 'Gelir', day: data.gelirDay, month: data.gelirMonth, all: data.gelirAll, color: '#34d399', money: true },
-          { label: 'Satılan Paket', day: data.paketDay, month: data.paketMonth, all: data.paketAll, color: '#38bdf8', money: false },
-          { label: 'Satılan Ders', day: data.satisDay, month: data.satisMonth, all: data.satisAll, color: '#a78bfa', money: false },
-          { label: 'İşlenen Ders', day: data.dersDay, month: data.dersMonth, all: data.dersAll, color: '#f59e0b', money: false },
-        ].map(row => (
-          <div key={row.label} className="grid px-4 py-2.5 items-center" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', ...ROW }}>
-            <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{row.label}</p>
-            <p className="text-xs font-bold" style={{ color: row.color }}>{fmt(row.day, row.money)}</p>
-            <p className="text-xs font-bold" style={{ color: row.color }}>{fmt(row.month, row.money)}</p>
-            <p className="text-xs font-bold" style={{ color: row.color }}>{fmt(row.all, row.money)}</p>
-          </div>
-        ))}
-        {data.trainerRows.length > 0 && <>
-          <div className="px-4 py-2" style={{ background: 'rgba(167,139,250,0.06)', borderTop: '1px solid rgba(167,139,250,0.1)' }}>
-            <p style={{ ...HDR, color: '#a78bfa' }}>Eğitmen Dersleri</p>
-          </div>
-          {data.trainerRows.map((t: any) => (
-            <div key={t.id} className="grid px-4 py-2.5 items-center" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', ...ROW }}>
-              <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.name}</p>
-              <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.dersDay}</p>
-              <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.dersMonth}</p>
-              <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.dersAll}</p>
+      {/* Veri satırları */}
+      {!data ? (
+        <p className="text-center py-8 text-xs" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      ) : (
+        <>
+          {data.rows.map((row: any) => (
+            <div key={row.label} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="px-3 py-3.5">
+                <div className="w-2 h-2 rounded-full inline-block mr-2" style={{ background: row.color }} />
+                <span className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{row.label}</span>
+              </div>
+              <p className="text-center text-sm font-bold py-3.5" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.day, row.money)}</p>
+              <p className="text-center text-sm font-bold py-3.5" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.month, row.money)}</p>
+              <p className="text-center text-sm font-bold py-3.5" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.all, row.money)}</p>
             </div>
           ))}
-        </>}
-      </>}
+
+          {/* Eğitmen dersleri */}
+          {data.trainerRows.length > 0 && (
+            <>
+              <div className="px-3 py-2" style={{ background: 'rgba(167,139,250,0.05)', borderTop: '1px solid rgba(167,139,250,0.12)' }}>
+                <p style={{ ...HDR, color: '#a78bfa' }}>EĞİTMEN DERSLERİ</p>
+              </div>
+              {data.trainerRows.map((t: any) => (
+                <div key={t.id} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div className="px-3 py-3">
+                    <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.name}</p>
+                  </div>
+                  <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.day}</p>
+                  <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.month}</p>
+                  <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.all}</p>
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }
