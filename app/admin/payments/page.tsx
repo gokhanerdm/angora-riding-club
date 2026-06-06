@@ -54,7 +54,13 @@ export default function PaymentsPage() {
       day:   (resDay   ?? []).filter((r: any) => r.trainer_id === t.id).length,
       month: (resMonth ?? []).filter((r: any) => r.trainer_id === t.id).length,
       all:   (resAll   ?? []).filter((r: any) => r.trainer_id === t.id).length,
-    })).filter((t: any) => t.all > 0)
+    }))
+    const ORDER = ['Ömer Faruk', 'İrem', 'Melike']
+    trainerRows.sort((a: any, b: any) => {
+      const ai = ORDER.findIndex(n => a.name.includes(n))
+      const bi = ORDER.findIndex(n => b.name.includes(n))
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+    })
 
     setData({
       rows: [
