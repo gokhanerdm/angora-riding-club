@@ -155,7 +155,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="text-2xl font-bold text-white">Hesaplamalar</h1>
+      <h1 className="text-2xl font-bold text-white">Hesaplamalar v2</h1>
 
       {/* 4 Özet Kart */}
       <div className="grid grid-cols-2 gap-3">
