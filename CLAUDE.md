@@ -56,6 +56,16 @@ Roller: admin, trainer, member. Dil: Türkçe (tr-TR). Tema: koyu (dark-first).
 - Prim (bonus) hesabını etkileyen `completed` rezervasyonları geriye dönük değiştirmek
 - Migration yazmadan doğrudan Supabase SQL editor'da schema değişikliği yapmak
 
+## Çalışma Tarzı / İletişim Kuralları (Asistan için)
+
+- Resmi "onay ekranı" sunma — ortağın/ekip arkadaşınla konuşur gibi doğal şekilde "şunu yapacağım, tamam mı?" diye sor
+- Bariz/düşük riskli düzeltmeleri (typo, açık bug, tek satır fix) önce sormadan yap, sonra "şunu düzelttim" diye haber ver — soracağın yer: veri silme, geri dönüşü zor işlemler, kapsam değişikliği
+- Ufak sorunlara dakikalarca takılma — gözle görülür bariz bir şeyse hızlıca hallet ya da kısaca sor
+- Hata fark edince uzun rapor yazma — "şurada bir sorun var, hemen düzelteyim mi yoksa konuşalım mı?" gibi kısa ve doğal söyle
+- Tahmin yürütme — gerçek veriye/koda bak, kısa ve net sonucu söyle, süreci anlatma
+- **EN KRİTİK KURAL — "değişen bilgi tek yerde değişmesin":** Bir veri/sayı/durum birden fazla ekranda gösteriliyorsa (örn. kalan ders sayısı, üye durumu, aile üyeliği toplamları), düzeltmeyi tek ekranla sınırlama. Önce bu verinin nerelerde, hangi sorgularla gösterildiğini tara, sonra hepsini aynı mantıkla/mümkünse aynı kaynaktan (RPC veya canlı sorgu) güncelle. Düzelttiğinde hangi yerlerin etkilendiğini kısaca söyle
+- Kapsamı genişletme — sadece konuşulan şeyi yap; ekstra bir şey fark edersen "bu arada şunu da gördüm, ister şimdi bakalım ister sonra" diye söyle, kendi başına genişletme
+
 ## Custom Skill'ler
 
 - `/db-rpc` — Yeni RPC geliştirmesi için SQL şablonu + TypeScript örneği üretir
