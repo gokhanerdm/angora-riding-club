@@ -51,12 +51,19 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       const uid = overrideUserId ?? user.id
-      supabase.from('members').select('id').eq('user_id', uid).single().then(({ data: m }) => {
+      supabase.from('members').select('id').eq('user_id', uid).single().then(async ({ data: m }) => {
         if (!m) return
-        supabase.from('memberships').select('type').eq('member_id', m.id)
-          .order('created_at', { ascending: false }).limit(1).single().then(({ data: ms }) => {
-          setIsWeekdayPkg(ms?.type === 'weekday')
-        })
+        const { data: ms } = await supabase.from('memberships').select('type, family_id, created_at')
+          .eq('member_id', m.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+        if (ms) { setIsWeekdayPkg(ms.type === 'weekday'); return }
+        // Kendi paketi yoksa aile paketine bak (paylaşılan havuzdan faydalanan üyeler için)
+        const { data: fm } = await supabase.from('family_members').select('family_id').eq('member_id', m.id).limit(1)
+        if (fm && fm.length > 0) {
+          const { data: famMs } = await supabase.from('memberships').select('type')
+            .eq('family_id', fm[0].family_id).eq('is_current', true)
+            .order('created_at', { ascending: false }).limit(1).maybeSingle()
+          setIsWeekdayPkg(famMs?.type === 'weekday')
+        }
       })
     })
   }, [overrideUserId])
@@ -102,20 +109,12 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     // overrideUserId varsa (admin üye adına bakıyor) onu kullan
     const effectiveUserId = overrideUserId ?? user.id
 
-    // Ders hakkı kontrolü (admin görüntülüyorsa atla)
+    // Ders hakkı kontrolü (admin görüntülüyorsa atla) — aile havuzunu da kapsayan RPC kullanılır
     if (!overrideUserId) {
-      const { data: memberData } = await supabase
-        .from('members').select('id').eq('user_id', effectiveUserId).single()
-      if (memberData) {
-        const { data: memberships } = await supabase
-          .from('memberships')
-          .select('total_lessons, used_lessons, reserved_lessons')
-          .eq('member_id', memberData.id).eq('is_current', true)
-        const remaining = (memberships ?? []).reduce(
-          (sum, m) => sum + (m.total_lessons - m.used_lessons - m.reserved_lessons), 0
-        )
-        if (remaining <= 0) { router.push('/member/packages'); return }
-      }
+      const { data: stats } = await supabase
+        .rpc('member_dashboard_stats', { user_id: effectiveUserId })
+      const remaining = stats?.[0]?.remaining_lessons ?? 0
+      if (remaining <= 0) { router.push('/member/packages'); return }
     }
 
     setSelectedDate(dateStr)
