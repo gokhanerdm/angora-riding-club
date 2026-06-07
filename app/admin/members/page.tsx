@@ -62,7 +62,7 @@ export default function MembersPage() {
       // Onayı/ödemesi tamamlanmamış (pending_club_approval) üyeler bu listede görünmez —
       // bunlar "Üyelik Talepleri" sayfasında bekleyen talepler altında yönetilir
       .neq('member_status', 'pending_club_approval')
-      .order('created_at', { ascending: false })
+      .order('name', { ascending: true })
     if (!membersData) { setLoading(false); return }
 
     const memberIds = membersData.map(m => m.id)
