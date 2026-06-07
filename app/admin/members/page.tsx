@@ -58,7 +58,11 @@ export default function MembersPage() {
     const supabase = createClient()
     const { data: membersData } = await supabase
       .from('members').select('id, name, surname, email, phone, member_status, created_at, default_trainer_id')
-      .is('deleted_at', null).order('created_at', { ascending: false })
+      .is('deleted_at', null)
+      // Onayı/ödemesi tamamlanmamış (pending_club_approval) üyeler bu listede görünmez —
+      // bunlar "Üyelik Talepleri" sayfasında bekleyen talepler altında yönetilir
+      .neq('member_status', 'pending_club_approval')
+      .order('created_at', { ascending: false })
     if (!membersData) { setLoading(false); return }
 
     const memberIds = membersData.map(m => m.id)
