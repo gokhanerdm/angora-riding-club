@@ -122,12 +122,20 @@ export default function MembersPage() {
     setSelected(member)
     setDetailLoading(true)
     const supabase = createClient()
-    const [{ data: memberships }, { data: reservations }, { data: trainers }] = await Promise.all([
+    const [{ data: memberships }, { data: reservations }, { data: trainers }, { data: activeRes }] = await Promise.all([
       supabase.from('memberships').select('*').eq('member_id', member.id).order('created_at', { ascending: false }),
       supabase.from('reservations').select('id, scheduled_date, start_time, status, trainers(name, surname)').eq('member_id', member.id).order('scheduled_date', { ascending: false }).limit(20),
       supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
+      // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — "Kalan" hesabı için gerçek bekleyen/onaylı rezervasyonu canlı say
+      supabase.from('reservations').select('membership_id').eq('member_id', member.id).in('status', ['pending', 'approved']),
     ])
-    setDetail({ memberships: memberships ?? [], reservations: reservations ?? [], trainers: trainers ?? [] })
+    const reservedByMs = new Map<string, number>()
+    for (const r of activeRes ?? []) {
+      if (!r.membership_id) continue
+      reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
+    }
+    const membershipsLive = (memberships ?? []).map((m: any) => ({ ...m, live_reserved: reservedByMs.get(m.id) ?? m.reserved_lessons }))
+    setDetail({ memberships: membershipsLive, reservations: reservations ?? [], trainers: trainers ?? [] })
     setDetailLoading(false)
   }
 
@@ -344,7 +352,7 @@ export default function MembersPage() {
                           <span className="text-xs font-bold" style={{ color: m.is_current ? '#f59e0b' : '#4a6190' }}>{m.is_current ? 'Aktif' : 'Geçmiş'}</span>
                         </div>
                         <p className="text-xs" style={{ color: '#7b93c4' }}>{formatDate(m.start_date)} — {formatDate(m.end_date)}</p>
-                        <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Kalan: {m.total_lessons - m.used_lessons - m.reserved_lessons} · Kullanılan: {m.used_lessons}</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Kalan: {m.total_lessons - m.used_lessons - m.live_reserved} · Kullanılan: {m.used_lessons}</p>
                       </div>
                     ))
                   }

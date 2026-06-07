@@ -176,7 +176,20 @@ export default function MemberDashboardClient({
           .eq('family_id', fm.family_id).order('created_at', { ascending: false })
         familyPkgs = (fp ?? []).map(p => ({ ...p, _isFamily: true }))
       }
-      setPackages([...(ownPkgs ?? []), ...familyPkgs])
+      // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — gösterimde gerçek bekleyen/onaylı rezervasyonu canlı say
+      const allPkgs = [...(ownPkgs ?? []), ...familyPkgs]
+      const msIds = allPkgs.map(p => p.id)
+      if (msIds.length > 0) {
+        const { data: activeRes } = await supabase
+          .from('reservations').select('membership_id').in('membership_id', msIds).in('status', ['pending', 'approved'])
+        const reservedByMs = new Map<string, number>()
+        for (const r of activeRes ?? []) {
+          if (!r.membership_id) continue
+          reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
+        }
+        for (const p of allPkgs) p.reserved_lessons = reservedByMs.get(p.id) ?? p.reserved_lessons
+      }
+      setPackages(allPkgs)
     } else {
       const statusFilter = type === 'used'
         ? ['completed', 'no_show']

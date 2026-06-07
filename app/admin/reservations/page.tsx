@@ -129,12 +129,22 @@ export default function ReservationsPage() {
     const { data: allowedData } = await supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', selectedTrainer)
     const memberIds = (allowedData ?? []).map((r: any) => r.member_id)
     if (memberIds.length === 0) { setMembers([]); return }
-    const [{ data: membersData }, { data: memberships }] = await Promise.all([
+    const [{ data: membersData }, { data: memberships }, { data: activeRes }] = await Promise.all([
       supabase.from('members').select('id, name, surname').in('id', memberIds).is('deleted_at', null),
-      supabase.from('memberships').select('member_id, total_lessons, used_lessons, reserved_lessons').in('member_id', memberIds).eq('is_current', true),
+      supabase.from('memberships').select('id, member_id, total_lessons, used_lessons').in('member_id', memberIds).eq('is_current', true),
+      // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — gerçek bekleyen/onaylı rezervasyonu canlı say
+      supabase.from('reservations').select('membership_id').in('member_id', memberIds).in('status', ['pending', 'approved']),
     ])
+    const reservedByMs = new Map<string, number>()
+    for (const r of activeRes ?? []) {
+      if (!r.membership_id) continue
+      reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
+    }
     const remainingMap = new Map<string, number>()
-    for (const m of memberships ?? []) remainingMap.set(m.member_id, (remainingMap.get(m.member_id) ?? 0) + (m.total_lessons - m.used_lessons - m.reserved_lessons))
+    for (const m of memberships ?? []) {
+      const reserved = reservedByMs.get(m.id) ?? 0
+      remainingMap.set(m.member_id, (remainingMap.get(m.member_id) ?? 0) + (m.total_lessons - m.used_lessons - reserved))
+    }
     setMembers((membersData ?? []).map((m: any) => ({ id: m.id, name: m.name, surname: m.surname, remaining_lessons: remainingMap.get(m.id) ?? 0 })))
   }
 

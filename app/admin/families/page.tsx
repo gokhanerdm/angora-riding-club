@@ -43,30 +43,42 @@ export default function FamiliesPage() {
     setLoading(true)
     const supabase = createClient()
 
-    const [{ data: fams }, { data: mems }, { data: ms }, { data: allMs }] = await Promise.all([
+    const [{ data: fams }, { data: mems }, { data: ms }, { data: allMs }, { data: activeRes }] = await Promise.all([
       supabase.from('families').select('id, name').order('name'),
       supabase.from('members').select('id, name, surname').is('deleted_at', null).order('name'),
       supabase.from('memberships').select('id, family_id, total_lessons, used_lessons, reserved_lessons, member_id').not('family_id', 'is', null),
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, reserved_lessons').is('family_id', null).eq('is_current', true),
+      // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — gösterimde gerçek bekleyen/onaylı rezervasyonu canlı say
+      supabase.from('reservations').select('membership_id').in('status', ['pending', 'approved']),
     ])
+
+    const reservedByMs = new Map<string, number>()
+    for (const r of activeRes ?? []) {
+      if (!r.membership_id) continue
+      reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
+    }
+    const liveReserved = (m: { id: string; reserved_lessons: number }) => reservedByMs.get(m.id) ?? m.reserved_lessons
 
     const { data: fms } = await supabase
       .from('family_members')
       .select('family_id, member_id, is_leader, members(id, name, surname)')
 
-    const familyList: Family[] = (fams ?? []).map(f => ({
-      id: f.id,
-      name: f.name,
-      members: (fms ?? [])
-        .filter(fm => fm.family_id === f.id)
-        .map(fm => ({ id: (fm.members as any).id, name: (fm.members as any).name, surname: (fm.members as any).surname, is_leader: fm.is_leader })),
-      membership: (ms ?? []).find(m => m.family_id === f.id),
-    }))
+    const familyList: Family[] = (fams ?? []).map(f => {
+      const fms_ms = (ms ?? []).find(m => m.family_id === f.id)
+      return {
+        id: f.id,
+        name: f.name,
+        members: (fms ?? [])
+          .filter(fm => fm.family_id === f.id)
+          .map(fm => ({ id: (fm.members as any).id, name: (fm.members as any).name, surname: (fm.members as any).surname, is_leader: fm.is_leader })),
+        membership: fms_ms ? { ...fms_ms, reserved_lessons: liveReserved(fms_ms) } : undefined,
+      }
+    })
 
     setFamilies(familyList)
     setMembers(mems ?? [])
     setMemberships((ms ?? []))
-    setAllMemberships(allMs ?? [])
+    setAllMemberships((allMs ?? []).map((m: any) => ({ ...m, reserved_lessons: liveReserved(m) })))
     setLoading(false)
   }
 
