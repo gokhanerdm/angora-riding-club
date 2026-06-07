@@ -51,11 +51,19 @@ export default function PackagesPage() {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('members').select('id').eq('user_id', user.id).single().then(({ data: m }) => {
+      supabase.from('members').select('id').eq('user_id', user.id).single().then(async ({ data: m }) => {
         if (!m) return
-        supabase.from('memberships').select('id').eq('member_id', m.id).limit(1).then(({ data: ms }) => {
-          setHasPackage((ms ?? []).length > 0)
-        })
+        // Kendi paketi var mı?
+        const { data: ownMs } = await supabase.from('memberships').select('id').eq('member_id', m.id).limit(1)
+        if ((ownMs ?? []).length > 0) { setHasPackage(true); return }
+        // Aile üyesi ise ailenin paylaşılan paketi var mı? (kendi paketi olmayan aile üyeleri "Üyeliğim Var" ekranını görmemeli)
+        const { data: fm } = await supabase.from('family_members').select('family_id').eq('member_id', m.id).limit(1)
+        if (fm && fm.length > 0) {
+          const { data: famMs } = await supabase.from('memberships').select('id').eq('family_id', fm[0].family_id).eq('is_current', true).limit(1)
+          setHasPackage((famMs ?? []).length > 0)
+          return
+        }
+        setHasPackage(false)
       })
     })
   }, [])
