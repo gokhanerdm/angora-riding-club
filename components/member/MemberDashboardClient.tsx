@@ -459,7 +459,7 @@ export default function MemberDashboardClient({
 
       {/* Paket düzenleme modalı */}
       {editPkg && adminMemberId && (
-        <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
+        <div className="fixed inset-0 z-[95] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <h3 className="font-bold text-white text-base">Paket Düzenle</h3>
