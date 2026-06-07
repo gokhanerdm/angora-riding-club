@@ -91,7 +91,7 @@ export default function AdminDashboard() {
     Promise.all([
       supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled'),
       supabase.from('membership_requests').select('id').eq('status', 'pending'),
-      supabase.from('members').select('id').gte('created_at', today + 'T00:00:00').is('deleted_at', null),
+      supabase.from('members').select('id').gte('created_at', today + 'T00:00:00').is('deleted_at', null).eq('is_passive', false),
     ]).then(([{ data: res }, { data: reqs }, { data: mem }]) => {
       setStats({
         total:      res?.length ?? 0,
@@ -136,6 +136,7 @@ export default function AdminDashboard() {
         .select('id, name, surname, email, phone, created_at')
         .gte('created_at', today + 'T00:00:00')
         .is('deleted_at', null)
+        .eq('is_passive', false)
         .order('created_at', { ascending: false })
       setModalData(data ?? [])
     }
