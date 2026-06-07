@@ -91,15 +91,13 @@ export default function AdminDashboard() {
     Promise.all([
       supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled'),
       supabase.from('membership_requests').select('id').eq('status', 'pending'),
-      // "Yeni Kayıt" = bugün paket talebi oluşturan üyeler (sadece hesap açıp talepte bulunmayanlar sayılmaz)
-      supabase.from('membership_requests').select('member_id').gte('created_at', today + 'T00:00:00'),
-    ]).then(([{ data: res }, { data: reqs }, { data: newReqs }]) => {
-      const uniqueNewMembers = new Set((newReqs ?? []).map((r: any) => r.member_id))
+      supabase.from('members').select('id').gte('created_at', today + 'T00:00:00').is('deleted_at', null).eq('is_passive', false),
+    ]).then(([{ data: res }, { data: reqs }, { data: mem }]) => {
       setStats({
         total:      res?.length ?? 0,
         completed:  res?.filter(r => r.status === 'completed').length ?? 0,
         remaining:  res?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
-        newMembers: uniqueNewMembers.size,
+        newMembers: mem?.length ?? 0,
         pending:    reqs?.length ?? 0,
       })
     })
@@ -134,27 +132,13 @@ export default function AdminDashboard() {
         }
       }))
     } else {
-      // "Yeni Kayıt" listesi: bugün paket talebi oluşturan üyeler (talepsiz hesap açılışları sayılmaz)
-      const { data: reqRows } = await supabase.from('membership_requests')
-        .select('member_id, created_at')
-        .gte('created_at', today + 'T00:00:00')
-        .order('created_at', { ascending: false })
-      const memberIds = [...new Set((reqRows ?? []).map((r: any) => r.member_id))]
-      if (memberIds.length === 0) { setModalData([]); setModalLoading(false); return }
-      const { data: mems } = await supabase.from('members')
+      const { data } = await supabase.from('members')
         .select('id, name, surname, email, phone, created_at')
-        .in('id', memberIds)
+        .gte('created_at', today + 'T00:00:00')
         .is('deleted_at', null)
-      const memberMap = new Map((mems ?? []).map((m: any) => [m.id, m]))
-      const seen = new Set<string>()
-      const ordered: any[] = []
-      for (const r of reqRows ?? []) {
-        if (seen.has(r.member_id)) continue
-        seen.add(r.member_id)
-        const m = memberMap.get(r.member_id)
-        if (m) ordered.push(m)
-      }
-      setModalData(ordered)
+        .eq('is_passive', false)
+        .order('created_at', { ascending: false })
+      setModalData(data ?? [])
     }
     setModalLoading(false)
   }
