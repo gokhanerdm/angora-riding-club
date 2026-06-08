@@ -38,6 +38,19 @@ export default function NotificationsPage() {
   useEffect(() => { load() }, [])
 
   const [legacyRequests, setLegacyRequests] = useState<any[]>([])
+  const [approvingId, setApprovingId] = useState<string | null>(null)
+
+  const approveLegacy = async (memberId: string) => {
+    setApprovingId(memberId)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setApprovingId(null); return }
+    const { data: admin } = await supabase.from('profiles').select('id').eq('id', user.id).single()
+    const { error } = await supabase.rpc('approve_legacy_member', { p_member_id: memberId, p_admin_id: admin?.id })
+    if (!error) setLegacyRequests(prev => prev.map(m => m.id === memberId ? { ...m, _approved: true } : m))
+    setApprovingId(null)
+  }
+
   const [dismissed, setDismissed] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('dismissed_notifications') ?? '[]')) }
     catch { return new Set() }
@@ -109,16 +122,31 @@ export default function NotificationsPage() {
         <div className="space-y-3">
           {/* Eski üye talepleri */}
           {legacyRequests.map(m => (
-            <a key={m.id} href={`/admin/members/${m.id}/legacy-lessons`}
-              className="rounded-2xl p-4 flex items-start gap-4 active:opacity-70"
+            <div key={m.id}
+              className="rounded-2xl p-4 flex items-start gap-4"
               style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.3)' }}>
               <span className="text-2xl flex-shrink-0">🕐</span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="font-bold text-white text-sm">{m.name} {m.surname} — Eski Üye Kaydı</p>
                 <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
-                <p className="text-xs font-bold mt-1" style={{ color: '#a78bfa' }}>Geçmiş bilgileri gir →</p>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {m._approved ? (
+                    <span className="text-xs font-bold" style={{ color: '#34d399' }}>✓ Onaylandı — üye listesinde görünüyor</span>
+                  ) : (
+                    <button
+                      onClick={() => approveLegacy(m.id)}
+                      disabled={approvingId === m.id}
+                      className="text-xs font-bold px-3 py-1.5 rounded-full disabled:opacity-50"
+                      style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.35)' }}
+                    >{approvingId === m.id ? 'Onaylanıyor...' : '✓ Onayla'}</button>
+                  )}
+                  <Link href={`/admin/members/${m.id}/legacy-lessons`}
+                    className="text-xs font-bold" style={{ color: '#a78bfa' }}>
+                    Geçmiş bilgileri gir →
+                  </Link>
+                </div>
               </div>
-            </a>
+            </div>
           ))}
 
           {notifications.length === 0 && legacyRequests.length === 0 && (
