@@ -8,7 +8,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
   const supabase = await createClient()
 
   const { data: trainer } = await supabase
-    .from('trainers').select('id, name, surname, bonus_rate, shift').eq('id', id).single()
+    .from('trainers').select('id, name, surname, bonus_rate, shift').eq('id', id).is('deleted_at', null).single()
 
   if (!trainer) redirect('/admin/trainers')
 

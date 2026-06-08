@@ -6,7 +6,7 @@ export default async function TrainerDashboardPage() {
   const trainer = await requireTrainer();
   const supabase = await createClient();
 
-  const now = new Date()
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
   const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
   const nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1)
   const monthEnd = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth()+1).padStart(2,'0')}-01`
@@ -30,7 +30,7 @@ export default async function TrainerDashboardPage() {
       .gte('scheduled_date', nextMonthStart)
       .lt('scheduled_date', nextMonthEnd)
       .neq('status', 'cancelled'),
-    supabase.from('trainers').select('bonus_rate, shift').eq('id', trainer.trainerId).single(),
+    supabase.from('trainers').select('bonus_rate, shift').eq('id', trainer.trainerId).is('deleted_at', null).single(),
     supabase.from('reservations')
       .select('member_id, memberships(lesson_price_snapshot)')
       .eq('trainer_id', trainer.trainerId)

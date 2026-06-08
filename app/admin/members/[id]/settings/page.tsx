@@ -53,7 +53,7 @@ export default function AdminMemberSettingsPage() {
   useEffect(() => {
     const supabase = createClient()
     Promise.all([
-      supabase.from('members').select('id, name, surname, email, member_status, default_trainer_id').eq('id', memberId).single(),
+      supabase.from('members').select('id, name, surname, email, member_status, default_trainer_id').eq('id', memberId).is('deleted_at', null).single(),
       supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
     ]).then(([{ data: m }, { data: t }]) => {
       setMember(m)
@@ -67,7 +67,8 @@ export default function AdminMemberSettingsPage() {
     setUpdatingStatus(true)
     const newStatus = member.member_status === 'active' ? 'inactive' : 'active'
     const supabase = createClient()
-    await supabase.from('members').update({ member_status: newStatus }).eq('id', memberId)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('set_member_status', { p_admin_id: user?.id, p_member_id: memberId, p_status: newStatus })
     setMember((p: any) => ({ ...p, member_status: newStatus }))
     setUpdatingStatus(false)
     showToast('Durum güncellendi ✓')

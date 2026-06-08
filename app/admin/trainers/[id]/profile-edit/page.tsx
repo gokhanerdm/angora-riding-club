@@ -29,7 +29,7 @@ export default function TrainerProfileEditPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.from('trainers').select('name, surname, bonus_rate, shift').eq('id', trainerId).single()
+    supabase.from('trainers').select('name, surname, bonus_rate, shift').eq('id', trainerId).is('deleted_at', null).single()
       .then(({ data }) => {
         if (!data) return
         setName(data.name ?? '')

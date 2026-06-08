@@ -120,7 +120,12 @@ export default function MemberDashboardClient({
       const res = await supabase.rpc('mark_attendance', { p_reservation_id: resId, p_status: editStatus, p_marked_by: user?.id })
       error = res.error
     } else {
-      const res = await supabase.from('reservations').update({ scheduled_date: editDate, status: editStatus }).eq('id', resId)
+      const res = await supabase.rpc('admin_update_reservation', {
+        p_admin_id: user?.id,
+        p_reservation_id: resId,
+        p_scheduled_date: editDate,
+        p_status: editStatus,
+      })
       error = res.error
     }
 

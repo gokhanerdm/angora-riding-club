@@ -39,6 +39,7 @@ const CARD_ACTIVE = { background: 'rgba(245,158,11,0.12)', border: '1px solid rg
 export default function MembersPage() {
   const [members, setMembers]         = useState<Member[]>([])
   const [loading, setLoading]             = useState(true)
+  const [loadError, setLoadError]         = useState('')
   const [search, setSearch]               = useState('')
   const [filter, setFilter]               = useState('Tümü')
   const [selected, setSelected]           = useState<Member | null>(null)
@@ -55,14 +56,16 @@ export default function MembersPage() {
 
   const loadMembers = async () => {
     setLoading(true)
+    setLoadError('')
     const supabase = createClient()
-    const { data: membersData } = await supabase
+    const { data: membersData, error: membersErr } = await supabase
       .from('members').select('id, name, surname, email, phone, member_status, created_at, default_trainer_id')
       .is('deleted_at', null)
       // Onayı/ödemesi tamamlanmamış (pending_club_approval) üyeler bu listede görünmez —
       // bunlar "Üyelik Talepleri" sayfasında bekleyen talepler altında yönetilir
       .neq('member_status', 'pending_club_approval')
       .order('name', { ascending: true })
+    if (membersErr) { setLoadError('Üyeler yüklenirken bir hata oluştu: ' + membersErr.message); setLoading(false); return }
     if (!membersData) { setLoading(false); return }
 
     const memberIds = membersData.map(m => m.id)
@@ -203,7 +206,8 @@ export default function MembersPage() {
 
   const updateStatus = async (memberId: string, status: string) => {
     const supabase = createClient()
-    await supabase.from('members').update({ member_status: status }).eq('id', memberId)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('set_member_status', { p_admin_id: user?.id, p_member_id: memberId, p_status: status })
     await loadMembers()
   }
 
@@ -260,6 +264,10 @@ export default function MembersPage() {
 
       {loading ? (
         <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      ) : loadError ? (
+        <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
+          {loadError}
+        </div>
       ) : (
         <div className="space-y-2">
           {filtered.length === 0 && <p style={{ color: '#7b93c4' }}>Üye bulunamadı.</p>}

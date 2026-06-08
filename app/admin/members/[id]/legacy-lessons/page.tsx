@@ -45,8 +45,8 @@ export default function LegacyLessonsPage() {
   useEffect(() => {
     const supabase = createClient()
     Promise.all([
-      supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).single(),
-      supabase.from('trainers').select('id, name, surname').order('name'),
+      supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).is('deleted_at', null).single(),
+      supabase.from('trainers').select('id, name, surname').is('deleted_at', null).order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_family').eq('is_active', true).order('lesson_count'),
       supabase.from('memberships').select('id').eq('member_id', memberId).eq('is_current', true).limit(1).maybeSingle(),
     ]).then(async ([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {

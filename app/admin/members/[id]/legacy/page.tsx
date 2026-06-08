@@ -39,8 +39,8 @@ export default function LegacyRequestPage() {
   useEffect(() => {
     const supabase = createClient()
     Promise.all([
-      supabase.from('members').select('id, name, surname, email').eq('id', memberId).single(),
-      supabase.from('trainers').select('id, name, surname').order('name'),
+      supabase.from('members').select('id, name, surname, email').eq('id', memberId).is('deleted_at', null).single(),
+      supabase.from('trainers').select('id, name, surname').is('deleted_at', null).order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_family').eq('is_active', true).eq('is_family', false).order('lesson_count'),
     ]).then(([{data:m},{data:t},{data:p}]) => {
       setMember(m)

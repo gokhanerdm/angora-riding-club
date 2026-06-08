@@ -54,7 +54,8 @@ export default function MembershipsPage() {
     if (!rejectTarget) return
     setRejecting(true)
     const supabase = createClient()
-    const { error } = await supabase.from('membership_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', rejectTarget)
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase.rpc('reject_membership_request', { p_admin_id: user?.id, p_request_id: rejectTarget })
     setRejecting(false)
     setRejectTarget(null)
     if (error) showToast('Hata: ' + error.message)

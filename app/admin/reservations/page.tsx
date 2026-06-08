@@ -184,7 +184,7 @@ export default function ReservationsPage() {
     } else if (status === 'completed' || status === 'no_show') {
       await supabase.rpc('mark_attendance', { p_reservation_id: id, p_status: status, p_marked_by: user?.id })
     } else {
-      await supabase.from('reservations').update({ status }).eq('id', id)
+      await supabase.rpc('admin_update_reservation', { p_admin_id: user?.id, p_reservation_id: id, p_status: status })
     }
     await loadReservations()
   }

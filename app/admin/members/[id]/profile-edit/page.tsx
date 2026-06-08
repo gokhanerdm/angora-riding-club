@@ -35,7 +35,7 @@ export default function AdminMemberProfileEdit() {
   useEffect(() => {
     const supabase = createClient()
     Promise.all([
-      supabase.from('members').select('user_id, name, surname, phone, date_of_birth, dogum_yeri, adres, emergency_contact_phone, meslek, ogretim_durumu, baba_adi, anne_adi').eq('id', memberId).single(),
+      supabase.from('members').select('user_id, name, surname, phone, date_of_birth, dogum_yeri, adres, emergency_contact_phone, meslek, ogretim_durumu, baba_adi, anne_adi').eq('id', memberId).is('deleted_at', null).single(),
       supabase.from('member_sensitive_data').select('tc_kimlik').eq('member_id', memberId).single(),
     ]).then(([{ data: m }, { data: s }]) => {
       if (!m) return
