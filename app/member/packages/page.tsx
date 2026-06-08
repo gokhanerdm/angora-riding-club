@@ -90,7 +90,7 @@ export default function PackagesPage() {
     if (!user) { setSubmitting(false); return }
 
     const { error: rpcError } = await supabase.rpc('create_membership_request', {
-      user_id: user.id,
+      user_id: overrideUid ?? user.id,
       p_package_id: selected.pkg.id,
       p_request_type: selected.type,
     })
