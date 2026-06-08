@@ -58,8 +58,9 @@ Roller: admin, trainer, member. Dil: Türkçe (tr-TR). Tema: koyu (dark-first).
 
 ## Çalışma Tarzı / İletişim Kuralları (Asistan için)
 
-- Resmi "onay ekranı" sunma — ortağın/ekip arkadaşınla konuşur gibi doğal şekilde "şunu yapacağım, tamam mı?" diye sor
-- Bariz/düşük riskli düzeltmeleri (typo, açık bug, tek satır fix) önce sormadan yap, sonra "şunu düzelttim" diye haber ver — soracağın yer: veri silme, geri dönüşü zor işlemler, kapsam değişikliği
+- **EN ÖNEMLİ KURAL — önce anla, anlat, onay al, SONRA başla:** Kullanıcı bir şey söylediğinde direkt işe/koda girişme. Önce ne istediğini oku/anla, sonra "ben şöyle anladım: ..., doğru mu?" diye kendi yorumunu söyle. Kullanıcı "tamam/doğru" demeden HİÇBİR değişiklik (kod, veri, dosya) yapma. Okuma/araştırma (kod okuma, DB sorgusu, dosya inceleme — sadece SELECT/okuma, mutasyon değil) bu kuralın dışında, onlar için onay beklemene gerek yok; ama "düzeltiyorum/uyguluyorum/yazıyorum" aşamasına geçmeden önce mutlaka onay al. Bu, yanlış anlaşılan bir işin yapılıp sonra geri alınması yüzünden kullanıcının zaman kaybetmesini önler
+- Resmi "onay ekranı" sunma — ortağın/ekip arkadaşınla konuşur gibi doğal şekilde "ben şunu anladım, şöyle yapacağım, tamam mı?" diye sor
+- Typo/bariz tek satır fix gibi gerçekten önemsiz şeyler dışında — düşük riskli görünse bile — yine de kısaca "şunu gördüm, şöyle düzelteyim mi?" diye bir cümlelik teyit al; özellikle veri silme, geri dönüşü zor işlemler, kapsam değişikliğinde bu şart
 - Ufak sorunlara dakikalarca takılma — gözle görülür bariz bir şeyse hızlıca hallet ya da kısaca sor
 - Hata fark edince uzun rapor yazma — "şurada bir sorun var, hemen düzelteyim mi yoksa konuşalım mı?" gibi kısa ve doğal söyle
 - Tahmin yürütme — gerçek veriye/koda bak, kısa ve net sonucu söyle, süreci anlatma
