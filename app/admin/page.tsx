@@ -94,12 +94,26 @@ export default function AdminDashboard() {
       // "Yeni Kayıt" = BUGÜN üye olup BUGÜN paket talebi oluşturanlar — mevcut/eski üyenin
       // yeni paket talebi (yenileme/ek paket) bu sayıma girmemeli, o "Bekleyen Talepler"de görünür
       supabase.from('membership_requests').select('member_id').gte('created_at', today + 'T00:00:00'),
-      supabase.from('members').select('id').gte('created_at', today + 'T00:00:00').is('deleted_at', null),
-    ]).then(([{ data: res }, { data: reqs }, { data: newReqs }, { data: newMems }]) => {
-      const newMemberIds = new Set((newMems ?? []).map((m: any) => m.id))
-      const uniqueNewMembers = new Set(
-        (newReqs ?? []).map((r: any) => r.member_id).filter((id: string) => newMemberIds.has(id))
-      )
+      supabase.from('members').select('id, created_at').gte('created_at', today + 'T00:00:00').is('deleted_at', null),
+    ]).then(async ([{ data: res }, { data: reqs }, { data: newReqs }, { data: newMems }]) => {
+      const newMemberMap = new Map((newMems ?? []).map((m: any) => [m.id, m.created_at]))
+      const candidateIds = [...new Set(
+        (newReqs ?? []).map((r: any) => r.member_id).filter((id: string) => newMemberMap.has(id))
+      )]
+      // Geçmişe dönük (kayıt tarihinden önceki) rezervasyonu olanlar "geçmiş ders ekle" ile
+      // işlenmiş eski üyelerdir — gerçek yeni kayıt sayılmaz
+      let backfilledIds = new Set<string>()
+      if (candidateIds.length > 0) {
+        const { data: oldRes } = await supabase.from('reservations')
+          .select('member_id, scheduled_date')
+          .in('member_id', candidateIds)
+        backfilledIds = new Set(
+          (oldRes ?? [])
+            .filter((r: any) => r.scheduled_date < String(newMemberMap.get(r.member_id)).slice(0, 10))
+            .map((r: any) => r.member_id)
+        )
+      }
+      const uniqueNewMembers = new Set(candidateIds.filter(id => !backfilledIds.has(id)))
       setStats({
         total:      res?.length ?? 0,
         completed:  res?.filter(r => r.status === 'completed').length ?? 0,
@@ -153,11 +167,26 @@ export default function AdminDashboard() {
         .gte('created_at', today + 'T00:00:00')
         .is('deleted_at', null)
       const memberMap = new Map((mems ?? []).map((m: any) => [m.id, m]))
+      // Geçmişe dönük (kayıt tarihinden önceki) rezervasyonu olanlar "geçmiş ders ekle" ile
+      // işlenmiş eski üyelerdir — gerçek yeni kayıt sayılmaz (üst sayaçla aynı kural)
+      const candIds = [...memberMap.keys()]
+      let backfilledIds = new Set<string>()
+      if (candIds.length > 0) {
+        const { data: oldRes } = await supabase.from('reservations')
+          .select('member_id, scheduled_date')
+          .in('member_id', candIds)
+        backfilledIds = new Set(
+          (oldRes ?? [])
+            .filter((r: any) => r.scheduled_date < String(memberMap.get(r.member_id)?.created_at).slice(0, 10))
+            .map((r: any) => r.member_id)
+        )
+      }
       const seen = new Set<string>()
       const ordered: any[] = []
       for (const r of reqRows ?? []) {
         if (seen.has(r.member_id)) continue
         seen.add(r.member_id)
+        if (backfilledIds.has(r.member_id)) continue
         const m = memberMap.get(r.member_id)
         if (m) ordered.push(m)
       }
