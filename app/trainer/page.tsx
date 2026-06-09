@@ -19,11 +19,11 @@ export default async function TrainerDashboardPage() {
     supabase.rpc("get_trainer_stats", { p_trainer_id: trainer.trainerId }).single<{
       today_lessons: number; week_lessons: number; completed_lessons: number
     }>(),
-    // Bu ay yapılacak: yarından itibaren ay sonuna kadar pending/approved (bugün = günün dersleri kartında)
+    // Bu ay yapılacak: bugün dahil ay sonuna kadar pending/approved
     supabase.from('reservations')
       .select('id', { count: 'exact' })
       .eq('trainer_id', trainer.trainerId)
-      .gt('scheduled_date', todayKey)
+      .gte('scheduled_date', todayKey)
       .lt('scheduled_date', monthEnd)
       .in('status', ['pending', 'approved']),
     // Sonraki ay yapılacak: sadece pending/approved

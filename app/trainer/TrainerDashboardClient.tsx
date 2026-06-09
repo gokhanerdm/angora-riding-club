@@ -111,10 +111,13 @@ export default function TrainerDashboardClient({
 
   const slots = SHIFT_SLOTS[shift] ?? SHIFT_SLOTS.fullday
 
-  // Sayfa açılışında saati geçmiş approved dersleri otomatik tamamla
+  // Sayfa açılışında saati geçmiş approved dersleri otomatik tamamla, ardından istatistikleri tazele
   useEffect(() => {
     const supabase = createClient()
-    supabase.rpc('auto_complete_past_lessons').then(() => loadSchedule(currentDate))
+    supabase.rpc('auto_complete_past_lessons').then(() => {
+      loadSchedule(currentDate)
+      refreshCurrentMonthStats()
+    })
   }, [])
 
   const loadSchedule = async (dateKey: string) => {
@@ -388,10 +391,29 @@ export default function TrainerDashboardClient({
   const currentMonth = MONTHS_TR[today.getMonth()]
   const nextMonthName = MONTHS_TR[(today.getMonth() + 1) % 12]
 
-  // Yapılan ay navigasyonu
+  // Canlı stat sayaçları — auto_complete sonrası tazelenir
+  const [liveReserved, setLiveReserved] = useState(stats.monthly_reserved)
   const [yapilanMonth, setYapilanMonth] = useState(nowMonthKey)
   const [yapilanCount, setYapilanCount] = useState(stats.completed_lessons)
   const [yapilanLoading, setYapilanLoading] = useState(false)
+
+  const refreshCurrentMonthStats = async () => {
+    const supabase = createClient()
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+    const monthEnd = nowMonthKey === `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`
+      ? (() => { const nd = new Date(today.getFullYear(), today.getMonth()+1, 1); return `${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-01` })()
+      : `${today.getFullYear()}-${String(today.getMonth()+2).padStart(2,'0')}-01`
+    const monthStart = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`
+    const [{ count: resCount }, { count: doneCount }] = await Promise.all([
+      supabase.from('reservations').select('id', { count: 'exact', head: true })
+        .eq('trainer_id', trainerId).gte('scheduled_date', todayKey).lt('scheduled_date', monthEnd).in('status', ['pending','approved']),
+      supabase.from('reservations').select('id', { count: 'exact', head: true })
+        .eq('trainer_id', trainerId).gte('scheduled_date', monthStart).lt('scheduled_date', monthEnd).in('status', ['completed','no_show']),
+    ])
+    setLiveReserved(resCount ?? 0)
+    // Sadece bu aydaysak yapılan sayacını da güncelle
+    if (yapilanMonth === nowMonthKey) setYapilanCount(doneCount ?? 0)
+  }
 
   const loadYapilanStats = async (month: string) => {
     setYapilanLoading(true)
@@ -485,7 +507,7 @@ export default function TrainerDashboardClient({
         <div className="rounded-xl flex flex-col items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
           <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} yapılacak</p>
-          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{stats.monthly_reserved}</p>
+          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{liveReserved}</p>
         </div>
         {/* Sonraki ay yapılacak */}
         <div className="rounded-xl flex flex-col items-center justify-center"
