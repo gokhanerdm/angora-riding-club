@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
   const dateLabel = `${DAYS_TR[now.getDay()]}, ${now.getDate()} ${MONTHS_TR[now.getMonth()]}`
 
-  const [stats, setStats] = useState({ total: 0, completed: 0, remaining: 0, newMembers: 0, pending: 0 })
+  const [stats, setStats] = useState({ total: 0, completed: 0, remaining: 0, newMembers: 0, pendingFirst: 0, pendingNew: 0 })
   const [activeCard, setActiveCard]     = useState<CardKey | null>(null)
   const [modalData, setModalData]       = useState<any[]>([])
   const [modalLoading, setModalLoading] = useState(false)
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
     const supabase = createClient()
     Promise.all([
       supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled'),
-      supabase.from('membership_requests').select('id').eq('status', 'pending'),
+      supabase.from('membership_requests').select('id, member_id, members!inner(member_status)').eq('status', 'pending'),
       // "Yeni Kayıt" = BUGÜN üye olup BUGÜN paket talebi oluşturanlar — mevcut/eski üyenin
       // yeni paket talebi (yenileme/ek paket) bu sayıma girmemeli, o "Bekleyen Talepler"de görünür
       supabase.from('membership_requests').select('member_id').gte('created_at', today + 'T00:00:00'),
@@ -114,12 +114,23 @@ export default function AdminDashboard() {
         )
       }
       const uniqueNewMembers = new Set(candidateIds.filter(id => !backfilledIds.has(id)))
+      // İlk paket: pending_club_approval üyelerden gelen talepler (yeni kayıt onayı bekliyor)
+      // Yeni paket: active üyelerden gelen talepler (ek/yenileme paketi)
+      const pendingFirst = (reqs ?? []).filter((r: any) => {
+        const m = Array.isArray(r.members) ? r.members[0] : r.members
+        return m?.member_status === 'pending_club_approval'
+      }).length
+      const pendingNew = (reqs ?? []).filter((r: any) => {
+        const m = Array.isArray(r.members) ? r.members[0] : r.members
+        return m?.member_status === 'active'
+      }).length
       setStats({
-        total:      res?.length ?? 0,
-        completed:  res?.filter(r => r.status === 'completed').length ?? 0,
-        remaining:  res?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
-        newMembers: uniqueNewMembers.size,
-        pending:    reqs?.length ?? 0,
+        total:        res?.length ?? 0,
+        completed:    res?.filter(r => r.status === 'completed').length ?? 0,
+        remaining:    res?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
+        newMembers:   uniqueNewMembers.size,
+        pendingFirst,
+        pendingNew,
       })
     })
   }, [])
@@ -231,22 +242,35 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {stats.pending > 0 && (
-        <Link href="/admin/membership-requests">
+      {stats.pendingFirst > 0 && (
+        <Link href="/admin/membership-requests" className="block mb-3">
           <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
             style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)' }}>
             <div>
-              <p className="font-bold text-white text-sm">{stats.pending} Bekleyen Üyelik Talebi</p>
-              <p className="text-xs mt-0.5" style={{ color: '#f59e0b' }}>Onaylamak için tıkla →</p>
+              <p className="font-bold text-white text-sm">{stats.pendingFirst} İlk Paket Başvurusu</p>
+              <p className="text-xs mt-0.5" style={{ color: '#f59e0b' }}>Yeni üye onayı bekliyor →</p>
             </div>
-            <span className="text-2xl">📋</span>
+            <span className="text-2xl">🆕</span>
+          </div>
+        </Link>
+      )}
+
+      {stats.pendingNew > 0 && (
+        <Link href="/admin/membership-requests" className="block mb-3">
+          <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
+            style={{ background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.3)' }}>
+            <div>
+              <p className="font-bold text-white text-sm">{stats.pendingNew} Yeni Paket Başvurusu</p>
+              <p className="text-xs mt-0.5" style={{ color: '#38bdf8' }}>Paket onayı bekliyor →</p>
+            </div>
+            <span className="text-2xl">📦</span>
           </div>
         </Link>
       )}
 
       {/* Aile Grupları linki */}
       <Link href="/admin/families">
-        <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80 mb-3"
+        <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
           style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
           <div>
             <p className="font-bold text-white text-sm">Aile Grupları</p>
