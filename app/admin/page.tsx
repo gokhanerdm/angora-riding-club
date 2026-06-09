@@ -88,6 +88,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const supabase = createClient()
+    // Saati geçmiş approved dersleri otomatik tamamla
+    supabase.rpc('auto_complete_past_lessons').catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const supabase = createClient()
     Promise.all([
       supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled'),
       supabase.from('membership_requests').select('id, member_id, members!inner(member_status)').eq('status', 'pending'),

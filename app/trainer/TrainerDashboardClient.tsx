@@ -112,6 +112,12 @@ export default function TrainerDashboardClient({
 
   const slots = SHIFT_SLOTS[shift] ?? SHIFT_SLOTS.fullday
 
+  // Sayfa açılışında saati geçmiş approved dersleri otomatik tamamla
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.rpc('auto_complete_past_lessons').then(() => loadSchedule(currentDate))
+  }, [])
+
   const loadSchedule = async (dateKey: string) => {
     setScheduleLoading(true)
     const supabase = createClient()
@@ -315,6 +321,31 @@ export default function TrainerDashboardClient({
     setLocalStatuses(prev => ({ ...prev, [slot]: status }))
     setSelectedSlot(null)
     setSlotAction(null)
+    await loadMembers()
+  }
+
+  const handleMarkNoShow = async (reservationId: string, slot: string) => {
+    setActionLoading(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('mark_attendance', { p_reservation_id: reservationId, p_status: 'no_show', p_marked_by: user?.id })
+    setLocalStatuses(prev => ({ ...prev, [slot]: 'no_show' }))
+    setSelectedSlot(null)
+    setSlotAction(null)
+    await loadMembers()
+    setActionLoading(false)
+  }
+
+  const handleAdminCancelCompleted = async (reservationId: string) => {
+    setActionLoading(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.rpc('admin_cancel_completed_lesson', { p_admin_id: user?.id, p_reservation_id: reservationId })
+    setSelectedSlot(null)
+    setSlotAction(null)
+    await loadSchedule(currentDate)
+    await loadMembers()
+    setActionLoading(false)
   }
 
   const handleMemberClick = async (member: Member) => {
@@ -532,15 +563,19 @@ export default function TrainerDashboardClient({
             {slotAction === 'menu' && (
               <>
                 {selectedRes && (() => {
-                  const done = selectedCurrentStatus === 'completed' || selectedCurrentStatus === 'no_show'
+                  const currentStatus = selectedCurrentStatus ?? selectedRes.status
+                  const done = currentStatus === 'completed' || currentStatus === 'no_show'
                   const finished = isFinished(currentDate, selectedRes.end_time)
                   const future = !isSlotPast(currentDate, selectedSlot)
+                  const isToday = currentDate === toDateKey(new Date())
                   return (
                     <div className="space-y-2">
                       <p className="font-bold text-white">{selectedRes.member_name}</p>
-                      <p className="text-sm font-bold" style={{ color: statusColor(selectedCurrentStatus ?? selectedRes.status) }}>
-                        {statusLabel(selectedCurrentStatus ?? selectedRes.status)}
+                      <p className="text-sm font-bold" style={{ color: statusColor(currentStatus) }}>
+                        {statusLabel(currentStatus)}
                       </p>
+
+                      {/* Saati geçmiş ama henüz işlenmemiş ders — sadece eğitmen için (otomatik tamamlama öncesi kısa pencere) */}
                       {!done && finished && (
                         <>
                           <button onClick={() => markLesson(selectedRes.id, selectedSlot, 'completed')}
@@ -557,20 +592,34 @@ export default function TrainerDashboardClient({
                           </button>
                         </>
                       )}
-                      {(future || isAdminView) && !done && (
+
+                      {/* Tamamlandı → Gelmedi: eğitmen aynı gün, admin her zaman */}
+                      {currentStatus === 'completed' && (isAdminView || isToday) && (
+                        <button onClick={() => handleMarkNoShow(selectedRes.id, selectedSlot)}
+                          disabled={actionLoading}
+                          className="w-full py-3 rounded-2xl text-sm font-bold"
+                          style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
+                          Gelmedi Olarak İşaretle
+                        </button>
+                      )}
+
+                      {/* İptal: sadece admin, her zaman (completed veya no_show) */}
+                      {isAdminView && done && (
+                        <button onClick={() => handleAdminCancelCompleted(selectedRes.id)}
+                          disabled={actionLoading}
+                          className="w-full py-3 rounded-2xl text-sm font-bold"
+                          style={{ background: 'rgba(248,113,113,0.08)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>
+                          İptal Et (ders geri döner)
+                        </button>
+                      )}
+
+                      {/* Gelecek ders iptali: eğitmen ve admin */}
+                      {future && !done && (
                         <button onClick={() => setCancelTarget(selectedRes.id)}
                           disabled={actionLoading}
                           className="w-full py-3 rounded-2xl text-sm font-bold"
                           style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
                           İptal Et
-                        </button>
-                      )}
-                      {isAdminView && done && (
-                        <button onClick={() => setCancelTarget(selectedRes.id)}
-                          disabled={actionLoading}
-                          className="w-full py-3 rounded-2xl text-sm font-bold"
-                          style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
-                          Sil
                         </button>
                       )}
                     </div>
