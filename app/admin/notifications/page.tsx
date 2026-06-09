@@ -108,7 +108,7 @@ export default function NotificationsPage() {
     for (const [, data] of memberMap) {
       if (data.remaining <= 0) {
         items.push({ type: 'no_lessons', member_name: data.name, member_email: data.email, remaining_lessons: 0, message: `${data.name} adlı üyenin dersi kalmadı.` })
-      } else if (data.remaining <= 3) {
+      } else if (data.remaining <= 2) {
         items.push({ type: 'lesson_ending', member_name: data.name, member_email: data.email, remaining_lessons: data.remaining, message: `${data.name} adlı üyenin ${data.remaining} dersi kaldı.` })
       }
     }
