@@ -120,8 +120,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const supabase = createClient()
 
-    // Ders istatistikleri (bugün)
-    supabase.from('reservations').select('status').eq('scheduled_date', today).neq('status', 'cancelled')
+    // Ders istatistikleri (bugün) — cancelled ve no_show hariç
+    supabase.from('reservations').select('status').eq('scheduled_date', today).in('status', ['pending','approved','completed'])
       .then(({ data }) => {
         setLessonStats({
           total:     data?.length ?? 0,
@@ -165,8 +165,8 @@ export default function AdminDashboard() {
       })
     })
 
-    // Satılan paket — toplam TL cinsinden
-    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, created_at').then(({ data: pkgs }) => {
+    // Satılan paket — legacy paketler (payment_amount = 0) hariç, TL cinsinden
+    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
       const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
       const all = pkgs ?? []
       setRawPackages(all)
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
     const supabase = createClient()
     let q = supabase.from('reservations')
       .select('id, start_time, end_time, status, members(name, surname), trainers(name, surname)')
-      .eq('scheduled_date', today).neq('status', 'cancelled').order('start_time')
+      .eq('scheduled_date', today).in('status', ['pending','approved','completed']).order('start_time')
     if (key === 'completed') q = q.eq('status', 'completed')
     if (key === 'pending')   q = q.eq('status', 'pending')
     if (key === 'remaining') q = q.in('status', ['approved', 'pending'])

@@ -82,7 +82,11 @@ export default function ReservationsPage() {
   const [actionMsg, setActionMsg] = useState('')
   const showMsg = (m: string) => { setActionMsg(m); setTimeout(() => setActionMsg(''), 3000) }
 
-  useEffect(() => { loadReservations() }, [])
+  useEffect(() => {
+    const supabase = createClient()
+    // Geçmiş 'approved' dersleri tamamlandı olarak işaretle, sonra listeyi yükle
+    supabase.rpc('auto_complete_past_lessons').then(() => loadReservations())
+  }, [])
   useEffect(() => { loadTrainers() }, [])
   useEffect(() => { if (selectedTrainer) loadCalendar() }, [selectedTrainer, currentDate])
 
