@@ -97,7 +97,6 @@ export default function TrainerDashboardClient({
   const [slotAction, setSlotAction] = useState<'menu' | 'addLesson' | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [membersLoading, setMembersLoading] = useState(false)
-  const [allMembers, setAllMembers] = useState<Member[]>([])
   const [actionLoading, setActionLoading] = useState(false)
   const [scheduleLoading, setScheduleLoading] = useState(false)
   const [shift, setShift] = useState<string>(initialShift ?? 'fullday')
@@ -172,57 +171,63 @@ export default function TrainerDashboardClient({
     const { data: membersData } = await supabase
       .from('members').select('id, user_id, name, surname').in('id', memberIds).is('deleted_at', null).order('name')
 
-    // Kalan ders: gerçek rezervasyon sayısına göre
-    const { data: usedRes } = await supabase.from('reservations').select('member_id').in('member_id', memberIds).in('status', ['completed','no_show'])
-    const { data: reservedRes } = await supabase.from('reservations').select('member_id').in('member_id', memberIds).in('status', ['pending','approved'])
-    const { data: ownMs } = await supabase.from('memberships').select('member_id, total_lessons').in('member_id', memberIds).is('family_id', null)
-    const { data: famMs } = await supabase.from('memberships').select('family_id, total_lessons').not('family_id', 'is', null)
+    // Kalan ders hesabı — üye sayfasındaki RPC mantığıyla aynı
+    const { data: ownMs } = await supabase.from('memberships').select('id, member_id, total_lessons').in('member_id', memberIds).is('family_id', null)
+    const { data: famMs } = await supabase.from('memberships').select('id, family_id, total_lessons').not('family_id', 'is', null)
     const { data: famMemberRows } = await supabase.from('family_members').select('family_id, member_id').in('member_id', memberIds)
 
-    const usedMap = new Map<string, number>()
-    for (const r of usedRes ?? []) usedMap.set(r.member_id, (usedMap.get(r.member_id) ?? 0) + 1)
-    const resMap = new Map<string, number>()
-    for (const r of reservedRes ?? []) resMap.set(r.member_id, (resMap.get(r.member_id) ?? 0) + 1)
     const ownTotalMap = new Map<string, number>()
     for (const m of ownMs ?? []) ownTotalMap.set(m.member_id, (ownTotalMap.get(m.member_id) ?? 0) + m.total_lessons)
-    const famTotalMap = new Map<string, number>()
-    for (const m of famMs ?? []) famTotalMap.set(m.family_id, (famTotalMap.get(m.family_id) ?? 0) + m.total_lessons)
     const memberFamMap = new Map<string, string>()
     for (const fm of famMemberRows ?? []) memberFamMap.set(fm.member_id, fm.family_id)
 
+    // Kişisel paket kullanımı (sadece family_id=null paketlere bağlı rezervasyonlar)
+    const ownMsIds = (ownMs ?? []).map((m: any) => m.id)
+    const [{ data: ownUsedRes }, { data: ownReservedRes }] = await Promise.all(
+      ownMsIds.length > 0 ? [
+        supabase.from('reservations').select('member_id').in('membership_id', ownMsIds).in('status', ['completed','no_show']),
+        supabase.from('reservations').select('member_id').in('membership_id', ownMsIds).in('status', ['pending','approved']),
+      ] : [{ data: [] }, { data: [] }]
+    )
+    const ownUsedMap = new Map<string, number>()
+    for (const r of ownUsedRes ?? []) ownUsedMap.set(r.member_id, (ownUsedMap.get(r.member_id) ?? 0) + 1)
+    const ownResMap = new Map<string, number>()
+    for (const r of ownReservedRes ?? []) ownResMap.set(r.member_id, (ownResMap.get(r.member_id) ?? 0) + 1)
+
+    // Aile havuzu: tüm aile üyelerinin ortak kullanımı family_id bazında
+    const msIdToFamId = new Map<string, string>()
+    const famTotalMap = new Map<string, number>()
+    for (const m of famMs ?? []) {
+      msIdToFamId.set(m.id, m.family_id)
+      famTotalMap.set(m.family_id, (famTotalMap.get(m.family_id) ?? 0) + m.total_lessons)
+    }
+    const famMsIds = (famMs ?? []).map((m: any) => m.id)
+    const [{ data: famPoolUsedRes }, { data: famPoolResRes }] = await Promise.all(
+      famMsIds.length > 0 ? [
+        supabase.from('reservations').select('membership_id').in('membership_id', famMsIds).in('status', ['completed','no_show']),
+        supabase.from('reservations').select('membership_id').in('membership_id', famMsIds).in('status', ['pending','approved']),
+      ] : [{ data: [] }, { data: [] }]
+    )
+    const famPoolUsedMap = new Map<string, number>()
+    for (const r of famPoolUsedRes ?? []) {
+      const fid = msIdToFamId.get(r.membership_id); if (fid) famPoolUsedMap.set(fid, (famPoolUsedMap.get(fid) ?? 0) + 1)
+    }
+    const famPoolResMap = new Map<string, number>()
+    for (const r of famPoolResRes ?? []) {
+      const fid = msIdToFamId.get(r.membership_id); if (fid) famPoolResMap.set(fid, (famPoolResMap.get(fid) ?? 0) + 1)
+    }
+    const famRemainingMap = new Map<string, number>()
+    for (const [fid, total] of famTotalMap) {
+      famRemainingMap.set(fid, total - (famPoolUsedMap.get(fid) ?? 0) - (famPoolResMap.get(fid) ?? 0))
+    }
+
     const mapped = (membersData ?? []).map((m: any) => {
       const famId = memberFamMap.get(m.id)
-      const total = (ownTotalMap.get(m.id) ?? 0) + (famId ? (famTotalMap.get(famId) ?? 0) : 0)
-      const used = usedMap.get(m.id) ?? 0
-      const res = resMap.get(m.id) ?? 0
-      return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: total - used - res }
+      const ownRemaining = (ownTotalMap.get(m.id) ?? 0) - (ownUsedMap.get(m.id) ?? 0) - (ownResMap.get(m.id) ?? 0)
+      const famRemaining = famId ? (famRemainingMap.get(famId) ?? 0) : 0
+      return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: ownRemaining + famRemaining }
     })
     setMembers(mapped)
-
-    // Admin ders ekleme için tüm üyeleri de yükle (kalan ders hesaplı)
-    if (isAdminView) {
-      const { data: allData } = await supabase.from('members').select('id, user_id, name, surname').is('deleted_at', null).order('name')
-      const allIds = (allData ?? []).map((m: any) => m.id)
-      if (allIds.length > 0) {
-        const [{ data: aUsed }, { data: aRes }, { data: aMs }, { data: aFamMs }, { data: aFamRows }] = await Promise.all([
-          supabase.from('reservations').select('member_id').in('member_id', allIds).in('status', ['completed','no_show']),
-          supabase.from('reservations').select('member_id').in('member_id', allIds).in('status', ['pending','approved']),
-          supabase.from('memberships').select('member_id, total_lessons').in('member_id', allIds).is('family_id', null),
-          supabase.from('memberships').select('family_id, total_lessons').not('family_id', 'is', null),
-          supabase.from('family_members').select('family_id, member_id').in('member_id', allIds),
-        ])
-        const aUsedMap = new Map<string, number>(); for (const r of aUsed ?? []) aUsedMap.set(r.member_id, (aUsedMap.get(r.member_id) ?? 0) + 1)
-        const aResMap  = new Map<string, number>(); for (const r of aRes  ?? []) aResMap.set(r.member_id, (aResMap.get(r.member_id) ?? 0) + 1)
-        const aTotalMap = new Map<string, number>(); for (const m of aMs ?? []) aTotalMap.set(m.member_id, (aTotalMap.get(m.member_id) ?? 0) + m.total_lessons)
-        const aFamTotalMap = new Map<string, number>(); for (const m of aFamMs ?? []) aFamTotalMap.set(m.family_id, (aFamTotalMap.get(m.family_id) ?? 0) + m.total_lessons)
-        const aFamMap = new Map<string, string>(); for (const fm of aFamRows ?? []) aFamMap.set(fm.member_id, fm.family_id)
-        setAllMembers((allData ?? []).map((m: any) => {
-          const famId = aFamMap.get(m.id)
-          const total = (aTotalMap.get(m.id) ?? 0) + (famId ? (aFamTotalMap.get(famId) ?? 0) : 0)
-          return { id: m.id, user_id: m.user_id, name: m.name, surname: m.surname, remaining_lessons: total - (aUsedMap.get(m.id) ?? 0) - (aResMap.get(m.id) ?? 0) }
-        }))
-      }
-    }
 
     setMembersLoading(false)
   }
@@ -499,17 +504,17 @@ export default function TrainerDashboardClient({
                 let subColor = '#34d399'
 
                 if (res) {
-                  // Başlangıç saati gelmiş (approved veya completed) → turuncu
-                  // Gelmedi → kırmızı
-                  // Henüz gelmemiş → nötr
-                  const isActionable = past && currentStatus !== 'no_show' && currentStatus !== 'cancelled'
-                  bg = currentStatus === 'no_show'  ? 'rgba(248,113,113,0.08)' :
-                       isActionable                  ? 'rgba(245,158,11,0.10)'  : 'rgba(255,255,255,0.07)'
+                  // Turuncu: saati gelmiş (past) VEYA zaten completed
+                  // Kırmızı: gelmedi (no_show)
+                  // Nötr: henüz gelmemiş (future, approved/pending)
+                  const isOrangeSlot = (past || currentStatus === 'completed') && currentStatus !== 'no_show' && currentStatus !== 'cancelled'
+                  bg = currentStatus === 'no_show' ? 'rgba(248,113,113,0.08)' :
+                       isOrangeSlot                ? 'rgba(245,158,11,0.10)'  : 'rgba(255,255,255,0.07)'
                   borderColor = currentStatus === 'no_show' ? 'rgba(248,113,113,0.25)' :
-                                isActionable                 ? 'rgba(245,158,11,0.35)'  : 'rgba(255,255,255,0.15)'
+                                isOrangeSlot                 ? 'rgba(245,158,11,0.35)'  : 'rgba(255,255,255,0.15)'
                   subText = res.member_name.split(' ')[0]
                   subColor = currentStatus === 'no_show' ? '#f87171' :
-                             isActionable                 ? '#f59e0b' : '#c8d6f0'
+                             isOrangeSlot                 ? '#f59e0b' : '#c8d6f0'
                 } else if (isClosed) {
                   bg = 'rgba(255,255,255,0.02)'
                   timeColor = 'rgba(74,97,144,0.4)'
@@ -573,9 +578,9 @@ export default function TrainerDashboardClient({
                   const currentStatus = selectedCurrentStatus ?? selectedRes.status
                   const isPast    = isSlotPast(currentDate, selectedSlot)
                   const isNoShow  = currentStatus === 'no_show'
-                  const isFuture  = !isPast
-                  // Turuncu durum: başlangıç saati geçmiş, gelmedi değil
-                  const isOrange  = isPast && !isNoShow && currentStatus !== 'cancelled'
+                  // Turuncu: saati gelmiş (past) VEYA completed — gelmedi/iptal değil
+                  const isOrange  = (isPast || currentStatus === 'completed') && !isNoShow && currentStatus !== 'cancelled'
+                  const isFuture  = !isOrange && !isNoShow && currentStatus !== 'cancelled'
                   return (
                     <div className="space-y-2">
                       <p className="font-bold text-white">{selectedRes.member_name}</p>
@@ -671,11 +676,11 @@ export default function TrainerDashboardClient({
                 <p className="text-sm font-bold text-white mb-3">Öğrenci seç:</p>
                 {membersLoading
                   ? <p className="text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
-                  : (isAdminView ? allMembers : members).length === 0
+                  : members.length === 0
                     ? <p className="text-sm" style={{ color: '#7b93c4' }}>Atanmış öğrenci yok.</p>
                     : (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {(isAdminView ? allMembers : members).map(member => (
+                        {members.map(member => (
                           <button key={member.id}
                             onClick={() => handleBookMember(member)}
                             disabled={actionLoading}

@@ -89,7 +89,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const supabase = createClient()
     // Saati geçmiş approved dersleri otomatik tamamla
-    supabase.rpc('auto_complete_past_lessons').catch(() => {})
+    void supabase.rpc('auto_complete_past_lessons')
   }, [])
 
   useEffect(() => {
