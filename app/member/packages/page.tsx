@@ -51,8 +51,10 @@ export default function PackagesPage() {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('members').select('id').eq('user_id', user.id).single().then(async ({ data: m }) => {
+      supabase.from('members').select('id, pending_legacy_setup').eq('user_id', user.id).single().then(async ({ data: m }) => {
         if (!m) return
+        // Daha önce "eski üyeyim" isteği göndermişse tekrar gösterme
+        if (m.pending_legacy_setup) { setLegacyDone(true); setHasPackage(true); return }
         // Kendi paketi var mı?
         const { data: ownMs } = await supabase.from('memberships').select('id').eq('member_id', m.id).limit(1)
         if ((ownMs ?? []).length > 0) { setHasPackage(true); return }
