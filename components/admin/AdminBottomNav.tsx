@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
+  { href: '/admin',               label: 'Anasayfa',     icon: '🏠', exact: true },
   { href: '/admin/trainers',      label: 'Eğitmenler',   icon: '🏇' },
   { href: '/admin/members',       label: 'Üyeler',        icon: '👥' },
   { href: '/admin/payments',      label: 'Hesaplamalar',  icon: '💰' },
@@ -25,7 +26,7 @@ export default function AdminBottomNav() {
       }}
     >
       {NAV.map(item => {
-        const active = pathname.startsWith(item.href)
+        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
         return (
           <Link
             key={item.href}
@@ -34,7 +35,7 @@ export default function AdminBottomNav() {
             style={{ color: active ? '#f59e0b' : '#4a6190' }}
           >
             <span className="text-xl leading-none">{item.icon}</span>
-            <span className="text-[10px] font-bold tracking-wide">{item.label}</span>
+            <span className="text-[9px] font-bold tracking-wide">{item.label}</span>
           </Link>
         )
       })}

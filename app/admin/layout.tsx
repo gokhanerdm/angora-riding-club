@@ -7,17 +7,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)', minHeight: '100vh' }}>
-      <header
-        className="flex items-center justify-between px-5 pt-12 pb-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <Link href="/admin">
-          <p className="font-bold text-white text-lg leading-none">Angora</p>
-          <p className="text-xs font-bold mt-0.5" style={{ color: '#f59e0b' }}>Admin Paneli</p>
-        </Link>
-      </header>
 
-      <main className="px-4 py-6 pb-44">
+      <main className="px-4 pt-14 pb-44">
         {children}
       </main>
 
