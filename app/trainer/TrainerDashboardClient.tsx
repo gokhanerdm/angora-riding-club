@@ -384,8 +384,42 @@ export default function TrainerDashboardClient({
     setShiftSaving(false)
   }
 
+  const nowMonthKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`
   const currentMonth = MONTHS_TR[today.getMonth()]
   const nextMonthName = MONTHS_TR[(today.getMonth() + 1) % 12]
+
+  // Yapılan ay navigasyonu
+  const [yapilanMonth, setYapilanMonth] = useState(nowMonthKey)
+  const [yapilanCount, setYapilanCount] = useState(stats.completed_lessons)
+  const [yapilanLoading, setYapilanLoading] = useState(false)
+
+  const loadYapilanStats = async (month: string) => {
+    setYapilanLoading(true)
+    const [y, m] = month.split('-').map(Number)
+    const start = `${y}-${String(m).padStart(2,'0')}-01`
+    const nd = m === 12 ? new Date(y+1, 0, 1) : new Date(y, m, 1)
+    const end = `${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-01`
+    const supabase = createClient()
+    const { count } = await supabase.from('reservations')
+      .select('id', { count: 'exact', head: true })
+      .eq('trainer_id', trainerId)
+      .gte('scheduled_date', start)
+      .lt('scheduled_date', end)
+      .in('status', ['completed', 'no_show'])
+    setYapilanCount(count ?? 0)
+    setYapilanLoading(false)
+  }
+
+  const changeYapilanMonth = (dir: number) => {
+    const [y, m] = yapilanMonth.split('-').map(Number)
+    const nd = new Date(y, m-1+dir, 1)
+    const newMonth = `${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}`
+    if (newMonth > nowMonthKey) return
+    setYapilanMonth(newMonth)
+    loadYapilanStats(newMonth)
+  }
+
+  const yapilanMonthName = MONTHS_TR[parseInt(yapilanMonth.split('-')[1]) - 1]
 
   const visibleSlots = [
     ...slots,
@@ -441,31 +475,48 @@ export default function TrainerDashboardClient({
 
       {/* Stat cards 3x2 */}
       <div className="grid grid-cols-3 gap-1.5 px-5 mb-2 flex-shrink-0">
-        {[
-          { label: 'Günün dersleri', value: stats.today_lessons, color: '#c8d6f0', clickable: false },
-          { label: `${currentMonth} yapılacak`, value: stats.monthly_reserved, color: '#c8d6f0', clickable: false },
-          { label: `${nextMonthName} yapılacak`, value: stats.next_month_reserved, color: '#38bdf8', clickable: false },
-          { label: `${currentMonth} yapılan`, value: stats.completed_lessons, color: '#34d399', clickable: false },
-          { label: `${currentMonth} prim`, value: `${Math.round(stats.monthly_prim ?? 0).toLocaleString('tr-TR')}₺`, color: '#f59e0b', clickable: false },
-          { label: 'Öğrencilerim', value: members.length, color: '#c8d6f0', clickable: true },
-        ].map((card) => (
-          <button
-            key={card.label}
-            onClick={card.clickable ? () => setShowStudents(p => !p) : undefined}
-            disabled={!card.clickable}
-            className="rounded-xl flex flex-col items-center justify-center"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              padding: '6px 6px',
-              height: 52,
-              cursor: card.clickable ? 'pointer' : 'default',
-            }}
-          >
-            <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{card.label}</p>
-            <p className="text-base font-bold text-center" style={{ color: card.color }}>{card.value}</p>
-          </button>
-        ))}
+        {/* Günün dersleri */}
+        <div className="rounded-xl flex flex-col items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>Günün dersleri</p>
+          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{stats.today_lessons}</p>
+        </div>
+        {/* Bu ay yapılacak */}
+        <div className="rounded-xl flex flex-col items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} yapılacak</p>
+          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{stats.monthly_reserved}</p>
+        </div>
+        {/* Sonraki ay yapılacak */}
+        <div className="rounded-xl flex flex-col items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{nextMonthName} yapılacak</p>
+          <p className="text-base font-bold text-center" style={{ color: '#38bdf8' }}>{stats.next_month_reserved}</p>
+        </div>
+        {/* Yapılan — ay navigasyonlu */}
+        <div className="rounded-xl flex flex-col items-center justify-center col-span-1"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '4px 4px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight text-center" style={{ color: '#7b93c4' }}>{yapilanMonthName} yapılan</p>
+          <div className="flex items-center gap-1 mt-1">
+            <button onClick={() => changeYapilanMonth(-1)} className="text-[10px] px-1" style={{ color: '#7b93c4' }}>←</button>
+            <p className="text-base font-bold text-center w-6" style={{ color: '#34d399' }}>{yapilanLoading ? '…' : yapilanCount}</p>
+            <button onClick={() => changeYapilanMonth(1)} className="text-[10px] px-1"
+              style={{ color: yapilanMonth >= nowMonthKey ? 'rgba(123,147,196,0.3)' : '#7b93c4' }}>→</button>
+          </div>
+        </div>
+        {/* Prim */}
+        <div className="rounded-xl flex flex-col items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} prim</p>
+          <p className="text-base font-bold text-center" style={{ color: '#f59e0b' }}>{Math.round(stats.monthly_prim ?? 0).toLocaleString('tr-TR')}₺</p>
+        </div>
+        {/* Öğrencilerim */}
+        <button onClick={() => setShowStudents(p => !p)}
+          className="rounded-xl flex flex-col items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>Öğrencilerim</p>
+          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{members.length}</p>
+        </button>
       </div>
 
       {/* Tarih nav */}
@@ -475,7 +526,16 @@ export default function TrainerDashboardClient({
           style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
           ←
         </button>
-        <p className="text-sm font-bold text-white">{formatDayLabel(currentDate)}</p>
+        <div className="text-center">
+          <p className="text-sm font-bold text-white">{formatDayLabel(currentDate)}</p>
+          {!scheduleLoading && (
+            <p className="text-[11px] font-medium" style={{ color: '#f59e0b' }}>
+              {Object.keys(reservations).length > 0
+                ? `(${Object.keys(reservations).length} ders)`
+                : 'ders yok'}
+            </p>
+          )}
+        </div>
         <button onClick={() => changeDate(1)}
           className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold"
           style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
