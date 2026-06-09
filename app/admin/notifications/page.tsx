@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 type Notification = {
-  type: 'lesson_ending' | 'no_lessons' | 'pending_request'
+  type: 'lesson_ending' | 'no_lessons' | 'pending_first' | 'pending_new'
   member_name?: string
   member_email?: string
   remaining_lessons?: number
@@ -14,20 +14,23 @@ type Notification = {
 }
 
 const ICON: Record<string, string> = {
-  pending_request: '📋',
-  no_lessons: '🚨',
+  pending_first: '🆕',
+  pending_new:   '📦',
+  no_lessons:    '🚨',
   lesson_ending: '⚠️',
 }
 
 const BORDER: Record<string, string> = {
-  pending_request: 'rgba(56,189,248,0.3)',
-  no_lessons: 'rgba(248,113,113,0.3)',
+  pending_first: 'rgba(245,158,11,0.3)',
+  pending_new:   'rgba(56,189,248,0.3)',
+  no_lessons:    'rgba(248,113,113,0.3)',
   lesson_ending: 'rgba(245,158,11,0.3)',
 }
 
 const BG: Record<string, string> = {
-  pending_request: 'rgba(56,189,248,0.08)',
-  no_lessons: 'rgba(248,113,113,0.08)',
+  pending_first: 'rgba(245,158,11,0.08)',
+  pending_new:   'rgba(56,189,248,0.08)',
+  no_lessons:    'rgba(248,113,113,0.08)',
   lesson_ending: 'rgba(245,158,11,0.08)',
 }
 
@@ -70,7 +73,7 @@ export default function NotificationsPage() {
 
     const [{ data: memberships }, { data: requests }, { data: legacyData }, { data: activeRes }] = await Promise.all([
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, members(name, surname, email)').eq('is_current', true),
-      supabase.from('membership_requests').select('id').eq('status', 'pending'),
+      supabase.from('membership_requests').select('id, member_id, members!inner(member_status)').eq('status', 'pending'),
       supabase.from('members').select('id, name, surname, email, created_at').eq('pending_legacy_setup', true).is('deleted_at', null),
       // Sayaç sütununa (reserved_lessons) güvenmek yerine gerçek bekleyen/onaylı rezervasyonları say —
       // sayaç zamanla sapabiliyor (drift), canlı sayım her zaman doğrudur
@@ -78,8 +81,19 @@ export default function NotificationsPage() {
     ])
     setLegacyRequests(legacyData ?? [])
 
-    if ((requests ?? []).length > 0) {
-      items.push({ type: 'pending_request', request_count: requests!.length, message: `${requests!.length} bekleyen üyelik talebi var.` })
+    const firstCount = (requests ?? []).filter((r: any) => {
+      const m = Array.isArray(r.members) ? r.members[0] : r.members
+      return m?.member_status === 'pending_club_approval'
+    }).length
+    const newCount = (requests ?? []).filter((r: any) => {
+      const m = Array.isArray(r.members) ? r.members[0] : r.members
+      return m?.member_status === 'active'
+    }).length
+    if (firstCount > 0) {
+      items.push({ type: 'pending_first', request_count: firstCount, message: `${firstCount} ilk paket başvurusu bekliyor.` })
+    }
+    if (newCount > 0) {
+      items.push({ type: 'pending_new', request_count: newCount, message: `${newCount} yeni paket başvurusu bekliyor.` })
     }
 
     const reservedByMs = new Map<string, number>()
@@ -164,9 +178,9 @@ export default function NotificationsPage() {
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-white text-sm">{n.message}</p>
                 {n.member_email && <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{n.member_email}</p>}
-                {n.type === 'pending_request' && (
+                {(n.type === 'pending_first' || n.type === 'pending_new') && (
                   <Link href="/admin/membership-requests" className="text-xs font-bold mt-1 block" style={{ color: '#38bdf8' }}>
-                    Taleplere git →
+                    Başvurulara git →
                   </Link>
                 )}
               </div>
