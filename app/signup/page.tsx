@@ -71,7 +71,11 @@ export default function SignupPage() {
         p_referral_code: referralCode.trim() || null,
       })
       if (setupError) {
-        setError('Kayıt tamamlanamadı. Lütfen tekrar deneyin.')
+        if (setupError.message.includes('telefon numarasıyla kayıtlı')) {
+          setError('Bu telefon numarasıyla kayıtlı bir hesap zaten mevcut. Giriş yapmayı deneyin.')
+        } else {
+          setError('Kayıt tamamlanamadı. Lütfen tekrar deneyin.')
+        }
         setLoading(false)
         return
       }

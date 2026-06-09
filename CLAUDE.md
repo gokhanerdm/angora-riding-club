@@ -64,6 +64,7 @@ Roller: admin, trainer, member. Dil: Türkçe (tr-TR). Tema: koyu (dark-first).
 - Ufak sorunlara dakikalarca takılma — gözle görülür bariz bir şeyse hızlıca hallet ya da kısaca sor
 - Hata fark edince uzun rapor yazma — "şurada bir sorun var, hemen düzelteyim mi yoksa konuşalım mı?" gibi kısa ve doğal söyle
 - Tahmin yürütme — gerçek veriye/koda bak, kısa ve net sonucu söyle, süreci anlatma
+- **Sorun araştırırken önce DB'ye ve koda bak** — tahmin veya çıkarım yapmadan önce ilgili tabloyu sorgula veya dosyayı oku; "büyük ihtimal şudur" diyerek ilerlemek yerine veriyi gör, sonra konuş
 - **EN KRİTİK KURAL — "değişen bilgi tek yerde değişmesin":** Bir veri/sayı/durum birden fazla ekranda gösteriliyorsa (örn. kalan ders sayısı, üye durumu, aile üyeliği toplamları), düzeltmeyi tek ekranla sınırlama. Önce bu verinin nerelerde, hangi sorgularla gösterildiğini tara, sonra hepsini aynı mantıkla/mümkünse aynı kaynaktan (RPC veya canlı sorgu) güncelle. Düzelttiğinde hangi yerlerin etkilendiğini kısaca söyle
 - Kapsamı genişletme — sadece konuşulan şeyi yap; ekstra bir şey fark edersen "bu arada şunu da gördüm, ister şimdi bakalım ister sonra" diye söyle, kendi başına genişletme
 

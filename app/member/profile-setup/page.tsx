@@ -112,7 +112,13 @@ export default function ProfileSetupPage() {
     })
 
     setSaving(false)
-    if (rpcErr) setError('Kaydedilemedi: ' + rpcErr.message)
+    if (rpcErr) {
+      if (rpcErr.message.includes('TC kimlik numarasıyla kayıtlı')) {
+        setError('Bu TC kimlik numarasıyla kayıtlı bir hesap zaten mevcut.')
+      } else {
+        setError('Kaydedilemedi: ' + rpcErr.message)
+      }
+    }
     else router.push('/member')
   }
 
