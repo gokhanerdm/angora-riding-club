@@ -391,10 +391,10 @@ export default function TrainerDashboardClient({
   const currentMonth = MONTHS_TR[today.getMonth()]
   const nextMonthName = MONTHS_TR[(today.getMonth() + 1) % 12]
 
-  // Canlı stat sayaçları — auto_complete sonrası tazelenir
-  const [liveReserved, setLiveReserved] = useState(stats.monthly_reserved)
+  // Canlı stat sayaçları — auto_complete sonrası tazelenir, öncesinde boş göster
+  const [liveReserved, setLiveReserved] = useState<number | null>(null)
   const [yapilanMonth, setYapilanMonth] = useState(nowMonthKey)
-  const [yapilanCount, setYapilanCount] = useState(stats.completed_lessons)
+  const [yapilanCount, setYapilanCount] = useState<number | null>(null)
   const [yapilanLoading, setYapilanLoading] = useState(false)
 
   const refreshCurrentMonthStats = async () => {
@@ -507,7 +507,7 @@ export default function TrainerDashboardClient({
         <div className="rounded-xl flex flex-col items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
           <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} yapılacak</p>
-          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{liveReserved}</p>
+          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{liveReserved === null ? '…' : liveReserved}</p>
         </div>
         {/* Sonraki ay yapılacak */}
         <div className="rounded-xl flex flex-col items-center justify-center"
@@ -521,7 +521,7 @@ export default function TrainerDashboardClient({
           <p className="text-[8px] font-medium uppercase tracking-wide leading-tight text-center" style={{ color: '#7b93c4' }}>{yapilanMonthName} yapılan</p>
           <div className="flex items-center gap-1 mt-1">
             <button onClick={() => changeYapilanMonth(-1)} className="text-[10px] px-1" style={{ color: '#7b93c4' }}>←</button>
-            <p className="text-base font-bold text-center w-6" style={{ color: '#34d399' }}>{yapilanLoading ? '…' : yapilanCount}</p>
+            <p className="text-base font-bold text-center w-6" style={{ color: '#34d399' }}>{yapilanLoading || yapilanCount === null ? '…' : yapilanCount}</p>
             <button onClick={() => changeYapilanMonth(1)} className="text-[10px] px-1"
               style={{ color: yapilanMonth >= nowMonthKey ? 'rgba(123,147,196,0.3)' : '#7b93c4' }}>→</button>
           </div>
