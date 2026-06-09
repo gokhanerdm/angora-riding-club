@@ -278,6 +278,7 @@ export default function LegacyLessonsPage() {
                 className="w-full px-2 py-1.5 rounded-lg text-xs outline-none" style={INPUT}>
                 <option value="">Seç</option>
                 {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
+                <option value="7078145c-cfdd-4995-b6c6-b53ca1c36f1a">Diğer Eğitmen</option>
               </select>
               <div className="flex gap-1">
                 <button onClick={() => updateLesson(i, 'status', 'completed')}
