@@ -71,13 +71,10 @@ export default function NotificationsPage() {
     const supabase = createClient()
     const items: Notification[] = []
 
-    const [{ data: memberships }, { data: requests }, { data: legacyData }, { data: activeRes }] = await Promise.all([
+    const [{ data: memberships }, { data: requests }, { data: legacyData }] = await Promise.all([
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, members(name, surname, email)').eq('is_current', true),
       supabase.from('membership_requests').select('id, member_id, members!inner(member_status)').eq('status', 'pending'),
       supabase.from('members').select('id, name, surname, email, created_at').eq('pending_legacy_setup', true).is('deleted_at', null),
-      // Sayaç sütununa (reserved_lessons) güvenmek yerine gerçek bekleyen/onaylı rezervasyonları say —
-      // sayaç zamanla sapabiliyor (drift), canlı sayım her zaman doğrudur
-      supabase.from('reservations').select('membership_id').in('status', ['pending', 'approved']),
     ])
     setLegacyRequests(legacyData ?? [])
 
@@ -96,18 +93,12 @@ export default function NotificationsPage() {
       items.push({ type: 'pending_new', request_count: newCount, message: `${newCount} yeni paket başvurusu bekliyor.` })
     }
 
-    const reservedByMs = new Map<string, number>()
-    for (const r of activeRes ?? []) {
-      if (!r.membership_id) continue
-      reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
-    }
-
     const memberMap = new Map<string, { name: string; email: string; remaining: number }>()
     for (const m of memberships ?? []) {
       const member = Array.isArray(m.members) ? m.members[0] : m.members
       if (!member) continue
-      const reserved = reservedByMs.get(m.id) ?? 0
-      const remaining = m.total_lessons - (m.used_lessons ?? 0) - reserved
+      // Bildirim eşiği: rezervasyonlar dahil toplam kullanılmamış ders 3 veya altına düşünce
+      const remaining = m.total_lessons - (m.used_lessons ?? 0)
       const current = memberMap.get(m.member_id)
       if (!current || remaining < current.remaining) {
         memberMap.set(m.member_id, { name: `${member.name} ${member.surname}`, email: member.email, remaining })
