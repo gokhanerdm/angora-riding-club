@@ -90,6 +90,9 @@ export default function LegacyLessonsPage() {
     setLessons(prev => [...prev, ...newRows])
   }
 
+  // Istanbul saat dilimiyle bugünün tarihi — date input'larına max sınırı
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
+
   const updateLesson = (i: number, field: keyof Lesson, val: string) =>
     setLessons(prev => prev.map((l, idx) => idx === i ? { ...l, [field]: val } : l))
 
@@ -107,6 +110,10 @@ export default function LegacyLessonsPage() {
     const validLessons = lessons.filter(l => l.date && l.trainer)
     const hasNewPkg = pkgId && pkgAmount && pkgStart
     if (!hasNewPkg && validLessons.length === 0) { showToast('Ders veya paket bilgisi girin'); return }
+    // İleri tarih kontrolü
+    const futureDateLesson = validLessons.find(l => l.date > today)
+    if (futureDateLesson) { showToast(`İleri tarihli ders girilemiyor: ${futureDateLesson.date}`); return }
+    if (pkgStart && pkgStart > today) { showToast('Paket başlangıç tarihi ileri tarih olamaz'); return }
 
     setSaving(true)
     const supabase = createClient()
@@ -235,7 +242,7 @@ export default function LegacyLessonsPage() {
           {/* Tarih */}
           <div>
             <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Başlangıç tarihi</p>
-            <input type="date" value={pkgStart} onChange={e => setPkgStart(e.target.value)}
+            <input type="date" value={pkgStart} max={today} onChange={e => setPkgStart(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
 
@@ -263,7 +270,7 @@ export default function LegacyLessonsPage() {
           {lessons.map((l, i) => (
             <div key={i} className="grid px-3 py-1.5 items-center"
               style={{ gridTemplateColumns: '130px 1fr 80px', gap: 6, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <input type="date" value={l.date}
+              <input type="date" value={l.date} max={today}
                 onChange={e => updateLesson(i, 'date', e.target.value)}
                 className="w-full px-2 py-1.5 rounded-lg text-xs outline-none" style={INPUT} />
               <select value={l.trainer}

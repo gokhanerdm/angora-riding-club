@@ -52,11 +52,30 @@ export default function LegacyRequestPage() {
   }, [])
 
   const addBlock     = () => setLessons(prev => [...prev, ...Array.from({ length: 10 }, emptyLesson)])
+  // Istanbul saat dilimiyle bugünün tarihi (YYYY-MM-DD) — date input'larına max sınırı
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
+
+  // Bugün için şu andan sonraki slotları engelle (HH:MM formatında karşılaştırma)
+  const nowIstanbul  = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
+  const nowMinutes   = nowIstanbul.getHours() * 60 + nowIstanbul.getMinutes()
+  const isSlotFuture = (date: string, slot: string) => {
+    if (date !== today) return false
+    const [h, m] = slot.split(':').map(Number)
+    return (h * 60 + m) > nowMinutes
+  }
+
   const updateLesson = (i: number, field: string, val: string) =>
     setLessons(prev => prev.map((l, idx) => idx === i ? {...l, [field]: val} : l))
 
   const handleSave = async () => {
     if (!pkgId || !pkgAmount) { showToast('Paket ve ödeme tutarı zorunlu'); return }
+    // İleri tarih / ileri saat kontrolü
+    const futureDateLesson = lessons.find(l => l.date && l.date > today)
+    if (futureDateLesson) { showToast(`İleri tarihli ders girilemiyor: ${futureDateLesson.date}`); return }
+    const futureSlotLesson = lessons.find(l => l.date && l.slot && isSlotFuture(l.date, l.slot))
+    if (futureSlotLesson) { showToast(`Bugün için henüz gelmemiş saat seçilemez: ${futureSlotLesson.slot}`); return }
+    if (pkgStart && pkgStart > today) { showToast('Paket başlangıç tarihi ileri tarih olamaz'); return }
+    if (pkgEnd   && pkgEnd   > today) { showToast('Paket bitiş tarihi ileri tarih olamaz'); return }
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -194,12 +213,12 @@ export default function LegacyRequestPage() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Başlangıç tarihi</p>
-              <input type="date" value={pkgStart} onChange={e => setPkgStart(e.target.value)}
+              <input type="date" value={pkgStart} max={today} onChange={e => setPkgStart(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl text-xs outline-none" style={INPUT} />
             </div>
             <div>
               <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Bitiş tarihi</p>
-              <input type="date" value={pkgEnd} onChange={e => setPkgEnd(e.target.value)}
+              <input type="date" value={pkgEnd} max={today} onChange={e => setPkgEnd(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl text-xs outline-none" style={INPUT} />
             </div>
           </div>
@@ -219,7 +238,7 @@ export default function LegacyRequestPage() {
             {lessons.map((l, i) => (
               <div key={i} className="grid px-3 py-1.5 items-center" style={{ gridTemplateColumns: '130px 1fr 90px', gap: 6 }}>
                 <input
-                  type="date" value={l.date}
+                  type="date" value={l.date} max={today}
                   onChange={e => updateLesson(i, 'date', e.target.value)}
                   className="w-full px-2 py-1.5 rounded-lg text-xs outline-none"
                   style={INPUT}
