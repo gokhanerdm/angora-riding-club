@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   // ---- State ----
   const [lessonStats, setLessonStats] = useState({ total: 0, completed: 0, pending: 0, remaining: 0 })
   const [memberStats, setMemberStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
-  const [packageStats, setPackageStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
+  const [packageStats, setPackageStats] = useState({ today: 0 as number, week: 0 as number, month: 0 as number, total: 0 as number })
   const [visitStats, setVisitStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
   const [pendingFirst, setPendingFirst] = useState(0)
   const [pendingNew, setPendingNew]     = useState(0)
@@ -103,24 +103,37 @@ export default function AdminDashboard() {
         }).length)
       })
 
-    // Yeni kayıt sayıları
-    Promise.all([
-      supabase.from('members').select('id', { count: 'exact', head: true }).gte('created_at', today + 'T00:00:00').is('deleted_at', null),
-      supabase.from('members').select('id', { count: 'exact', head: true }).gte('created_at', weekStart + 'T00:00:00').is('deleted_at', null),
-      supabase.from('members').select('id', { count: 'exact', head: true }).gte('created_at', monthStart + 'T00:00:00').is('deleted_at', null),
-      supabase.from('members').select('id', { count: 'exact', head: true }).is('deleted_at', null),
-    ]).then(([d, w, m, t]) => {
-      setMemberStats({ today: d.count ?? 0, week: w.count ?? 0, month: m.count ?? 0, total: t.count ?? 0 })
+    // Yeni kayıt — eski üyeler hariç (kayıt tarihinden önce dersi olan = geçmiş ders eklenmiş)
+    supabase.from('members').select('id, created_at').is('deleted_at', null).then(async ({ data: allMems }) => {
+      const mems = allMems ?? []
+      // Hangi üyelerin kayıt öncesi rezervasyonu var?
+      const { data: earlyRes } = await supabase.from('reservations').select('member_id, scheduled_date')
+        .in('member_id', mems.map(m => m.id))
+      const legacyIds = new Set(
+        (earlyRes ?? []).filter((r: any) => {
+          const mem = mems.find(m => m.id === r.member_id)
+          return mem && r.scheduled_date < mem.created_at.slice(0, 10)
+        }).map((r: any) => r.member_id)
+      )
+      const realMembers = mems.filter(m => !legacyIds.has(m.id))
+      setMemberStats({
+        today: realMembers.filter(m => m.created_at >= today + 'T00:00:00').length,
+        week:  realMembers.filter(m => m.created_at >= weekStart + 'T00:00:00').length,
+        month: realMembers.filter(m => m.created_at >= monthStart + 'T00:00:00').length,
+        total: realMembers.length,
+      })
     })
 
-    // Satılan paket sayıları
-    Promise.all([
-      supabase.from('memberships').select('id', { count: 'exact', head: true }).gte('created_at', today + 'T00:00:00'),
-      supabase.from('memberships').select('id', { count: 'exact', head: true }).gte('created_at', weekStart + 'T00:00:00'),
-      supabase.from('memberships').select('id', { count: 'exact', head: true }).gte('created_at', monthStart + 'T00:00:00'),
-      supabase.from('memberships').select('id', { count: 'exact', head: true }),
-    ]).then(([d, w, m, t]) => {
-      setPackageStats({ today: d.count ?? 0, week: w.count ?? 0, month: m.count ?? 0, total: t.count ?? 0 })
+    // Satılan paket — toplam TL cinsinden
+    supabase.from('memberships').select('payment_amount, created_at').then(({ data: pkgs }) => {
+      const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
+      const all = pkgs ?? []
+      setPackageStats({
+        today: sum(all.filter(p => p.created_at >= today + 'T00:00:00')),
+        week:  sum(all.filter(p => p.created_at >= weekStart + 'T00:00:00')),
+        month: sum(all.filter(p => p.created_at >= monthStart + 'T00:00:00')),
+        total: sum(all),
+      })
     })
 
     // Gelen üye (distinct — completed ders yapan benzersiz üye sayısı)
@@ -235,11 +248,11 @@ export default function AdminDashboard() {
       ]} />
 
       {/* Satır 3 — Satılan Paket */}
-      <StatRow label="Satılan Paket" items={[
-        { title: 'Bugün',  value: packageStats.today, color: '#34d399' },
-        { title: 'Hafta',  value: packageStats.week,  color: '#34d399' },
-        { title: 'Ay',     value: packageStats.month, color: '#34d399' },
-        { title: 'Toplam', value: packageStats.total, color: '#c8d6f0' },
+      <StatRow label="Satılan Paket (₺)" items={[
+        { title: 'Bugün',  value: packageStats.today  ? `${(packageStats.today/1000).toFixed(0)}K`  : '0', color: '#34d399' },
+        { title: 'Hafta',  value: packageStats.week   ? `${(packageStats.week/1000).toFixed(0)}K`   : '0', color: '#34d399' },
+        { title: 'Ay',     value: packageStats.month  ? `${(packageStats.month/1000).toFixed(0)}K`  : '0', color: '#34d399' },
+        { title: 'Toplam', value: packageStats.total  ? `${(packageStats.total/1000).toFixed(0)}K`  : '0', color: '#c8d6f0' },
       ]} />
 
       {/* Satır 4 — Gelen Üye */}
