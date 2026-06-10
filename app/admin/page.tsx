@@ -104,13 +104,14 @@ export default function AdminDashboard() {
     }
 
     if (type === 'package') {
-      const cutoff = period === 'today' ? today + 'T00:00:00' : period === 'week' ? weekStart + 'T00:00:00' : period === 'month' ? monthStart + 'T00:00:00' : '2000-01-01T00:00:00'
-      const filtered = rawPackages.filter(p => p.created_at >= cutoff)
+      // Satış tarihi olarak start_date kullanılır (created_at değil — geçmiş paket geriye dönük girilebilir)
+      const cutoff = period === 'today' ? today : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
+      const filtered = rawPackages.filter(p => p.start_date >= cutoff)
       // Üye adlarını çek
       const memberIds = [...new Set(filtered.map((p: any) => p.member_id))]
       const { data: mems } = await supabase.from('members').select('id, name, surname').in('id', memberIds)
       const memMap = new Map((mems ?? []).map((m: any) => [m.id, `${m.name} ${m.surname}`]))
-      setGenericData(filtered.map(p => ({ ...p, member_name: memMap.get(p.member_id) ?? '—' })).sort((a, b) => b.created_at.localeCompare(a.created_at)))
+      setGenericData(filtered.map(p => ({ ...p, member_name: memMap.get(p.member_id) ?? '—' })).sort((a, b) => b.start_date.localeCompare(a.start_date)))
     }
 
     if (type === 'visit') {
@@ -180,14 +181,15 @@ export default function AdminDashboard() {
     })
 
     // Satılan paket — legacy paketler (payment_amount = 0) hariç, TL cinsinden
-    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
+    // Sınıflandırma start_date'e göre yapılır (created_at değil — geçmiş paket geriye dönük girilebilir)
+    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, start_date, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
       const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
       const all = pkgs ?? []
       setRawPackages(all)
       setPackageStats({
-        today: sum(all.filter(p => p.created_at >= today + 'T00:00:00')),
-        week:  sum(all.filter(p => p.created_at >= weekStart + 'T00:00:00')),
-        month: sum(all.filter(p => p.created_at >= monthStart + 'T00:00:00')),
+        today: sum(all.filter(p => p.start_date >= today)),
+        week:  sum(all.filter(p => p.start_date >= weekStart)),
+        month: sum(all.filter(p => p.start_date >= monthStart)),
         total: sum(all),
       })
     })
@@ -450,7 +452,7 @@ export default function AdminDashboard() {
                   style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.15)' }}>
                   <div>
                     <p className="text-sm font-bold text-white">{p.member_name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{p.total_lessons} ders · {fmtDate(p.created_at?.substring(0,10))}</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{p.total_lessons} ders · {fmtDate(p.start_date)}</p>
                   </div>
                   <p className="text-sm font-bold" style={{ color: '#34d399' }}>{parseFloat(p.payment_amount).toLocaleString('tr-TR')}₺</p>
                 </div>
