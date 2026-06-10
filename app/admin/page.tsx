@@ -114,7 +114,7 @@ export default function AdminDashboard() {
       setGenericData(filtered.map(p => ({ ...p, member_name: memMap.get(p.member_id) ?? '—' })).sort((a, b) => b.start_date.localeCompare(a.start_date)))
     }
 
-    if (type === 'visit') {
+    if (type === 'visit' && period !== 'year') {
       const members = rawVisits[period]
       setGenericData(members)
     }
