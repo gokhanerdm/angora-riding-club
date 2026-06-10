@@ -52,7 +52,7 @@ export default function AdminDashboard() {
 
   // ---- State ----
   const [lessonStats, setLessonStats] = useState({ total: 0, completed: 0, pending: 0, remaining: 0 })
-  const [memberStats, setMemberStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
+  const [memberStats, setMemberStats] = useState({ today: 0, week: 0, month: 0, year: 0 })
   const [packageStats, setPackageStats] = useState({ today: 0 as number, week: 0 as number, month: 0 as number, total: 0 as number })
   const [visitStats, setVisitStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
   const [pendingFirst, setPendingFirst] = useState(0)
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
   const [editSaving,  setEditSaving]  = useState(false)
 
   // Genel modal (kayıt / paket / gelen üye)
-  type GenericModal = { type: 'member' | 'package' | 'visit'; period: 'today' | 'week' | 'month' | 'total'; title: string }
+  type GenericModal = { type: 'member' | 'package' | 'visit'; period: 'today' | 'week' | 'month' | 'total' | 'year'; title: string }
   const [genericModal, setGenericModal] = useState<GenericModal | null>(null)
   const [genericData,  setGenericData]  = useState<any[]>([])
   const [genericLoading, setGenericLoading] = useState(false)
@@ -84,7 +84,20 @@ export default function AdminDashboard() {
     setGenericData([])
     const supabase = createClient()
 
-    if (type === 'member') {
+    if (type === 'member' && period === 'year') {
+      // Tüm yıllara göre grupla — her yıl başlık, altında o yıl kayıt olanlar
+      const groups = new Map<string, any[]>()
+      for (const m of rawRealMembers) {
+        const y = m.created_at.slice(0, 4)
+        if (!groups.has(y)) groups.set(y, [])
+        groups.get(y)!.push(m)
+      }
+      const sortedYears = [...groups.keys()].sort((a, b) => b.localeCompare(a))
+      setGenericData(sortedYears.map(y => ({
+        year: y,
+        members: groups.get(y)!.sort((a, b) => b.created_at.localeCompare(a.created_at)),
+      })))
+    } else if (type === 'member') {
       const cutoff = period === 'today' ? today + 'T00:00:00' : period === 'week' ? weekStart + 'T00:00:00' : period === 'month' ? monthStart + 'T00:00:00' : '2000-01-01T00:00:00'
       const filtered = rawRealMembers.filter(m => m.created_at >= cutoff)
       setGenericData(filtered.sort((a, b) => b.created_at.localeCompare(a.created_at)))
@@ -157,11 +170,12 @@ export default function AdminDashboard() {
       )
       const realMembers = mems.filter(m => !legacyIds.has(m.id))
       setRawRealMembers(realMembers)
+      const yearStart = `${now.getFullYear()}-01-01`
       setMemberStats({
         today: realMembers.filter(m => m.created_at >= today + 'T00:00:00').length,
         week:  realMembers.filter(m => m.created_at >= weekStart + 'T00:00:00').length,
         month: realMembers.filter(m => m.created_at >= monthStart + 'T00:00:00').length,
-        total: realMembers.length,
+        year:  realMembers.filter(m => m.created_at >= yearStart + 'T00:00:00').length,
       })
     })
 
@@ -298,7 +312,7 @@ export default function AdminDashboard() {
         { title: 'Bugün',  value: memberStats.today, color: '#a78bfa', onClick: () => openGenericModal('member','today','Bugün Yeni Kayıtlar') },
         { title: 'Hafta',  value: memberStats.week,  color: '#a78bfa', onClick: () => openGenericModal('member','week','Bu Hafta Yeni Kayıtlar') },
         { title: 'Ay',     value: memberStats.month, color: '#a78bfa', onClick: () => openGenericModal('member','month','Bu Ay Yeni Kayıtlar') },
-        { title: 'Toplam', value: memberStats.total, color: '#c8d6f0', onClick: () => openGenericModal('member','total','Tüm Kayıtlar') },
+        { title: String(now.getFullYear()), value: memberStats.year, color: '#c8d6f0', onClick: () => openGenericModal('member','year',`${now.getFullYear()} ve Önceki Yıllar`) },
       ]} />
 
       {/* Satır 3 — Satılan Paket */}
@@ -408,13 +422,27 @@ export default function AdminDashboard() {
                 <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Kayıt bulunamadı.</p>
               )}
               {/* Yeni kayıt listesi */}
-              {!genericLoading && genericModal.type === 'member' && genericData.map((m, i) => (
+              {!genericLoading && genericModal.type === 'member' && genericModal.period !== 'year' && genericData.map((m, i) => (
                 <a key={i} href={`/admin/members/${m.id}/settings`}
                   className="block rounded-2xl p-3 active:opacity-70"
                   style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
                   <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
                   <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.created_at?.substring(0,10))}</p>
                 </a>
+              ))}
+              {/* Yeni kayıt — yıllara göre gruplu liste */}
+              {!genericLoading && genericModal.type === 'member' && genericModal.period === 'year' && genericData.map((g, gi) => (
+                <div key={gi} className="space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-widest px-0.5 pt-2" style={{ color: '#f59e0b' }}>{g.year} ({g.members.length})</p>
+                  {g.members.map((m: any, i: number) => (
+                    <a key={i} href={`/admin/members/${m.id}/settings`}
+                      className="block rounded-2xl p-3 active:opacity-70"
+                      style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                      <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.created_at?.substring(0,10))}</p>
+                    </a>
+                  ))}
+                </div>
               ))}
               {/* Satılan paket listesi */}
               {!genericLoading && genericModal.type === 'package' && genericData.map((p, i) => (
