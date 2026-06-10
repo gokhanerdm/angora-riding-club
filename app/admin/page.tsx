@@ -85,22 +85,22 @@ export default function AdminDashboard() {
     const supabase = createClient()
 
     if (type === 'member' && period === 'year') {
-      // Tüm yıllara göre grupla — her yıl başlık, altında o yıl kayıt olanlar
+      // Tüm yıllara göre grupla — her yıl başlık, altında o yıl kayıt olanlar (ilk paket başlangıç tarihine göre)
       const groups = new Map<string, any[]>()
       for (const m of rawRealMembers) {
-        const y = m.created_at.slice(0, 4)
+        const y = m.reg_date.slice(0, 4)
         if (!groups.has(y)) groups.set(y, [])
         groups.get(y)!.push(m)
       }
       const sortedYears = [...groups.keys()].sort((a, b) => b.localeCompare(a))
       setGenericData(sortedYears.map(y => ({
         year: y,
-        members: groups.get(y)!.sort((a, b) => b.created_at.localeCompare(a.created_at)),
+        members: groups.get(y)!.sort((a, b) => b.reg_date.localeCompare(a.reg_date)),
       })))
     } else if (type === 'member') {
-      const cutoff = period === 'today' ? today + 'T00:00:00' : period === 'week' ? weekStart + 'T00:00:00' : period === 'month' ? monthStart + 'T00:00:00' : '2000-01-01T00:00:00'
-      const filtered = rawRealMembers.filter(m => m.created_at >= cutoff)
-      setGenericData(filtered.sort((a, b) => b.created_at.localeCompare(a.created_at)))
+      const cutoff = period === 'today' ? today : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
+      const filtered = rawRealMembers.filter(m => m.reg_date >= cutoff)
+      setGenericData(filtered.sort((a, b) => b.reg_date.localeCompare(a.reg_date)))
     }
 
     if (type === 'package') {
@@ -158,25 +158,27 @@ export default function AdminDashboard() {
         }).length)
       })
 
-    // Yeni kayıt — eski üyeler hariç (kayıt tarihinden önce dersi olan = geçmiş ders eklenmiş)
+    // Yeni kayıt — kayıt tarihi, üyenin ilk paket başlangıç tarihine (start_date) göre belirlenir
     supabase.from('members').select('id, name, surname, email, created_at').is('deleted_at', null).then(async ({ data: allMems }) => {
       const mems = allMems ?? []
-      const { data: earlyRes } = await supabase.from('reservations').select('member_id, scheduled_date')
+      const { data: allMemberships } = await supabase.from('memberships').select('member_id, start_date')
         .in('member_id', mems.map(m => m.id))
-      const legacyIds = new Set(
-        (earlyRes ?? []).filter((r: any) => {
-          const mem = mems.find(m => m.id === r.member_id)
-          return mem && r.scheduled_date < mem.created_at.slice(0, 10)
-        }).map((r: any) => r.member_id)
-      )
-      const realMembers = mems.filter(m => !legacyIds.has(m.id))
+      const firstStartDate = new Map<string, string>()
+      for (const ms of allMemberships ?? []) {
+        const cur = firstStartDate.get(ms.member_id)
+        if (!cur || ms.start_date < cur) firstStartDate.set(ms.member_id, ms.start_date)
+      }
+      const realMembers = mems.map(m => ({
+        ...m,
+        reg_date: firstStartDate.get(m.id) ?? m.created_at.slice(0, 10),
+      }))
       setRawRealMembers(realMembers)
       const yearStart = `${now.getFullYear()}-01-01`
       setMemberStats({
-        today: realMembers.filter(m => m.created_at >= today + 'T00:00:00').length,
-        week:  realMembers.filter(m => m.created_at >= weekStart + 'T00:00:00').length,
-        month: realMembers.filter(m => m.created_at >= monthStart + 'T00:00:00').length,
-        year:  realMembers.filter(m => m.created_at >= yearStart + 'T00:00:00').length,
+        today: realMembers.filter(m => m.reg_date >= today).length,
+        week:  realMembers.filter(m => m.reg_date >= weekStart).length,
+        month: realMembers.filter(m => m.reg_date >= monthStart).length,
+        year:  realMembers.filter(m => m.reg_date >= yearStart).length,
       })
     })
 
@@ -429,7 +431,7 @@ export default function AdminDashboard() {
                   className="block rounded-2xl p-3 active:opacity-70"
                   style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
                   <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.created_at?.substring(0,10))}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.reg_date)}</p>
                 </a>
               ))}
               {/* Yeni kayıt — yıllara göre gruplu liste */}
@@ -441,7 +443,7 @@ export default function AdminDashboard() {
                       className="block rounded-2xl p-3 active:opacity-70"
                       style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
                       <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.created_at?.substring(0,10))}</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.reg_date)}</p>
                     </a>
                   ))}
                 </div>
