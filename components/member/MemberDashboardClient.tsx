@@ -112,13 +112,30 @@ export default function MemberDashboardClient({
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    const dateChanged = editDate !== editRes.scheduled_date
+    const statusChanged = editStatus !== editRes.status
+
     let error: any = null
     if (editStatus === 'cancelled') {
-      const res = await supabase.rpc('admin_cancel_reservation', { p_reservation_id: resId })
-      error = res.error
+      if (statusChanged) {
+        const res = await supabase.rpc('admin_cancel_reservation', { p_reservation_id: resId })
+        error = res.error
+      }
     } else if (editStatus === 'completed' || editStatus === 'no_show') {
-      const res = await supabase.rpc('mark_attendance', { p_reservation_id: resId, p_status: editStatus, p_marked_by: user?.id })
-      error = res.error
+      if (statusChanged) {
+        const res = await supabase.rpc('mark_attendance', { p_reservation_id: resId, p_status: editStatus, p_marked_by: user?.id })
+        error = res.error
+      }
+      // mark_attendance sadece durumu değiştirir, tarihi değiştirmez —
+      // tarih de değiştiyse ayrıca admin_update_reservation ile güncelle.
+      if (!error && dateChanged) {
+        const res = await supabase.rpc('admin_update_reservation', {
+          p_admin_id: user?.id,
+          p_reservation_id: resId,
+          p_scheduled_date: editDate,
+        })
+        error = res.error
+      }
     } else {
       const res = await supabase.rpc('admin_update_reservation', {
         p_admin_id: user?.id,
