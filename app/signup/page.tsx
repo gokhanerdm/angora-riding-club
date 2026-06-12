@@ -1,13 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 interface LegalDoc { title: string; content: string }
 
-export default function SignupPage() {
+const BG = '#FBFBFB'
+const GREEN = '#1B3B2F'
+const GREEN_SOFT = '#E8F0EA'
+const MUTED = '#6B7280'
+
+function SignupForm() {
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -24,6 +29,8 @@ export default function SignupPage() {
   const [docs, setDocs] = useState<Record<string, LegalDoc>>({})
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isTrial = searchParams.get('trial') === '1'
 
   useEffect(() => {
     const supabase = createClient()
@@ -79,62 +86,62 @@ export default function SignupPage() {
         setLoading(false)
         return
       }
-      router.push('/member')
+      router.push(isTrial ? '/member/trial-lesson' : '/member')
     }
     setLoading(false)
   }
 
   const inputStyle = {
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.10)',
-    color: '#c8d6f0',
+    background: GREEN_SOFT,
+    border: '1px solid rgba(27,59,47,0.10)',
+    color: GREEN,
   }
 
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
+      style={{ background: BG }}
     >
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Angora</h1>
+          <h1 className="text-3xl font-bold" style={{ color: GREEN }}>Angora</h1>
           <p className="text-sm mt-1 font-bold" style={{ color: '#f59e0b' }}>Üye Kaydı</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Ad</label>
+              <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Ad</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} required
                 className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Soyad</label>
+              <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Soyad</label>
               <input type="text" value={surname} onChange={e => setSurname(e.target.value)} required
                 className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Telefon</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Telefon</label>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Email</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Email</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Şifre</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none" style={inputStyle} />
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Şifre Tekrar</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Şifre Tekrar</label>
             <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} required minLength={6}
               placeholder="Şifrenizi tekrar girin"
               className="w-full px-4 py-3 rounded-2xl text-sm outline-none"
@@ -152,8 +159,8 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>
-              Referans Kodu <span style={{ color: '#4a6190' }}>(isteğe bağlı)</span>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>
+              Referans Kodu <span style={{ color: MUTED }}>(isteğe bağlı)</span>
             </label>
             <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())}
               placeholder="Varsa referans kodunu gir"
@@ -169,7 +176,7 @@ export default function SignupPage() {
                 onChange={e => setAgreementChecked(e.target.checked)}
                 className="mt-0.5 w-4 h-4 rounded accent-amber-400 flex-shrink-0"
               />
-              <span className="text-xs leading-relaxed" style={{ color: '#7b93c4' }}>
+              <span className="text-xs leading-relaxed" style={{ color: MUTED }}>
                 <button type="button" onClick={() => setActiveDoc(docs['membership_agreement'] ?? { title: 'Hizmet Sözleşmesi', content: 'Yükleniyor...' })}
                   className="font-bold underline" style={{ color: '#f59e0b' }}>
                   Hizmet Sözleşmesi
@@ -185,7 +192,7 @@ export default function SignupPage() {
                 onChange={e => setKvkkChecked(e.target.checked)}
                 className="mt-0.5 w-4 h-4 rounded accent-amber-400 flex-shrink-0"
               />
-              <span className="text-xs leading-relaxed" style={{ color: '#7b93c4' }}>
+              <span className="text-xs leading-relaxed" style={{ color: MUTED }}>
                 <button type="button" onClick={() => setActiveDoc(docs['kvkk'] ?? { title: 'KVKK Aydınlatma Metni', content: 'Yükleniyor...' })}
                   className="font-bold underline" style={{ color: '#f59e0b' }}>
                   KVKK Aydınlatma Metni
@@ -204,12 +211,12 @@ export default function SignupPage() {
 
           <button type="submit" disabled={loading || !agreementChecked || !kvkkChecked}
             className="w-full py-3 rounded-2xl font-bold text-sm disabled:opacity-40 mt-2"
-            style={{ background: '#f59e0b', color: '#0a0f2e' }}>
+            style={{ background: '#f59e0b', color: GREEN }}>
             {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
           </button>
         </form>
 
-        <p className="text-center text-sm mt-6" style={{ color: '#4a6190' }}>
+        <p className="text-center text-sm mt-6" style={{ color: MUTED }}>
           Hesabınız var mı?{' '}
           <Link href="/login" className="font-bold" style={{ color: '#f59e0b' }}>Giriş Yap</Link>
         </p>
@@ -217,27 +224,27 @@ export default function SignupPage() {
 
       {/* Metin modalı */}
       {activeDoc && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.5)' }}>
           <div
             className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '80vh', border: '1px solid rgba(255,255,255,0.10)' }}
+            style={{ background: '#fff', maxHeight: '80vh', border: '1px solid rgba(27,59,47,0.10)' }}
           >
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="text-sm font-bold text-white">{activeDoc.title}</h3>
+              style={{ borderBottom: '1px solid rgba(27,59,47,0.08)' }}>
+              <h3 className="text-sm font-bold" style={{ color: GREEN }}>{activeDoc.title}</h3>
               <button onClick={() => setActiveDoc(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: GREEN_SOFT, color: MUTED }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-5 py-4">
-              <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: '#c8d6f0' }}>
+              <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: GREEN }}>
                 {activeDoc.content}
               </p>
             </div>
             <div className="px-5 pb-6 pt-3 flex-shrink-0">
               <button onClick={() => setActiveDoc(null)}
                 className="w-full py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: GREEN_SOFT, color: MUTED }}>
                 Kapat
               </button>
             </div>
@@ -245,5 +252,13 @@ export default function SignupPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   )
 }

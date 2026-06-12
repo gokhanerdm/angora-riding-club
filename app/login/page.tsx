@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const BG = "#FBFBFB";
+const GREEN = "#1B3B2F";
+const GREEN_SOFT = "#E8F0EA";
+const MUTED = "#6B7280";
+
 export default function LoginPage() {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -71,21 +76,21 @@ export default function LoginPage() {
   };
 
   const inputStyle = {
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.10)",
-    color: "#c8d6f0",
+    background: GREEN_SOFT,
+    border: "1px solid rgba(27,59,47,0.10)",
+    color: GREEN,
   };
 
   return (
     <div
       className="flex items-center justify-center p-4"
-      style={{ minHeight: '100dvh', background: "linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)" }}
+      style={{ minHeight: '100dvh', background: BG }}
     >
       <div className="w-full max-w-sm">
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Angora</h1>
+          <h1 className="text-3xl font-bold" style={{ color: GREEN }}>Angora</h1>
           <p className="text-sm mt-1 font-bold" style={{ color: "#f59e0b" }}>
             Binicilik Spor Kulübü
           </p>
@@ -93,7 +98,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: "#7b93c4" }}>Email</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Email</label>
             <input
               type="email"
               value={email}
@@ -106,7 +111,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: "#7b93c4" }}>Şifre</label>
+            <label className="block text-xs font-bold mb-2" style={{ color: MUTED }}>Şifre</label>
             <input
               type="password"
               value={password}
@@ -126,7 +131,7 @@ export default function LoginPage() {
               onChange={e => setRememberMe(e.target.checked)}
               className="w-4 h-4 rounded accent-amber-400"
             />
-            <span className="text-xs" style={{ color: '#7b93c4' }}>Oturumumu açık tut</span>
+            <span className="text-xs" style={{ color: MUTED }}>Oturumumu açık tut</span>
           </label>
 
           {/* Şifremi unuttum */}
@@ -135,7 +140,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setForgotOpen(true); setResetEmail(email); }}
               className="text-xs font-bold"
-              style={{ color: "#7b93c4" }}
+              style={{ color: MUTED }}
             >
               Şifremi Unuttum
             </button>
@@ -152,13 +157,13 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className="w-full py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-            style={{ background: "#f59e0b", color: "#0a0f2e" }}
+            style={{ background: "#f59e0b", color: GREEN }}
           >
             {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
           </button>
         </form>
 
-        <p className="text-center text-sm mt-6" style={{ color: "#4a6190" }}>
+        <p className="text-center text-sm mt-6" style={{ color: MUTED }}>
           Hesabınız yok mu?{" "}
           <Link href="/signup" className="font-bold" style={{ color: "#f59e0b" }}>Kayıt Ol</Link>
         </p>
@@ -166,11 +171,11 @@ export default function LoginPage() {
 
       {/* Şifremi Unuttum Modalı */}
       {forgotOpen && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.75)" }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: "#0d1b4b", border: "1px solid rgba(255,255,255,0.10)" }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: "rgba(255,255,255,0.15)" }} />
-            <h3 className="text-lg font-bold text-white mb-2">Şifremi Unuttum</h3>
-            <p className="text-sm mb-5" style={{ color: "#7b93c4" }}>
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: "#fff", border: "1px solid rgba(27,59,47,0.10)" }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: GREEN_SOFT }} />
+            <h3 className="text-lg font-bold mb-2" style={{ color: GREEN }}>Şifremi Unuttum</h3>
+            <p className="text-sm mb-5" style={{ color: MUTED }}>
               Email adresini gir, şifre sıfırlama linki gönderelim.
             </p>
 
@@ -197,7 +202,7 @@ export default function LoginPage() {
                   type="submit"
                   disabled={resetLoading}
                   className="w-full py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                  style={{ background: "#f59e0b", color: "#0a0f2e" }}
+                  style={{ background: "#f59e0b", color: GREEN }}
                 >
                   {resetLoading ? "Gönderiliyor..." : "Link Gönder"}
                 </button>
@@ -207,7 +212,7 @@ export default function LoginPage() {
             <button
               onClick={() => { setForgotOpen(false); setResetMsg(""); setResetErr(""); }}
               className="w-full mt-3 py-2 text-sm font-bold rounded-2xl"
-              style={{ background: "rgba(255,255,255,0.06)", color: "#7b93c4" }}
+              style={{ background: GREEN_SOFT, color: MUTED }}
             >
               Kapat
             </button>

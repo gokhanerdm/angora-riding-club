@@ -12,6 +12,10 @@ interface TimeSlot {
   slot_status:  'available' | 'own_reservation' | 'own_completed' | 'own_no_show' | 'closed' | 'reserved' | 'past'
 }
 
+const GREEN = '#1B3B2F'
+const GREEN_SOFT = '#E8F0EA'
+const MUTED = '#6B7280'
+
 const DAYS   = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
 const MONTHS_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
@@ -285,21 +289,21 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           onClick={prevMonth}
           disabled={isAtMin}
           className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-bold disabled:opacity-20"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: GREEN_SOFT, color: MUTED, border: '1px solid rgba(27,59,47,0.08)' }}
         >←</button>
-        <span className="text-lg font-bold text-white">{MONTHS[viewMonth]} {viewYear}</span>
+        <span className="text-lg font-bold" style={{ color: GREEN }}>{MONTHS[viewMonth]} {viewYear}</span>
         <button
           onClick={nextMonth}
           disabled={isAtMax}
           className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-bold disabled:opacity-20"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: GREEN_SOFT, color: MUTED, border: '1px solid rgba(27,59,47,0.08)' }}
         >→</button>
       </div>
 
       {/* Gün başlıkları */}
       <div className="grid grid-cols-7 mb-2 px-1">
         {DAYS.map(d => (
-          <div key={d} className="text-center text-xs font-bold uppercase tracking-wide" style={{ color: '#4a6190' }}>{d}</div>
+          <div key={d} className="text-center text-xs font-bold uppercase tracking-wide" style={{ color: MUTED }}>{d}</div>
         ))}
       </div>
 
@@ -323,8 +327,8 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                 width: 40, height: 40, borderRadius: 12,
                 fontSize: 15,
                 fontWeight: sel || isToday ? 700 : 500,
-                color:   ((!isAdmin && past) || blocked) ? 'rgba(74,97,144,0.4)' : sel ? '#0a0f2e' : isToday ? '#f59e0b' : '#c8d6f0',
-                background: sel ? '#fff' : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
+                color:   ((!isAdmin && past) || blocked) ? 'rgba(107,114,128,0.4)' : sel ? '#fff' : isToday ? '#f59e0b' : GREEN,
+                background: sel ? GREEN : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
                 border: isToday && !sel ? '1px solid rgba(245,158,11,0.4)' : 'none',
                 cursor: past ? 'default' : 'pointer',
               }}

@@ -58,6 +58,11 @@ function canCancel(scheduledDate: string, startTime: string) {
 
 type ModalType = 'total' | 'used' | 'reserved' | null
 
+const BG = '#FBFBFB'
+const GREEN = '#1B3B2F'
+const GREEN_SOFT = '#E8F0EA'
+const MUTED = '#6B7280'
+
 export default function MemberDashboardClient({
   stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId
 }: {
@@ -266,7 +271,7 @@ export default function MemberDashboardClient({
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)', paddingBottom: adminMemberId ? 80 : 0 }}
+      style={{ background: BG, paddingBottom: adminMemberId ? 80 : 0 }}
     >
       <WelcomeModal />
       {/* Header */}
@@ -275,7 +280,7 @@ export default function MemberDashboardClient({
         <button className="flex items-center gap-3 text-left active:opacity-70" onClick={openProfile}>
           <div
             className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(245,158,11,0.4)' }}
+            style={{ background: GREEN_SOFT, border: '2px solid rgba(245,158,11,0.4)' }}
           >
             {profilePhotoUrl
               ? <img src={profilePhotoUrl} alt={memberName} className="w-full h-full object-cover" />
@@ -283,8 +288,8 @@ export default function MemberDashboardClient({
             }
           </div>
           <div>
-            <p className="text-xs font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
-            <h1 className="text-2xl font-bold text-white mt-0.5">{memberName}</h1>
+            <p className="text-xs font-medium tracking-widest" style={{ color: MUTED }}>Hoş geldin</p>
+            <h1 className="text-2xl font-bold mt-0.5" style={{ color: GREEN }}>{memberName}</h1>
             {trainerName && (
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
@@ -306,7 +311,7 @@ export default function MemberDashboardClient({
         <div className="px-5 mb-3">
           <a href={`/admin/members/${adminMemberId}/settings`}
             className="w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
-            style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.10)' }}>
+            style={{ background: GREEN_SOFT, color: GREEN, border: '1px solid rgba(27,59,47,0.10)' }}>
             ⚙️ Ayarlar
           </a>
         </div>
@@ -315,8 +320,8 @@ export default function MemberDashboardClient({
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2 px-5 mb-5">
         {[
-          { label: 'Toplam',    value: stats.total_lessons,     type: 'total' as ModalType,    accent: '#7b93c4' },
-          { label: 'Kullanılan', value: stats.used_lessons,     type: 'used' as ModalType,     accent: '#7b93c4' },
+          { label: 'Toplam',    value: stats.total_lessons,     type: 'total' as ModalType,    accent: GREEN },
+          { label: 'Kullanılan', value: stats.used_lessons,     type: 'used' as ModalType,     accent: GREEN },
           { label: 'Kalan',     value: stats.remaining_lessons, type: null,                    accent: '#34d399' },
           { label: 'Bekleyen',  value: stats.reserved_lessons,  type: 'reserved' as ModalType, accent: '#38bdf8' },
         ].map((card) => (
@@ -325,10 +330,10 @@ export default function MemberDashboardClient({
             onClick={() => card.type && openModal(card.type)}
             disabled={!card.type}
             className="rounded-2xl p-3 flex flex-col items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: GREEN_SOFT, border: '1px solid rgba(27,59,47,0.08)' }}
           >
-            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: '#7b93c4' }}>{card.label}</p>
-            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: '#7b93c4' }}>Ders</p>
+            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: MUTED }}>{card.label}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: MUTED }}>Ders</p>
             <p className="text-2xl font-bold mt-1" style={{ color: card.accent }}>{card.value}</p>
           </button>
         ))}
@@ -338,16 +343,16 @@ export default function MemberDashboardClient({
       {referralCode && (
         <div className="mx-5 mb-4 px-4 py-2.5 rounded-2xl flex items-center justify-between"
           style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-          <p className="text-xs font-bold" style={{ color: '#7b93c4' }}>Referans Kodun</p>
+          <p className="text-xs font-bold" style={{ color: MUTED }}>Referans Kodun</p>
           <p className="text-sm font-bold tracking-widest" style={{ color: '#f59e0b' }}>{referralCode}</p>
         </div>
       )}
 
       {/* Divider */}
-      <div className="mx-5 mb-4" style={{ height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+      <div className="mx-5 mb-4" style={{ height: '1px', background: 'rgba(27,59,47,0.08)' }} />
 
       {/* Calendar label */}
-      <p className="px-5 text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: '#7b93c4' }}>
+      <p className="px-5 text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: MUTED }}>
         Rezervasyon Takvimi
       </p>
 
