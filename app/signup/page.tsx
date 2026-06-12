@@ -109,9 +109,8 @@ function SignupForm() {
           ←
         </Link>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold" style={{ color: GREEN }}>Angora</h1>
-          <p className="text-sm mt-1 font-bold" style={{ color: '#f59e0b' }}>Üye Kaydı</p>
+        <div className="pt-8 pb-3 flex justify-center">
+          <img src="/images/angora-emblem.png" alt="Angora Binicilik Spor Kulübü" className="w-64" />
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
