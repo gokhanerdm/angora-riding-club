@@ -170,12 +170,14 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
                   const slotStatus = getSlotStatus(dayKey, slot)
 
                   if (reservation) {
-                    const isDone = slotStatus === 'completed' || slotStatus === 'no_show'
+                    const isDone  = slotStatus === 'completed' || slotStatus === 'no_show'
+                    const isTrial = reservation.type === 'trial'
                     let bg     = 'rgba(56,189,248,0.12)'
                     let border = '1px solid rgba(56,189,248,0.25)'
                     let color  = '#38bdf8'
                     if (slotStatus === 'completed') { bg = 'rgba(52,211,153,0.12)'; border = '1px solid rgba(52,211,153,0.25)'; color = '#34d399' }
                     if (slotStatus === 'no_show')   { bg = 'rgba(248,113,113,0.12)'; border = '1px solid rgba(248,113,113,0.25)'; color = '#f87171' }
+                    if (isTrial) { bg = 'rgba(245,158,11,0.15)'; border = '1px solid rgba(245,158,11,0.4)' }
                     return (
                       <li key={slot}>
                         <button
@@ -184,15 +186,17 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
                           className="w-full rounded-xl px-2 py-2 text-left transition-opacity disabled:cursor-default"
                           style={{ background: bg, border }}
                         >
-                          <p className="text-xs font-bold text-white">{slot.substring(0,5)}</p>
-                          <p className="text-xs truncate" style={{ color: '#c8d6f0' }}>
-                            {reservation.member_name}
-                            {reservation.type === 'trial' && (
+                          <p className="text-xs font-bold text-white">
+                            {slot.substring(0,5)}
+                            {isTrial && (
                               <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
-                                style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                                style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
                             )}
                           </p>
-                          <p className="text-[10px] font-bold mt-0.5" style={{ color }}>{STATUS_LABELS[slotStatus ?? reservation.status]}</p>
+                          <p className="text-xs truncate" style={{ color: '#c8d6f0' }}>
+                            {reservation.member_name}
+                          </p>
+                          <p className="text-[10px] font-bold mt-0.5" style={{ color: isTrial ? '#f59e0b' : color }}>{STATUS_LABELS[slotStatus ?? reservation.status]}</p>
                         </button>
                       </li>
                     )

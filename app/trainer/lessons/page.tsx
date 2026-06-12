@@ -47,22 +47,26 @@ export default async function TrainerLessonsPage() {
           <ul>
             {(lessons as any[]).map((lesson, i) => {
               const member = Array.isArray(lesson.members) ? lesson.members[0] : lesson.members
+              const isTrial = lesson.type === 'trial'
               return (
                 <li
                   key={lesson.id}
                   className="flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: i < lessons.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
+                  style={{
+                    borderBottom: i < lessons.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                    background: isTrial ? 'rgba(245,158,11,0.1)' : undefined,
+                  }}
                 >
                   <div>
                     <p className="text-sm font-bold text-white">
                       {formatDateTime(lesson.scheduled_date, lesson.start_time)}
+                      {isTrial && (
+                        <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                          style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
+                      )}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>
                       {member ? `${member.name} ${member.surname}` : 'Bilinmiyor'}
-                      {lesson.type === 'trial' && (
-                        <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
-                          style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
-                      )}
                     </p>
                   </div>
                   <span

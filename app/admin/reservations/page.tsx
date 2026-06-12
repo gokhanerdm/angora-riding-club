@@ -272,20 +272,20 @@ export default function ReservationsPage() {
             <div className="space-y-2">
               {filtered.length === 0 && <p style={{ color: '#7b93c4' }}>Rezervasyon bulunamadı.</p>}
               {filtered.map(r => (
-                <div key={r.id} className="rounded-2xl p-4" style={CARD}>
+                <div key={r.id} className="rounded-2xl p-4" style={r.type === 'trial' ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' } : CARD}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <p className="font-bold text-white">
-                        {r.member_name}
-                        {r.type === 'trial' && (
-                          <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
-                            style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
-                        )}
-                      </p>
+                      <p className="font-bold text-white">{r.member_name}</p>
                       <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.trainer_name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{formatDate(r.scheduled_date)}</p>
+                      <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>
+                        {formatDate(r.scheduled_date)}
+                        {r.type === 'trial' && (
+                          <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                            style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
+                        )}
+                      </p>
                       <p className="text-xs" style={{ color: '#7b93c4' }}>{formatTime(r.start_time)} — {formatTime(r.end_time)}</p>
                     </div>
                   </div>
@@ -343,6 +343,7 @@ export default function ReservationsPage() {
                     if (res) {
                       bg = res.status === 'completed' ? 'rgba(52,211,153,0.10)' : res.status === 'no_show' ? 'rgba(248,113,113,0.10)' : 'rgba(56,189,248,0.10)'
                       border = res.status === 'completed' ? '1px solid rgba(52,211,153,0.25)' : res.status === 'no_show' ? '1px solid rgba(248,113,113,0.25)' : '1px solid rgba(56,189,248,0.25)'
+                      if (res.type === 'trial') { bg = 'rgba(245,158,11,0.15)'; border = '1px solid rgba(245,158,11,0.4)' }
                     } else if (closed) {
                       bg = 'rgba(255,255,255,0.02)'
                       border = '1px solid rgba(255,255,255,0.04)'
@@ -352,15 +353,17 @@ export default function ReservationsPage() {
                       <button key={slot} onClick={() => handleSlotClick(slot)}
                         className="w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all text-left"
                         style={{ background: bg, border }}>
-                        <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: '#7b93c4' }}>{formatTime(slot)}</span>
+                        <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: '#7b93c4' }}>
+                          {formatTime(slot)}
+                          {res?.type === 'trial' && (
+                            <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                              style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
+                          )}
+                        </span>
                         {res ? (
                           <div className="flex-1 flex items-center justify-between gap-2">
                             <span className="text-sm font-bold text-white truncate">
                               {res.member_name}
-                              {res.type === 'trial' && (
-                                <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
-                                  style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
-                              )}
                             </span>
                             <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#c8d6f0' }}>{STATUS_MAP[res.status]}</span>
                           </div>
@@ -380,7 +383,13 @@ export default function ReservationsPage() {
             {selectedSlot && (
               <div className="lg:w-64 lg:flex-shrink-0 rounded-2xl p-4" style={CARD}>
                 <div className="flex justify-between items-center mb-4">
-                  <p className="font-bold text-white">{formatTime(selectedSlot)}</p>
+                  <p className="font-bold text-white">
+                    {formatTime(selectedSlot)}
+                    {selectedRes?.type === 'trial' && (
+                      <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                        style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
+                    )}
+                  </p>
                   <button onClick={() => setSelectedSlot(null)} style={{ color: '#7b93c4' }}>✕</button>
                 </div>
 
@@ -388,10 +397,6 @@ export default function ReservationsPage() {
                   <div className="space-y-3">
                     <p className="font-bold text-white text-sm">
                       {selectedRes.member_name}
-                      {selectedRes.type === 'trial' && (
-                        <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
-                          style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
-                      )}
                     </p>
                     <p className="text-xs font-bold px-2 py-1 rounded-lg inline-block" style={{ background: STATUS_COLOR[selectedRes.status], color: STATUS_TEXT[selectedRes.status] }}>
                       {STATUS_MAP[selectedRes.status]}
