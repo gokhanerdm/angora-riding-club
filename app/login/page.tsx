@@ -88,6 +88,12 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-sm">
 
+        {/* Geri dön */}
+        <Link href="/" className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-4"
+          style={{ background: GREEN_SOFT, color: GREEN }}>
+          ←
+        </Link>
+
         {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold" style={{ color: GREEN }}>Angora</h1>
