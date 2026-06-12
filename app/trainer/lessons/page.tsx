@@ -32,7 +32,7 @@ export default async function TrainerLessonsPage() {
 
   const { data: lessons } = await supabase
     .from("reservations")
-    .select("id, scheduled_date, start_time, status, members(name, surname)")
+    .select("id, scheduled_date, start_time, status, type, members(name, surname)")
     .eq("trainer_id", trainer.trainerId)
     .neq("status", "cancelled")
     .order("scheduled_date", { ascending: false })
@@ -59,6 +59,10 @@ export default async function TrainerLessonsPage() {
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>
                       {member ? `${member.name} ${member.surname}` : 'Bilinmiyor'}
+                      {lesson.type === 'trial' && (
+                        <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                          style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                      )}
                     </p>
                   </div>
                   <span

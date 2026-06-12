@@ -52,8 +52,8 @@ const STATUS_TEXT: Record<string,string> = {
   no_show:   '#fb923c',
 }
 
-type Reservation = { id: string; scheduled_date: string; start_time: string; end_time: string; status: string; member_name: string; trainer_name: string }
-type SlotReservation = { id: string; member_name: string; member_id: string; status: string; end_time: string }
+type Reservation = { id: string; scheduled_date: string; start_time: string; end_time: string; status: string; type: string; member_name: string; trainer_name: string }
+type SlotReservation = { id: string; member_name: string; member_id: string; status: string; end_time: string; type: string }
 type Trainer = { id: string; name: string; surname: string }
 type Member = { id: string; name: string; surname: string; remaining_lessons: number }
 
@@ -97,7 +97,7 @@ export default function ReservationsPage() {
     setReservations((data ?? []).map((r: any) => {
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       const t = Array.isArray(r.trainers) ? r.trainers[0] : r.trainers
-      return { id: r.id, scheduled_date: r.scheduled_date, start_time: r.start_time, end_time: r.end_time, status: r.status, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', trainer_name: t ? `${t.name} ${t.surname}` : 'Bilinmiyor' }
+      return { id: r.id, scheduled_date: r.scheduled_date, start_time: r.start_time, end_time: r.end_time, status: r.status, type: r.type, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', trainer_name: t ? `${t.name} ${t.surname}` : 'Bilinmiyor' }
     }))
     setLoading(false)
   }
@@ -114,13 +114,13 @@ export default function ReservationsPage() {
     setCalLoading(true)
     const supabase = createClient()
     const [{ data: resData }, { data: closedData }] = await Promise.all([
-      supabase.from('reservations').select('id, start_time, end_time, status, member_id, members(name, surname)').eq('trainer_id', selectedTrainer).eq('scheduled_date', currentDate).neq('status', 'cancelled'),
+      supabase.from('reservations').select('id, start_time, end_time, status, type, member_id, members(name, surname)').eq('trainer_id', selectedTrainer).eq('scheduled_date', currentDate).neq('status', 'cancelled'),
       supabase.from('trainer_schedules').select('start_time').eq('trainer_id', selectedTrainer).eq('scheduled_date', currentDate).eq('is_available', false),
     ])
     const resMap: Record<string, SlotReservation> = {}
     for (const r of resData ?? []) {
       const m = Array.isArray(r.members) ? r.members[0] : r.members
-      resMap[r.start_time] = { id: r.id, member_id: r.member_id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', status: r.status, end_time: r.end_time }
+      resMap[r.start_time] = { id: r.id, member_id: r.member_id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', status: r.status, end_time: r.end_time, type: r.type }
     }
     setSlotReservations(resMap)
     setClosedSlots(new Set((closedData ?? []).map((c: any) => c.start_time)))
@@ -275,7 +275,13 @@ export default function ReservationsPage() {
                 <div key={r.id} className="rounded-2xl p-4" style={CARD}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <p className="font-bold text-white">{r.member_name}</p>
+                      <p className="font-bold text-white">
+                        {r.member_name}
+                        {r.type === 'trial' && (
+                          <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                            style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                        )}
+                      </p>
                       <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.trainer_name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -349,7 +355,13 @@ export default function ReservationsPage() {
                         <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: '#7b93c4' }}>{formatTime(slot)}</span>
                         {res ? (
                           <div className="flex-1 flex items-center justify-between gap-2">
-                            <span className="text-sm font-bold text-white truncate">{res.member_name}</span>
+                            <span className="text-sm font-bold text-white truncate">
+                              {res.member_name}
+                              {res.type === 'trial' && (
+                                <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                                  style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                              )}
+                            </span>
                             <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#c8d6f0' }}>{STATUS_MAP[res.status]}</span>
                           </div>
                         ) : closed ? (
@@ -374,7 +386,13 @@ export default function ReservationsPage() {
 
                 {selectedRes ? (
                   <div className="space-y-3">
-                    <p className="font-bold text-white text-sm">{selectedRes.member_name}</p>
+                    <p className="font-bold text-white text-sm">
+                      {selectedRes.member_name}
+                      {selectedRes.type === 'trial' && (
+                        <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                          style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                      )}
+                    </p>
                     <p className="text-xs font-bold px-2 py-1 rounded-lg inline-block" style={{ background: STATUS_COLOR[selectedRes.status], color: STATUS_TEXT[selectedRes.status] }}>
                       {STATUS_MAP[selectedRes.status]}
                     </p>
