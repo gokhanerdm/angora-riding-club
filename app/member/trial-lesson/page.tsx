@@ -1,25 +1,35 @@
-import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import TrialLessonCalendar from '@/components/member/TrialLessonCalendar'
 
 const BG = '#FBFBFB'
 const GREEN = '#1B3B2F'
-const GREEN_SOFT = '#E8F0EA'
 const MUTED = '#6B7280'
 
-export default function TrialLessonPage() {
+export default async function TrialLessonPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: member } = await supabase
+    .from('members')
+    .select('trial_lesson_requested, trial_lesson_used')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member?.trial_lesson_requested || member.trial_lesson_used) {
+    redirect('/member')
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: BG }}>
-      <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl mb-5" style={{ background: GREEN_SOFT }}>
-        📅
+    <div className="min-h-screen px-4 pt-8" style={{ background: BG }}>
+      <div className="text-center mb-6">
+        <h1 className="text-xl font-bold" style={{ color: GREEN }}>Deneme Dersi Takvimi</h1>
+        <p className="text-sm mt-2 leading-relaxed" style={{ color: MUTED }}>
+          Ücretsiz deneme dersiniz için uygun bir tarih ve saat seçin.
+        </p>
       </div>
-      <h1 className="text-xl font-bold" style={{ color: GREEN }}>Deneme Dersi Takvimi</h1>
-      <p className="text-sm mt-2 leading-relaxed" style={{ color: MUTED }}>
-        Deneme dersi tarih ve saat seçim ekranı yakında burada olacak.
-      </p>
-      <Link href="/member"
-        className="mt-8 px-6 py-3 rounded-2xl font-bold text-sm"
-        style={{ background: GREEN, color: '#fff' }}>
-        Üye Paneline Git
-      </Link>
+      <TrialLessonCalendar />
     </div>
   )
 }

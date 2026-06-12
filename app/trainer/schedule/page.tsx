@@ -28,7 +28,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
       .lte("scheduled_date", endDateStr),
     supabase
       .from("reservations")
-      .select("id, scheduled_date, start_time, status, members(name, surname)")
+      .select("id, scheduled_date, start_time, status, type, members(name, surname)")
       .eq("trainer_id", trainer.trainerId)
       .gte("scheduled_date", startDateStr)
       .lte("scheduled_date", endDateStr),
@@ -38,7 +38,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
     (s: any) => `${s.scheduled_date}|${s.start_time}`
   );
 
-  const reservationMap: Record<string, { id: string; member_name: string; status: string }> = {};
+  const reservationMap: Record<string, { id: string; member_name: string; status: string; type: string }> = {};
   for (const r of (reservations ?? []) as any[]) {
     const key = `${r.scheduled_date}|${r.start_time}`;
     const member = Array.isArray(r.members) ? r.members[0] : r.members;
@@ -46,6 +46,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
       id:          r.id,
       member_name: member ? `${member.name} ${member.surname}` : "Bilinmiyor",
       status:      r.status,
+      type:        r.type,
     };
   }
 

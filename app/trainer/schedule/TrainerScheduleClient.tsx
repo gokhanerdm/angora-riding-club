@@ -35,7 +35,7 @@ function addThirtyMin(time: string): string {
 }
 
 type DayInfo         = { key: string; isToday: boolean }
-type ReservationInfo = { id: string; member_name: string; status: string }
+type ReservationInfo = { id: string; member_name: string; status: string; type: string }
 type AttendanceModal = { reservationId: string; memberName: string; date: string; time: string }
 
 type Props = {
@@ -185,7 +185,13 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
                           style={{ background: bg, border }}
                         >
                           <p className="text-xs font-bold text-white">{slot.substring(0,5)}</p>
-                          <p className="text-xs truncate" style={{ color: '#c8d6f0' }}>{reservation.member_name}</p>
+                          <p className="text-xs truncate" style={{ color: '#c8d6f0' }}>
+                            {reservation.member_name}
+                            {reservation.type === 'trial' && (
+                              <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
+                                style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
+                            )}
+                          </p>
                           <p className="text-[10px] font-bold mt-0.5" style={{ color }}>{STATUS_LABELS[slotStatus ?? reservation.status]}</p>
                         </button>
                       </li>
