@@ -54,8 +54,8 @@ BEGIN
 
   RETURN QUERY
   WITH slots AS (
-    SELECT ('10:30:00'::time + (n * '00:30:00'::interval))::time AS st
-    FROM generate_series(0, 25) AS n
+    SELECT ('15:00:00'::time + (n * '00:30:00'::interval))::time AS st
+    FROM generate_series(0, 14) AS n
   )
   SELECT
     v_trainer_id,
