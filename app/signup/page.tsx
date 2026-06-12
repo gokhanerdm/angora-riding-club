@@ -76,6 +76,7 @@ function SignupForm() {
         p_user_id: data.user.id,
         p_name: name, p_surname: surname, p_email: email, p_phone: phone,
         p_referral_code: referralCode.trim() || null,
+        p_trial: isTrial,
       })
       if (setupError) {
         if (setupError.message.includes('telefon numarasıyla kayıtlı')) {

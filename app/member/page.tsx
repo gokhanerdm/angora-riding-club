@@ -17,13 +17,16 @@ export default async function MemberDashboard() {
   const [statsResult, memberResult] = await Promise.all([
     supabase.rpc('member_dashboard_stats', { user_id: user.id }),
     supabase.from('members')
-      .select('id, name, profile_completed, profile_photo_url, default_trainer_id, referral_code')
+      .select('id, name, profile_completed, profile_photo_url, default_trainer_id, referral_code, trial_lesson_requested')
       .eq('user_id', user.id)
       .single()
   ])
 
   // Profil tamamlanmamışsa yönlendir
   if (memberResult.data && !memberResult.data.profile_completed) {
+    if (memberResult.data.trial_lesson_requested) {
+      redirect('/member/trial-lesson')
+    }
     redirect('/member/profile-setup')
   }
 
