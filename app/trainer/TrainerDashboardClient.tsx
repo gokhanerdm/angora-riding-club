@@ -889,11 +889,11 @@ export default function TrainerDashboardClient({
 
       {/* Slot seçici (vardiya) */}
       {showShiftPicker && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.65)' }}
+        <div className="fixed inset-0 z-50" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowShiftPicker(false)}>
           <div
-            className="w-full rounded-t-3xl px-5 pt-5 pb-8 max-h-[85vh] overflow-y-auto"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
+            className="w-full h-full px-5 pt-5 pb-8 overflow-y-auto"
+            style={{ background: '#0d1b4b' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3 sticky top-0 pt-1 -mt-1" style={{ background: '#0d1b4b' }}>
