@@ -114,7 +114,7 @@ export default function NotificationsPage() {
     const [{ data: memberships }, { data: newMemberData }, { data: pkgRequestData }, { data: legacyData }, { data: trialData }] = await Promise.all([
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, members(name, surname, email)').eq('is_current', true),
       supabase.from('members').select('id, name, surname, email, created_at').eq('member_status', 'pending_club_approval').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('membership_requests').select('id, member_id, request_type, created_at, members!inner(name, surname, email, member_status)').eq('status', 'pending').eq('members.member_status', 'active').order('created_at', { ascending: false }),
+      supabase.from('membership_requests').select('id, member_id, request_type, created_at, members!inner(name, surname, email, deleted_at)').eq('status', 'pending').is('members.deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('members').select('id, name, surname, email, created_at').eq('pending_legacy_setup', true).eq('member_status', 'pending_club_approval').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('reservations').select('id, status, scheduled_date, start_time, created_at, members(name, surname)').eq('type', 'trial').order('created_at', { ascending: false }),
     ])
