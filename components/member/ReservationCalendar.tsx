@@ -49,6 +49,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const [isWeekdayPkg, setIsWeekdayPkg] = useState(false)
   const [pastSlot, setPastSlot]   = useState<TimeSlot | null>(null)
   const [pastSaving, setPastSaving] = useState(false)
+  const [reservedDates, setReservedDates] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const supabase = createClient()
@@ -71,6 +72,26 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
       })
     })
   }, [overrideUserId])
+  // Ayda kayıtlı (iptal/gelmedi hariç) dersi olan günler — mavi kutu ile işaretlenir
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const uid = overrideUserId ?? user.id
+      const { data: m } = await supabase.from('members').select('id').eq('user_id', uid).single()
+      if (!m) return
+      const monthStart = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-01`
+      const monthEnd   = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(new Date(viewYear, viewMonth + 1, 0).getDate()).padStart(2, '0')}`
+      const { data: res } = await supabase.from('reservations')
+        .select('scheduled_date')
+        .eq('member_id', m.id)
+        .in('status', ['pending', 'approved', 'completed'])
+        .gte('scheduled_date', monthStart)
+        .lte('scheduled_date', monthEnd)
+      setReservedDates(new Set((res ?? []).map(r => r.scheduled_date)))
+    })
+  }, [overrideUserId, viewYear, viewMonth])
+
   const [modalOpen, setModalOpen] = useState(false)
 
   // Rezervasyon onay state
@@ -317,6 +338,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
           const dateStr  = toDateStr(date)
           const sel      = dateStr === selectedDate
           const isToday  = dateStr === toDateStr(today)
+          const hasLesson = reservedDates.has(dateStr)
           return (
             <button
               key={i}
@@ -326,10 +348,10 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               style={{
                 width: 40, height: 40, borderRadius: 12,
                 fontSize: 15,
-                fontWeight: sel || isToday ? 700 : 500,
-                color:   ((!isAdmin && past) || blocked) ? 'rgba(107,114,128,0.4)' : sel ? '#fff' : isToday ? '#f59e0b' : GREEN,
-                background: sel ? GREEN : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
-                border: isToday && !sel ? '1px solid rgba(245,158,11,0.4)' : 'none',
+                fontWeight: sel || isToday || hasLesson ? 700 : 500,
+                color:   ((!isAdmin && past) || blocked) ? 'rgba(107,114,128,0.4)' : sel ? '#fff' : hasLesson ? '#38bdf8' : isToday ? '#f59e0b' : GREEN,
+                background: sel ? GREEN : hasLesson ? 'rgba(56,189,248,0.15)' : isToday ? 'rgba(245,158,11,0.12)' : 'transparent',
+                border: hasLesson && !sel ? '1px solid rgba(56,189,248,0.4)' : isToday && !sel ? '1px solid rgba(245,158,11,0.4)' : 'none',
                 cursor: past ? 'default' : 'pointer',
               }}
             >{day}</button>
