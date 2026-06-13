@@ -892,18 +892,18 @@ export default function TrainerDashboardClient({
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowShiftPicker(false)}>
           <div
-            className="w-full rounded-t-3xl px-5 pt-5 pb-24"
+            className="w-full rounded-t-3xl px-5 pt-5 pb-8 max-h-[85vh] overflow-y-auto"
             style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-5">
+            <div className="flex justify-between items-center mb-3 sticky top-0 pt-1 -mt-1" style={{ background: '#0d1b4b' }}>
               <p className="font-bold text-white text-base">Slot Seçimi</p>
               <button onClick={() => setShowShiftPicker(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
             </div>
-            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır.</p>
-            <div className="space-y-2">
+            <p className="text-xs mb-2" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır.</p>
+            <div className="space-y-1.5">
               {[
                 { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
                 { key: 'evening', label: '🌙 Akşam', desc: '15:00 — 22:00' },
@@ -914,7 +914,7 @@ export default function TrainerDashboardClient({
                   key={opt.key}
                   onClick={() => saveShift(opt.key)}
                   disabled={shiftSaving}
-                  className="w-full rounded-2xl p-4 text-left flex justify-between items-center"
+                  className="w-full rounded-2xl p-2.5 text-left flex justify-between items-center"
                   style={{
                     background: shift === opt.key ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)',
                     border: `1px solid ${shift === opt.key ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.08)'}`,
@@ -929,11 +929,11 @@ export default function TrainerDashboardClient({
               ))}
             </div>
 
-            <div className="h-px my-5" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.08)' }} />
 
             <p className="font-bold text-white text-sm mb-1">Sadece bu gün — {formatDayLabel(currentDate)}</p>
-            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Bu günü farklı bir mesaiye çevir, diğer günler varsayılanı kullanmaya devam eder.</p>
-            <div className="space-y-2">
+            <p className="text-xs mb-2" style={{ color: '#7b93c4' }}>Bu günü farklı bir mesaiye çevir, diğer günler varsayılanı kullanmaya devam eder.</p>
+            <div className="space-y-1.5">
               {[
                 { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
                 { key: 'evening', label: '🌙 Akşam', desc: '15:00 — 22:00' },
@@ -944,7 +944,7 @@ export default function TrainerDashboardClient({
                   key={opt.key}
                   onClick={() => saveDailyShift(opt.key)}
                   disabled={dailyShiftSaving}
-                  className="w-full rounded-2xl p-4 text-left flex justify-between items-center"
+                  className="w-full rounded-2xl p-2.5 text-left flex justify-between items-center"
                   style={{
                     background: dailyShift === opt.key ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.05)',
                     border: `1px solid ${dailyShift === opt.key ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.08)'}`,
@@ -961,7 +961,7 @@ export default function TrainerDashboardClient({
                 <button
                   onClick={() => saveDailyShift(null)}
                   disabled={dailyShiftSaving}
-                  className="w-full rounded-2xl p-3 text-center text-sm font-bold"
+                  className="w-full rounded-2xl p-2.5 text-center text-sm font-bold"
                   style={{ background: 'rgba(255,255,255,0.05)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
                   Varsayılana dön ({SHIFT_LABELS[shift] ?? shift})
