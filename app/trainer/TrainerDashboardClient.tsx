@@ -42,6 +42,23 @@ const SHIFT_SLOTS: Record<string, string[]> = {
 
 const EXTRA_SLOTS = ["22:30:00","23:00:00",]
 
+// Slot arşivi: bu tarihten önceki günler için sabit 10:00-23:00 tam liste kullanılır,
+// bu tarihten sonraki günler için ilk görüntülemede o anki slot listesi donar.
+const SLOT_ARCHIVE_CUTOFF = '2026-06-01'
+
+const FULL_SLOTS: string[] = (() => {
+  const out: string[] = []
+  for (let h = 10; h <= 23; h++) {
+    out.push(`${String(h).padStart(2,'0')}:00:00`)
+    if (h < 23) out.push(`${String(h).padStart(2,'0')}:30:00`)
+  }
+  return out
+})()
+
+function todayKeyIstanbul() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
+}
+
 const SHIFT_LABELS: Record<string, string> = {
   morning: 'Sabah', evening: 'Akşam', fullday: 'Tam Gün', weekend: 'Hafta Sonu',
 }
@@ -115,7 +132,7 @@ export default function TrainerDashboardClient({
   const [selectedMemberStats, setSelectedMemberStats] = useState<MemberStats | null>(null)
   const [memberStatsLoading, setMemberStatsLoading] = useState(false)
 
-  const slots = SHIFT_SLOTS[dailyShift ?? shift] ?? SHIFT_SLOTS.fullday
+  const [effectiveSlots, setEffectiveSlots] = useState<string[]>(SHIFT_SLOTS.fullday)
 
   // Sayfa açılışında saati geçmiş approved dersleri otomatik tamamla, ardından istatistikleri tazele
   useEffect(() => {
@@ -171,6 +188,37 @@ export default function TrainerDashboardClient({
     setLocalStatuses({})
     setSelectedSlot(null)
     setSlotAction(null)
+
+    // Slot listesi: 1 Haziran 2026 öncesi için sabit tam liste, sonrası için
+    // ilk görüntülemede donmuş arşiv (varsa) veya o anki mesaiye göre hesaplanan liste.
+    if (dateKey < SLOT_ARCHIVE_CUTOFF) {
+      setEffectiveSlots(FULL_SLOTS)
+    } else {
+      const baseShift = dailyShiftData?.shift ?? shift
+      const liveSlots = [
+        ...(SHIFT_SLOTS[baseShift] ?? SHIFT_SLOTS.fullday),
+        ...EXTRA_SLOTS.filter(s => extra.has(s))
+      ]
+
+      if (dateKey <= todayKeyIstanbul()) {
+        const { data: archiveRow } = await supabase.from('trainer_daily_slot_archive')
+          .select('slots')
+          .eq('trainer_id', trainerId)
+          .eq('scheduled_date', dateKey)
+          .maybeSingle()
+
+        if (archiveRow?.slots) {
+          setEffectiveSlots(archiveRow.slots as string[])
+        } else {
+          await supabase.from('trainer_daily_slot_archive')
+            .upsert({ trainer_id: trainerId, scheduled_date: dateKey, slots: liveSlots }, { onConflict: 'trainer_id,scheduled_date' })
+          setEffectiveSlots(liveSlots)
+        }
+      } else {
+        setEffectiveSlots(liveSlots)
+      }
+    }
+
     setScheduleLoading(false)
   }
 
@@ -331,6 +379,25 @@ export default function TrainerDashboardClient({
         start_time: slot, end_time: endTime.toTimeString().substring(0, 8), is_available: true
       })
     }
+
+    // Bu gün için donmuş bir slot arşivi varsa, ekstra slot değişikliğini orada da yansıt
+    if (currentDate >= SLOT_ARCHIVE_CUTOFF) {
+      const { data: archiveRow } = await supabase.from('trainer_daily_slot_archive')
+        .select('slots')
+        .eq('trainer_id', trainerId).eq('scheduled_date', currentDate)
+        .maybeSingle()
+
+      if (archiveRow?.slots) {
+        const current = archiveRow.slots as string[]
+        const updated = currentlyOpen
+          ? current.filter(s => s !== slot)
+          : [...current, slot].sort()
+        await supabase.from('trainer_daily_slot_archive')
+          .update({ slots: updated })
+          .eq('trainer_id', trainerId).eq('scheduled_date', currentDate)
+      }
+    }
+
     await loadSchedule(currentDate)
     setActionLoading(false)
   }
@@ -472,10 +539,10 @@ export default function TrainerDashboardClient({
 
   const yapilanMonthName = MONTHS_TR[parseInt(yapilanMonth.split('-')[1]) - 1]
 
-  const visibleSlots = [
-    ...slots,
-    ...EXTRA_SLOTS.filter(s => openExtraSlots.has(s))
-  ]
+  const visibleSlots = effectiveSlots
+
+  // Henüz listede olmayan ekstra slotlar (22:30 / 23:00) — "Slotu Aç" butonu için
+  const closedExtraSlots = EXTRA_SLOTS.filter(s => !effectiveSlots.includes(s))
 
   const selectedRes = selectedSlot ? reservations[selectedSlot] : undefined
   const selectedClosed = selectedSlot ? closedSlots.has(selectedSlot) : false
@@ -664,6 +731,23 @@ export default function TrainerDashboardClient({
             </div>
           )
         }
+
+        {/* Henüz açılmamış ekstra slotlar (22:30 / 23:00) */}
+        {!scheduleLoading && (() => {
+          const openable = closedExtraSlots.filter(s => !isSlotPast(currentDate, s) || isAdminView)
+          return openable.length > 0 ? (
+            <div className="flex gap-2 mt-2">
+              {openable.map(s => (
+                <button key={s} onClick={() => handleToggleExtra(s, false)}
+                  disabled={actionLoading}
+                  className="flex-1 py-2 rounded-xl text-xs font-bold"
+                  style={{ background: 'rgba(52,211,153,0.10)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}>
+                  + {formatTime(s)} Slotunu Aç
+                </button>
+              ))}
+            </div>
+          ) : null
+        })()}
       </div>
 
       {/* Slot action bottom sheet */}
