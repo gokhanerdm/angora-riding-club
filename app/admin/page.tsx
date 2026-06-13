@@ -33,11 +33,11 @@ function fmtDate(s: string) {
 }
 
 const STATUS_LABEL: Record<string,string> = {
-  pending: 'Beklemede', approved: 'Onaylı', completed: 'Tamamlandı',
+  pending: 'Beklemede', approved: 'Beklemede', completed: 'Tamamlandı',
   cancelled: 'İptal', no_show: 'Gelmedi',
 }
 const STATUS_COLOR: Record<string,string> = {
-  pending: '#f59e0b', approved: '#38bdf8', completed: '#34d399',
+  pending: '#f59e0b', approved: '#f59e0b', completed: '#34d399',
   cancelled: '#f87171', no_show: '#fb923c',
 }
 
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
         setLessonStats({
           total:     data?.length ?? 0,
           completed: data?.filter(r => r.status === 'completed').length ?? 0,
-          pending:   data?.filter(r => r.status === 'pending').length ?? 0,
+          pending:   data?.filter(r => r.status === 'pending' || r.status === 'approved').length ?? 0,
           remaining: data?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
         })
       })
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
       .select('id, start_time, end_time, status, members(name, surname), trainers(name, surname)')
       .eq('scheduled_date', today).in('status', ['pending','approved','completed']).order('start_time')
     if (key === 'completed') q = q.eq('status', 'completed')
-    if (key === 'pending')   q = q.eq('status', 'pending')
+    if (key === 'pending')   q = q.in('status', ['pending', 'approved'])
     if (key === 'remaining') q = q.in('status', ['approved', 'pending'])
     const { data } = await q
     setModalData((data ?? []).map((r: any) => {
