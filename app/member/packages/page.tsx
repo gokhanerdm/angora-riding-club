@@ -131,8 +131,8 @@ export default function PackagesPage() {
               const targetUid = overrideUid ?? user.id
               const { error } = await supabase.rpc('request_legacy_setup', { p_user_id: targetUid })
               if (error) {
-                // Hata varsa direkt UPDATE dene
-                await supabase.from('members').update({ pending_legacy_setup: true }).eq('user_id', user.id)
+                setError('Talep gönderilemedi, lütfen tekrar deneyin.')
+                return
               }
               setLegacyDone(true)
               setHasPackage(true)
