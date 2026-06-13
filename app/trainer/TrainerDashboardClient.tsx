@@ -42,6 +42,10 @@ const SHIFT_SLOTS: Record<string, string[]> = {
 
 const EXTRA_SLOTS = ["22:30:00","23:00:00",]
 
+const SHIFT_LABELS: Record<string, string> = {
+  morning: 'Sabah', evening: 'Akşam', fullday: 'Tam Gün', weekend: 'Hafta Sonu',
+}
+
 function toDateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 }
@@ -102,6 +106,8 @@ export default function TrainerDashboardClient({
   const [shift, setShift] = useState<string>(initialShift ?? 'fullday')
   const [showShiftPicker, setShowShiftPicker] = useState(false)
   const [shiftSaving, setShiftSaving] = useState(false)
+  const [dailyShift, setDailyShift] = useState<string | null>(null)
+  const [dailyShiftSaving, setDailyShiftSaving] = useState(false)
   const [toast, setToast] = useState('')
   const showFeedback = (msg: string, ok: boolean) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
   const [showStudents, setShowStudents] = useState(false)
@@ -109,7 +115,7 @@ export default function TrainerDashboardClient({
   const [selectedMemberStats, setSelectedMemberStats] = useState<MemberStats | null>(null)
   const [memberStatsLoading, setMemberStatsLoading] = useState(false)
 
-  const slots = SHIFT_SLOTS[shift] ?? SHIFT_SLOTS.fullday
+  const slots = SHIFT_SLOTS[dailyShift ?? shift] ?? SHIFT_SLOTS.fullday
 
   // Sayfa açılışında saati geçmiş approved dersleri otomatik tamamla, ardından istatistikleri tazele
   useEffect(() => {
@@ -124,7 +130,7 @@ export default function TrainerDashboardClient({
     setScheduleLoading(true)
     const supabase = createClient()
 
-    const [{ data: resData }, { data: scheduleData }] = await Promise.all([
+    const [{ data: resData }, { data: scheduleData }, { data: dailyShiftData }] = await Promise.all([
       supabase.from('reservations')
         .select('id, start_time, end_time, status, members(name, surname)')
         .eq('trainer_id', trainerId)
@@ -133,8 +139,15 @@ export default function TrainerDashboardClient({
       supabase.from('trainer_schedules')
         .select('start_time, is_available')
         .eq('trainer_id', trainerId)
+        .eq('scheduled_date', dateKey),
+      supabase.from('trainer_daily_shifts')
+        .select('shift')
+        .eq('trainer_id', trainerId)
         .eq('scheduled_date', dateKey)
+        .maybeSingle()
     ])
+
+    setDailyShift(dailyShiftData?.shift ?? null)
 
     const resMap: Record<string, Reservation> = {}
     for (const r of resData ?? []) {
@@ -387,6 +400,22 @@ export default function TrainerDashboardClient({
     setShiftSaving(false)
   }
 
+  const saveDailyShift = async (newShift: string | null) => {
+    setDailyShiftSaving(true)
+    const supabase = createClient()
+    if (newShift === null) {
+      await supabase.from('trainer_daily_shifts').delete()
+        .eq('trainer_id', trainerId).eq('scheduled_date', currentDate)
+    } else {
+      await supabase.from('trainer_daily_shifts').upsert({
+        trainer_id: trainerId, scheduled_date: currentDate, shift: newShift
+      }, { onConflict: 'trainer_id,scheduled_date' })
+    }
+    setDailyShift(newShift)
+    setShowShiftPicker(false)
+    setDailyShiftSaving(false)
+  }
+
   const nowMonthKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`
   const currentMonth = MONTHS_TR[today.getMonth()]
   const nextMonthName = MONTHS_TR[(today.getMonth() + 1) % 12]
@@ -553,6 +582,7 @@ export default function TrainerDashboardClient({
               {Object.keys(reservations).length > 0
                 ? `(${Object.keys(reservations).length} ders)`
                 : 'ders yok'}
+              {dailyShift && ` · ${SHIFT_LABELS[dailyShift] ?? dailyShift}`}
             </p>
           )}
         </div>
@@ -872,7 +902,7 @@ export default function TrainerDashboardClient({
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
                 style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
             </div>
-            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır. İstediğin günü günlük olarak değiştirebilirsin.</p>
+            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır.</p>
             <div className="space-y-2">
               {[
                 { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
@@ -897,6 +927,46 @@ export default function TrainerDashboardClient({
                   {shift === opt.key && <span style={{ color: '#38bdf8' }}>✓</span>}
                 </button>
               ))}
+            </div>
+
+            <div className="h-px my-5" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+            <p className="font-bold text-white text-sm mb-1">Sadece bu gün — {formatDayLabel(currentDate)}</p>
+            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>Bu günü farklı bir mesaiye çevir, diğer günler varsayılanı kullanmaya devam eder.</p>
+            <div className="space-y-2">
+              {[
+                { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
+                { key: 'evening', label: '🌙 Akşam', desc: '15:00 — 22:00' },
+                { key: 'fullday', label: '🌅 Tam Gün', desc: '11:00 — 22:00' },
+                { key: 'weekend', label: '📅 Hafta Sonu', desc: 'Cmt & Paz' },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => saveDailyShift(opt.key)}
+                  disabled={dailyShiftSaving}
+                  className="w-full rounded-2xl p-4 text-left flex justify-between items-center"
+                  style={{
+                    background: dailyShift === opt.key ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${dailyShift === opt.key ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                  }}
+                >
+                  <div>
+                    <p className="text-sm font-bold text-white">{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{opt.desc}</p>
+                  </div>
+                  {dailyShift === opt.key && <span style={{ color: '#f59e0b' }}>✓</span>}
+                </button>
+              ))}
+              {dailyShift && (
+                <button
+                  onClick={() => saveDailyShift(null)}
+                  disabled={dailyShiftSaving}
+                  className="w-full rounded-2xl p-3 text-center text-sm font-bold"
+                  style={{ background: 'rgba(255,255,255,0.05)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  Varsayılana dön ({SHIFT_LABELS[shift] ?? shift})
+                </button>
+              )}
             </div>
           </div>
         </div>
