@@ -7,7 +7,7 @@ import { useRouter, useParams } from 'next/navigation'
 const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
 const SHIFT_OPTIONS = [
   { value: 'morning', label: 'Sabah (10:30–20:00)' },
-  { value: 'evening', label: 'Akşam (14:00–21:30)' },
+  { value: 'evening', label: 'Akşam (15:00–22:00)' },
   { value: 'fullday', label: 'Tam Gün' },
   { value: 'weekend', label: 'Hafta Sonu (Cmt-Paz)' },
 ]
