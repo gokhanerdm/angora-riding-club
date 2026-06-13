@@ -15,7 +15,7 @@ export default function AdminSidebar() {
     { href: '/admin/memberships', label: 'Üyelikler', icon: '💳' },
     { href: '/admin/reservations', label: 'Rezervasyonlar', icon: '📅' },
     { href: '/admin/payments', label: 'Ödemeler', icon: '💰' },
-    { href: '/admin/notifications', label: 'Bildirimler', icon: '🔔' },
+    { href: '/admin/notifications', label: 'İstekler', icon: '🔔' },
     { href: '/admin/settings', label: 'Ayarlar', icon: '⚙️' },
   ]
 

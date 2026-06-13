@@ -8,7 +8,7 @@ const NAV = [
   { href: '/admin/trainers',      label: 'Eğitmenler',   icon: '🏇' },
   { href: '/admin/members',       label: 'Üyeler',        icon: '👥' },
   { href: '/admin/payments',      label: 'Hesaplamalar',  icon: '💰' },
-  { href: '/admin/notifications', label: 'Bildirimler',   icon: '🔔' },
+  { href: '/admin/notifications', label: 'İstekler',      icon: '🔔' },
   { href: '/admin/settings',      label: 'Ayarlar',       icon: '⚙️' },
 ]
 
