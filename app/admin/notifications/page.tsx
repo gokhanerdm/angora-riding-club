@@ -43,8 +43,9 @@ type NewMember     = { id: string; name: string; surname: string; email: string;
 type PackageRequest = { id: string; member_id: string; request_type: string; created_at: string; member_name: string; member_email: string }
 type LegacyRequest  = { id: string; name: string; surname: string; email: string; created_at: string; _approved?: boolean }
 type TrialLesson   = { id: string; member_name: string; scheduled_date: string; start_time: string; status: string; created_at: string }
+type FamilyRequest = { id: string; name: string; surname: string; email: string; created_at: string; _resolved?: boolean }
 
-const SECTION_ORDER = ['new_member', 'package_request', 'legacy', 'trial'] as const
+const SECTION_ORDER = ['new_member', 'package_request', 'legacy', 'trial', 'family'] as const
 type SectionKey = typeof SECTION_ORDER[number]
 
 const SECTION_LABELS: Record<SectionKey, string> = {
@@ -52,6 +53,7 @@ const SECTION_LABELS: Record<SectionKey, string> = {
   package_request: 'Paket Talebi',
   legacy:          'Eski Üye Kaydı',
   trial:           'Deneme Dersi',
+  family:          'Aile Üyesi',
 }
 
 const SECTION_ICONS: Record<SectionKey, string> = {
@@ -59,6 +61,7 @@ const SECTION_ICONS: Record<SectionKey, string> = {
   package_request: '📦',
   legacy:          '🕐',
   trial:           '🐎',
+  family:          '👨‍👩‍👧',
 }
 
 export default function NotificationsPage() {
@@ -69,8 +72,10 @@ export default function NotificationsPage() {
   const [packageRequests, setPackageRequests] = useState<PackageRequest[]>([])
   const [legacyRequests,  setLegacyRequests]  = useState<LegacyRequest[]>([])
   const [trialLessons,    setTrialLessons]    = useState<TrialLesson[]>([])
+  const [familyRequests,  setFamilyRequests]  = useState<FamilyRequest[]>([])
   const [openSections, setOpenSections] = useState<Set<SectionKey>>(new Set())
   const [approvingId, setApprovingId] = useState<string | null>(null)
+  const [resolvingId, setResolvingId] = useState<string | null>(null)
 
   const toggleSection = (key: SectionKey) => {
     setOpenSections(prev => {
@@ -94,6 +99,17 @@ export default function NotificationsPage() {
     setApprovingId(null)
   }
 
+  const resolveFamily = async (memberId: string) => {
+    setResolvingId(memberId)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setResolvingId(null); return }
+    const { data: admin } = await supabase.from('profiles').select('id').eq('id', user.id).single()
+    const { error } = await supabase.rpc('resolve_family_setup', { p_member_id: memberId, p_admin_id: admin?.id })
+    if (!error) setFamilyRequests(prev => prev.map(m => m.id === memberId ? { ...m, _resolved: true } : m))
+    setResolvingId(null)
+  }
+
   const [dismissed, setDismissed] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('dismissed_notifications') ?? '[]')) }
     catch { return new Set() }
@@ -111,24 +127,35 @@ export default function NotificationsPage() {
     const supabase = createClient()
     const items: Notification[] = []
 
-    const [{ data: memberships }, { data: newMemberData }, { data: pkgRequestData }, { data: legacyData }, { data: trialData }] = await Promise.all([
+    const [{ data: memberships }, { data: newMemberData }, { data: pkgRequestData }, { data: legacyData }, { data: trialData }, { data: familyData }] = await Promise.all([
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, members(name, surname, email)').eq('is_current', true),
-      supabase.from('members').select('id, name, surname, email, created_at').eq('member_status', 'pending_club_approval').eq('pending_legacy_setup', false).is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('membership_requests').select('id, member_id, request_type, created_at, members!inner(name, surname, email, deleted_at)').eq('status', 'pending').is('members.deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('members').select('id, name, surname, email, created_at, membership_requests(status)').eq('member_status', 'pending_club_approval').eq('pending_legacy_setup', false).is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('membership_requests').select('id, member_id, request_type, created_at, members!inner(name, surname, email, deleted_at, member_status)').eq('status', 'pending').eq('members.member_status', 'active').is('members.deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('members').select('id, name, surname, email, created_at').eq('pending_legacy_setup', true).eq('member_status', 'pending_club_approval').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('reservations').select('id, status, scheduled_date, start_time, created_at, members(name, surname)').eq('type', 'trial').order('created_at', { ascending: false }),
+      supabase.from('reservations').select('id, status, scheduled_date, start_time, created_at, members!inner(name, surname, member_status, pending_legacy_setup, trial_lesson_requested, deleted_at, membership_requests(status))').eq('type', 'trial').eq('members.member_status', 'pending_club_approval').eq('members.pending_legacy_setup', false).eq('members.trial_lesson_requested', true).is('members.deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('members').select('id, name, surname, email, created_at').eq('pending_family_setup', true).is('deleted_at', null).order('created_at', { ascending: false }),
     ])
 
-    setNewMembers(newMemberData ?? [])
+    // Yeni üye kaydı: sadece bekleyen paket talebi (membership_requests) olan ilk kayıtlar
+    setNewMembers((newMemberData ?? []).filter((m: any) =>
+      (m.membership_requests ?? []).some((r: any) => r.status === 'pending')
+    ))
     setPackageRequests((pkgRequestData ?? []).map((r: any) => {
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       return { id: r.id, member_id: r.member_id, request_type: r.request_type, created_at: r.created_at, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', member_email: m?.email ?? '' }
     }))
     setLegacyRequests(legacyData ?? [])
-    setTrialLessons((trialData ?? []).map((r: any) => {
-      const m = Array.isArray(r.members) ? r.members[0] : r.members
-      return { id: r.id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', scheduled_date: r.scheduled_date, start_time: r.start_time, status: r.status, created_at: r.created_at }
-    }))
+    // Deneme dersi: bekleyen paket talebi olanlar Yeni Üye Kaydı'na taşındığı için burada gösterilmez
+    setTrialLessons((trialData ?? [])
+      .filter((r: any) => {
+        const m = Array.isArray(r.members) ? r.members[0] : r.members
+        return !(m?.membership_requests ?? []).some((x: any) => x.status === 'pending')
+      })
+      .map((r: any) => {
+        const m = Array.isArray(r.members) ? r.members[0] : r.members
+        return { id: r.id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', scheduled_date: r.scheduled_date, start_time: r.start_time, status: r.status, created_at: r.created_at }
+      }))
+    setFamilyRequests(familyData ?? [])
 
     const memberMap = new Map<string, { name: string; email: string; remaining: number }>()
     for (const m of memberships ?? []) {
@@ -159,6 +186,7 @@ export default function NotificationsPage() {
     package_request: packageRequests.length,
     legacy:          legacyRequests.filter(m => !m._approved).length,
     trial:           trialLessons.length,
+    family:          familyRequests.filter(m => !m._resolved).length,
   }
 
   return (
@@ -254,6 +282,34 @@ export default function NotificationsPage() {
                           </p>
                           <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{formatDate(t.scheduled_date)} — {t.start_time.substring(0,5)}</p>
                           <p className="text-xs mt-1" style={{ color: '#4a6190' }}>Talep: {formatDateTime(t.created_at)}</p>
+                        </div>
+                      ))
+                    )}
+
+                    {/* Aile üyesi */}
+                    {key === 'family' && (
+                      familyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Bekleyen aile üyesi talebi yok.</p> :
+                      familyRequests.map(m => (
+                        <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <p className="font-bold text-white text-sm">{m.name} {m.surname}</p>
+                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
+                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>{formatDateTime(m.created_at)}</p>
+                          <div className="flex items-center gap-3 mt-2 flex-wrap">
+                            {m._resolved ? (
+                              <span className="text-xs font-bold" style={{ color: '#34d399' }}>✓ Tamamlandı</span>
+                            ) : (
+                              <button
+                                onClick={() => resolveFamily(m.id)}
+                                disabled={resolvingId === m.id}
+                                className="text-xs font-bold px-3 py-1.5 rounded-full disabled:opacity-50"
+                                style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.35)' }}
+                              >{resolvingId === m.id ? 'İşleniyor...' : '✓ Tamamlandı'}</button>
+                            )}
+                            <Link href="/admin/families"
+                              className="text-xs font-bold" style={{ color: '#a78bfa' }}>
+                              Aile Grupları →
+                            </Link>
+                          </div>
                         </div>
                       ))
                     )}
