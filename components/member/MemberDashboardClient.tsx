@@ -21,7 +21,7 @@ interface Package {
   used_lessons: number
   reserved_lessons: number
   start_date: string
-  end_date: string
+  end_date: string | null
   is_current: boolean
   _isFamily?: boolean
 }
@@ -679,7 +679,7 @@ export default function MemberDashboardClient({
                         </div>
                       </div>
                       <p className="text-xs" style={{ color: '#7b93c4' }}>{pkg.type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
-                      <p className="text-xs mt-1" style={{ color: 'rgba(123,147,196,0.6)' }}>{formatDate(pkg.start_date)} — {formatDate(pkg.end_date)}</p>
+                      <p className="text-xs mt-1" style={{ color: 'rgba(123,147,196,0.6)' }}>{pkg.end_date ? `${formatDate(pkg.start_date)} — ${formatDate(pkg.end_date)}` : 'İlk dersinizi alın'}</p>
                       <p className="text-xs" style={{ color: 'rgba(123,147,196,0.6)' }}>Kullanılan: {pkg.used_lessons} · Rezerve: {pkg.reserved_lessons}</p>
                     </div>
                   ))}

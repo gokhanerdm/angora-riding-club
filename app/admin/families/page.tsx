@@ -45,7 +45,7 @@ export default function FamiliesPage() {
 
     const [{ data: fams }, { data: mems }, { data: ms }, { data: allMs }, { data: activeRes }] = await Promise.all([
       supabase.from('families').select('id, name').order('name'),
-      supabase.from('members').select('id, name, surname').is('deleted_at', null).order('name'),
+      supabase.from('members').select('id, name, surname').is('deleted_at', null).eq('pending_family_setup', true).order('name'),
       supabase.from('memberships').select('id, family_id, total_lessons, used_lessons, reserved_lessons, member_id').not('family_id', 'is', null),
       supabase.from('memberships').select('id, member_id, total_lessons, used_lessons, reserved_lessons').is('family_id', null).eq('is_current', true),
       // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — gösterimde gerçek bekleyen/onaylı rezervasyonu canlı say
@@ -109,7 +109,10 @@ export default function FamiliesPage() {
       p_admin_id: user.id, p_family_id: addModal, p_member_id: addMember
     })
     if (error) showToast('Hata: ' + error.message)
-    else { showToast('Üye eklendi ✓'); setAddModal(null); setAddMember(''); load() }
+    else {
+      await supabase.from('members').update({ pending_family_setup: false }).eq('id', addMember)
+      showToast('Üye eklendi ✓'); setAddModal(null); setAddMember(''); load()
+    }
   }
 
   const handleRemoveMember = async (familyId: string, memberId: string) => {

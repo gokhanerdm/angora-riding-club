@@ -41,6 +41,7 @@ export default function PackagesPage() {
   const [legacyDone,  setLegacyDone]  = useState(false)
   const [familyDone,  setFamilyDone]  = useState(false)
   const [hasPackage,  setHasPackage]  = useState(true) // varsayılan gizli, kontrol sonrası gösterilir
+  const [profileCompleted, setProfileCompleted] = useState(true)
   const [error, setError]           = useState('')
   const router       = useRouter()
   const searchParams = useSearchParams()
@@ -48,12 +49,14 @@ export default function PackagesPage() {
 
   useEffect(() => {
     loadPackages()
+    if (searchParams.get('submitted') === '1') setSubmitted(true)
     // Üyenin aktif paketi var mı kontrol et
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
-      supabase.from('members').select('id, pending_legacy_setup, pending_family_setup').eq('user_id', user.id).single().then(async ({ data: m }) => {
+      supabase.from('members').select('id, pending_legacy_setup, pending_family_setup, profile_completed').eq('user_id', user.id).single().then(async ({ data: m }) => {
         if (!m) return
+        setProfileCompleted(m.profile_completed)
         // Daha önce "eski üyeyim" isteği göndermişse tekrar gösterme
         if (m.pending_legacy_setup) { setLegacyDone(true); setHasPackage(true); return }
         // Daha önce "aile üyesiyim" isteği göndermişse tekrar gösterme
@@ -88,6 +91,10 @@ export default function PackagesPage() {
 
   const handleRequest = async () => {
     if (!selected) return
+    if (!profileCompleted) {
+      router.push(`/member/profile-setup?action=package&package_id=${selected.pkg.id}&type=${selected.type}`)
+      return
+    }
     setSubmitting(true)
     setError('')
     const supabase = createClient()
@@ -128,6 +135,10 @@ export default function PackagesPage() {
         <div className="px-5 mb-4 space-y-2">
           <button
             onClick={async () => {
+              if (!profileCompleted) {
+                router.push('/member/profile-setup?action=legacy')
+                return
+              }
               const supabase = createClient()
               const { data: { user } } = await supabase.auth.getUser()
               if (!user) return
@@ -147,6 +158,10 @@ export default function PackagesPage() {
           </button>
           <button
             onClick={async () => {
+              if (!profileCompleted) {
+                router.push('/member/profile-setup?action=family')
+                return
+              }
               const supabase = createClient()
               const { data: { user } } = await supabase.auth.getUser()
               if (!user) return

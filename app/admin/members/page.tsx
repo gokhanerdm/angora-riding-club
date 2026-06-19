@@ -42,6 +42,7 @@ export default function MembersPage() {
   const [loadError, setLoadError]         = useState('')
   const [search, setSearch]               = useState('')
   const [filter, setFilter]               = useState('Tümü')
+  const [tab, setTab]                     = useState<'kulup' | 'program'>('kulup')
   const [selected, setSelected]           = useState<Member | null>(null)
   const [detail, setDetail]               = useState<MemberDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -61,9 +62,6 @@ export default function MembersPage() {
     const { data: membersData, error: membersErr } = await supabase
       .from('members').select('id, name, surname, email, phone, member_status, created_at, default_trainer_id')
       .is('deleted_at', null)
-      // Onayı/ödemesi tamamlanmamış (pending_club_approval) üyeler bu listede görünmez —
-      // bunlar "Üyelik Talepleri" sayfasında bekleyen talepler altında yönetilir
-      .neq('member_status', 'pending_club_approval')
       .order('name', { ascending: true })
     if (membersErr) { setLoadError('Üyeler yüklenirken bir hata oluştu: ' + membersErr.message); setLoading(false); return }
     if (!membersData) { setLoading(false); return }
@@ -211,8 +209,12 @@ export default function MembersPage() {
     await loadMembers()
   }
 
-  const filtered = members.filter(m => {
+  const clubMembers    = members.filter(m => m.total_lessons > 0)
+  const programMembers = members.filter(m => m.total_lessons === 0)
+
+  const filtered = (tab === 'kulup' ? clubMembers : programMembers).filter(m => {
     const matchSearch = `${m.name} ${m.surname} ${m.email}`.toLowerCase().includes(search.toLowerCase())
+    if (tab === 'program') return matchSearch
     const matchFilter =
       filter === 'Aktif' ? m.member_status === 'active' && m.remaining_lessons > 0 :
       filter === 'Pasif' ? m.member_status !== 'active' :
@@ -230,14 +232,37 @@ export default function MembersPage() {
     <div>
       {/* LİSTE */}
       <div className="mb-6 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Üyeler <span style={{ color: '#7b93c4', fontSize: '0.85rem', fontWeight: 700 }}>({members.length})</span></h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">Üyeler</h1>
           <a href="/admin/members/new-passive"
             className="text-xs font-bold px-3 py-2 rounded-xl"
             style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)' }}>
             + Pasif Üye
           </a>
         </div>
+
+        {/* Sekmeler */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setTab('kulup'); setFilter('Tümü') }}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+            style={tab === 'kulup'
+              ? { background: '#f59e0b', color: '#0a0f2e' }
+              : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            Kulüp Üyeleri <span style={{ opacity: 0.7, fontSize: '0.8em' }}>({clubMembers.length})</span>
+          </button>
+          <button
+            onClick={() => { setTab('program'); setFilter('Tümü') }}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+            style={tab === 'program'
+              ? { background: '#f59e0b', color: '#0a0f2e' }
+              : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            Program Kayıtlıları <span style={{ opacity: 0.7, fontSize: '0.8em' }}>({programMembers.length})</span>
+          </button>
+        </div>
+
         <input
           type="text"
           placeholder="İsim veya email ara..."
@@ -246,20 +271,22 @@ export default function MembersPage() {
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
         />
-        <div className="flex gap-1.5 overflow-x-auto pb-1 flex-nowrap">
-          {STATUS_FILTERS.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0"
-              style={filter === f
-                ? { background: '#f59e0b', color: '#0a0f2e' }
-                : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        {tab === 'kulup' && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 flex-nowrap">
+            {STATUS_FILTERS.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0"
+                style={filter === f
+                  ? { background: '#f59e0b', color: '#0a0f2e' }
+                  : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -279,9 +306,15 @@ export default function MembersPage() {
               style={CARD}
             >
               <p className="text-sm font-bold" style={{ color: member.default_trainer_id ? '#fff' : '#f59e0b' }}>{member.name} {member.surname}</p>
-              <p className="text-xs font-bold flex-shrink-0" style={{ color: member.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
-                {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
-              </p>
+              {tab === 'kulup' ? (
+                <p className="text-xs font-bold flex-shrink-0" style={{ color: member.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
+                  {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
+                </p>
+              ) : (
+                <p className="text-xs flex-shrink-0" style={{ color: '#7b93c4' }}>
+                  {formatDate(member.created_at.substring(0, 10))}
+                </p>
+              )}
             </a>
           ))}
         </div>
@@ -375,7 +408,7 @@ export default function MembersPage() {
                           <span className="font-bold text-white">{m.total_lessons} Ders</span>
                           <span className="text-xs font-bold" style={{ color: m.is_current ? '#f59e0b' : '#4a6190' }}>{m.is_current ? 'Aktif' : 'Geçmiş'}</span>
                         </div>
-                        <p className="text-xs" style={{ color: '#7b93c4' }}>{formatDate(m.start_date)} — {formatDate(m.end_date)}</p>
+                        <p className="text-xs" style={{ color: '#7b93c4' }}>{m.end_date ? `${formatDate(m.start_date)} — ${formatDate(m.end_date)}` : 'İlk dersinizi alın'}</p>
                         <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Kalan: {m.total_lessons - m.used_lessons - m.live_reserved} · Kullanılan: {m.used_lessons}</p>
                       </div>
                     ))

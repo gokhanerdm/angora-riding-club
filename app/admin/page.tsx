@@ -104,14 +104,14 @@ export default function AdminDashboard() {
     }
 
     if (type === 'package') {
-      // Satış tarihi olarak start_date kullanılır (created_at değil — geçmiş paket geriye dönük girilebilir)
+      // Satış/onay tarihi olarak purchase_date kullanılır
       const cutoff = period === 'today' ? today : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
-      const filtered = rawPackages.filter(p => p.start_date >= cutoff)
+      const filtered = rawPackages.filter(p => p.purchase_date >= cutoff)
       // Üye adlarını çek
       const memberIds = [...new Set(filtered.map((p: any) => p.member_id))]
       const { data: mems } = await supabase.from('members').select('id, name, surname').in('id', memberIds)
       const memMap = new Map((mems ?? []).map((m: any) => [m.id, `${m.name} ${m.surname}`]))
-      setGenericData(filtered.map(p => ({ ...p, member_name: memMap.get(p.member_id) ?? '—' })).sort((a, b) => b.start_date.localeCompare(a.start_date)))
+      setGenericData(filtered.map(p => ({ ...p, member_name: memMap.get(p.member_id) ?? '—' })).sort((a, b) => b.purchase_date.localeCompare(a.purchase_date)))
     }
 
     if (type === 'visit' && period !== 'year') {
@@ -158,20 +158,22 @@ export default function AdminDashboard() {
         }).length)
       })
 
-    // Yeni kayıt — kayıt tarihi, üyenin ilk paket başlangıç tarihine (start_date) göre belirlenir
-    supabase.from('members').select('id, name, surname, email, created_at').is('deleted_at', null).then(async ({ data: allMems }) => {
+    // Yeni kayıt — kayıt tarihi, üyenin ilk paketinin alım/onay tarihine (purchase_date) göre belirlenir
+    supabase.from('members').select('id, name, surname, email, created_at, member_status').is('deleted_at', null).then(async ({ data: allMems }) => {
       const mems = allMems ?? []
-      const { data: allMemberships } = await supabase.from('memberships').select('member_id, start_date')
+      const { data: allMemberships } = await supabase.from('memberships').select('member_id, purchase_date')
         .in('member_id', mems.map(m => m.id))
-      const firstStartDate = new Map<string, string>()
+      const firstPurchaseDate = new Map<string, string>()
       for (const ms of allMemberships ?? []) {
-        const cur = firstStartDate.get(ms.member_id)
-        if (!cur || ms.start_date < cur) firstStartDate.set(ms.member_id, ms.start_date)
+        const cur = firstPurchaseDate.get(ms.member_id)
+        if (!cur || ms.purchase_date < cur) firstPurchaseDate.set(ms.member_id, ms.purchase_date)
       }
-      const realMembers = mems.map(m => ({
-        ...m,
-        reg_date: firstStartDate.get(m.id) ?? m.created_at.slice(0, 10),
-      }))
+      const realMembers = mems
+        .filter(m => firstPurchaseDate.has(m.id) || m.member_status === 'active')
+        .map(m => ({
+          ...m,
+          reg_date: firstPurchaseDate.get(m.id) ?? m.created_at.slice(0, 10),
+        }))
       setRawRealMembers(realMembers)
       const yearStart = `${now.getFullYear()}-01-01`
       setMemberStats({
@@ -183,15 +185,15 @@ export default function AdminDashboard() {
     })
 
     // Satılan paket — legacy paketler (payment_amount = 0) hariç, TL cinsinden
-    // Sınıflandırma start_date'e göre yapılır (created_at değil — geçmiş paket geriye dönük girilebilir)
-    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, start_date, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
+    // Sınıflandırma purchase_date'e göre yapılır (paketin onaylandığı/satıldığı tarih)
+    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, purchase_date, start_date, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
       const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
       const all = pkgs ?? []
       setRawPackages(all)
       setPackageStats({
-        today: sum(all.filter(p => p.start_date >= today)),
-        week:  sum(all.filter(p => p.start_date >= weekStart)),
-        month: sum(all.filter(p => p.start_date >= monthStart)),
+        today: sum(all.filter(p => p.purchase_date >= today)),
+        week:  sum(all.filter(p => p.purchase_date >= weekStart)),
+        month: sum(all.filter(p => p.purchase_date >= monthStart)),
         total: sum(all),
       })
     })

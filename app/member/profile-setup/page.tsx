@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
 const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
@@ -20,7 +20,7 @@ function calculateAge(dateStr: string): number {
   return age
 }
 
-export default function ProfileSetupPage() {
+function ProfileSetupForm() {
   const [tcKimlik, setTcKimlik]           = useState('')
   const [dogumYeri, setDogumYeri]         = useState('')
   const [dogumTarihi, setDogumTarihi]     = useState('')
@@ -42,6 +42,10 @@ export default function ProfileSetupPage() {
   const [saving, setSaving]               = useState(false)
   const [error, setError]                 = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const action    = searchParams.get('action')
+  const packageId = searchParams.get('package_id')
+  const reqType   = searchParams.get('type')
 
   const isMinor = calculateAge(dogumTarihi) <= 18
 
@@ -111,15 +115,34 @@ export default function ProfileSetupPage() {
       p_veli_tc_kimlik:  isMinor ? veliTcKimlik : null,
     })
 
-    setSaving(false)
     if (rpcErr) {
+      setSaving(false)
       if (rpcErr.message.includes('TC kimlik numarasıyla kayıtlı')) {
         setError('Bu TC kimlik numarasıyla kayıtlı bir hesap zaten mevcut.')
       } else {
         setError('Kaydedilemedi: ' + rpcErr.message)
       }
+      return
     }
-    else router.push('/member')
+
+    // Profil tamamlandı — paketler sayfasından gelen bekleyen işlemi uygula
+    if (action === 'legacy') {
+      await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
+      router.push('/member/packages')
+    } else if (action === 'family') {
+      await supabase.rpc('request_family_setup', { p_user_id: user.id })
+      router.push('/member/packages')
+    } else if (action === 'package' && packageId && reqType) {
+      await supabase.rpc('create_membership_request', {
+        user_id: user.id,
+        p_package_id: packageId,
+        p_request_type: reqType,
+      })
+      router.push('/member/packages?submitted=1')
+    } else {
+      router.push('/member')
+    }
+    setSaving(false)
   }
 
   return (
@@ -330,5 +353,13 @@ export default function ProfileSetupPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function ProfileSetupPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProfileSetupForm />
+    </Suspense>
   )
 }

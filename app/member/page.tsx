@@ -22,10 +22,6 @@ export default async function MemberDashboard() {
       .single()
   ])
 
-  // Profil tamamlanmamışsa yönlendir (deneme dersi alanlar hariç — 2. kayıt sadece paket alan üyeler için)
-  if (memberResult.data && !memberResult.data.profile_completed && !memberResult.data.trial_lesson_requested) {
-    redirect('/member/profile-setup')
-  }
   if (memberResult.data?.trial_lesson_requested && !memberResult.data.trial_lesson_used) {
     redirect('/member/trial-lesson')
   }
