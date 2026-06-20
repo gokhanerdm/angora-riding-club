@@ -127,17 +127,32 @@ function ProfileSetupForm() {
 
     // Profil tamamlandı — paketler sayfasından gelen bekleyen işlemi uygula
     if (action === 'legacy') {
-      await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
-      router.push('/member/packages')
+      const { error: legacyErr } = await supabase.rpc('request_legacy_setup', { p_user_id: user.id })
+      if (legacyErr) {
+        setSaving(false)
+        setError('Talep gönderilemedi: ' + legacyErr.message)
+        return
+      }
+      router.push('/member?legacy=1')
     } else if (action === 'family') {
-      await supabase.rpc('request_family_setup', { p_user_id: user.id })
-      router.push('/member/packages')
+      const { error: familyErr } = await supabase.rpc('request_family_setup', { p_user_id: user.id })
+      if (familyErr) {
+        setSaving(false)
+        setError('Talep gönderilemedi: ' + familyErr.message)
+        return
+      }
+      router.push('/member?family=1')
     } else if (action === 'package' && packageId && reqType) {
-      await supabase.rpc('create_membership_request', {
+      const { error: pkgErr } = await supabase.rpc('create_membership_request', {
         user_id: user.id,
         p_package_id: packageId,
         p_request_type: reqType,
       })
+      if (pkgErr) {
+        setSaving(false)
+        setError('Talep gönderilemedi: ' + pkgErr.message)
+        return
+      }
       router.push('/member/packages?submitted=1')
     } else {
       router.push('/member')

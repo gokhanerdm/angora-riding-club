@@ -9,7 +9,8 @@ interface MemberStats {
   reserved_lessons: number
 }
 
-export default async function MemberDashboard() {
+export default async function MemberDashboard({ searchParams }: { searchParams: Promise<{ legacy?: string; family?: string }> }) {
+  const sp = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -73,6 +74,7 @@ export default async function MemberDashboard() {
       trainerName={trainerName}
       profilePhotoUrl={profilePhotoUrl}
       referralCode={referralCode}
+      successBanner={sp.legacy === '1' ? 'legacy' : sp.family === '1' ? 'family' : undefined}
     />
   )
 }

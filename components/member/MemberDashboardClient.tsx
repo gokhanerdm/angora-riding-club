@@ -64,7 +64,7 @@ const GREEN_SOFT = '#E8F0EA'
 const MUTED = '#6B7280'
 
 export default function MemberDashboardClient({
-  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId
+  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId, successBanner
 }: {
   stats: Stats
   userId: string
@@ -72,7 +72,8 @@ export default function MemberDashboardClient({
   trainerName: string
   profilePhotoUrl?: string | null
   referralCode?: string | null
-  adminMemberId?: string   // sadece admin görüntülerken gelir
+  adminMemberId?: string
+  successBanner?: 'legacy' | 'family'
 }) {
   const router = useRouter()
   const [modal, setModal]           = useState<ModalType>(null)
@@ -274,6 +275,12 @@ export default function MemberDashboardClient({
       style={{ background: BG, paddingBottom: adminMemberId ? 80 : 0 }}
     >
       <WelcomeModal />
+      {successBanner && (
+        <div className="mx-4 mt-4 px-4 py-3 rounded-2xl text-sm font-medium"
+          style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+          ✓ Talebiniz alındı. Yönetici en kısa sürede bilgilerinizi işleyecek.
+        </div>
+      )}
       {/* Header */}
       <div className="px-5 pt-12 pb-4 flex items-start justify-between">
         {/* İsme tıklayınca profil bilgileri */}
