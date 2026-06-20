@@ -17,19 +17,30 @@ function todayKey() {
   const d = nowIstanbul()
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
 }
-function weekStartKey() {
-  const d = nowIstanbul()
-  const day = d.getDay() === 0 ? 6 : d.getDay() - 1 // Pazartesi = 0
+function dateFromKey(key: string) {
+  return new Date(key + 'T00:00:00')
+}
+function shiftDay(key: string, delta: number) {
+  const d = dateFromKey(key)
+  d.setDate(d.getDate() + delta)
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+}
+function weekStartForDate(key: string) {
+  const d = dateFromKey(key)
+  const day = d.getDay() === 0 ? 6 : d.getDay() - 1
   d.setDate(d.getDate() - day)
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
 }
-function monthStartKey() {
-  const d = nowIstanbul()
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-01`
+function monthStartForDate(key: string) {
+  return key.substring(0, 7) + '-01'
 }
 function fmtDate(s: string) {
   const d = new Date(s + 'T00:00:00')
   return `${d.getDate()} ${MONTHS_S[d.getMonth()]} ${d.getFullYear()}`
+}
+function dateLabelFor(key: string) {
+  const d = dateFromKey(key)
+  return `${DAYS_TR[d.getDay()]}, ${d.getDate()} ${MONTHS_TR[d.getMonth()]}`
 }
 
 const STATUS_LABEL: Record<string,string> = {
@@ -44,13 +55,10 @@ const STATUS_COLOR: Record<string,string> = {
 type LessonCardKey = 'total' | 'completed' | 'pending' | 'remaining'
 
 export default function AdminDashboard() {
-  const today      = todayKey()
-  const weekStart  = weekStartKey()
-  const monthStart = monthStartKey()
-  const now        = nowIstanbul()
-  const dateLabel  = `${DAYS_TR[now.getDay()]}, ${now.getDate()} ${MONTHS_TR[now.getMonth()]}`
+  const realToday = todayKey()
 
   // ---- State ----
+  const [selectedDate, setSelectedDate] = useState(realToday)
   const [lessonStats, setLessonStats] = useState({ total: 0, completed: 0, pending: 0, remaining: 0 })
   const [memberStats, setMemberStats] = useState({ today: 0, week: 0, month: 0, year: 0 })
   const [packageStats, setPackageStats] = useState({ today: 0 as number, week: 0 as number, month: 0 as number, total: 0 as number })
@@ -59,9 +67,10 @@ export default function AdminDashboard() {
   const [pendingNew, setPendingNew]     = useState(0)
 
   // Ham veriler (modal için)
-  const [rawRealMembers, setRawRealMembers] = useState<any[]>([])
-  const [rawPackages,    setRawPackages]    = useState<any[]>([])
-  const [rawVisits,      setRawVisits]      = useState<{ today: any[]; week: any[]; month: any[]; total: any[] }>({ today: [], week: [], month: [], total: [] })
+  const [rawRealMembers,    setRawRealMembers]    = useState<any[]>([])
+  const [rawPackages,       setRawPackages]       = useState<any[]>([])
+  const [rawVisits,         setRawVisits]         = useState<{ today: any[]; week: any[]; month: any[]; total: any[] }>({ today: [], week: [], month: [], total: [] })
+  const [allCompletedRaw,   setAllCompletedRaw]   = useState<any[]>([])
 
   // Ders modalı
   const [activeCard, setActiveCard]     = useState<LessonCardKey | null>(null)
@@ -83,11 +92,14 @@ export default function AdminDashboard() {
     setGenericLoading(true)
     setGenericData([])
     const supabase = createClient()
+    const weekStart  = weekStartForDate(selectedDate)
+    const monthStart = monthStartForDate(selectedDate)
+    const yearStart  = selectedDate.substring(0, 4) + '-01-01'
 
     if (type === 'member' && period === 'year') {
-      // Tüm yıllara göre grupla — her yıl başlık, altında o yıl kayıt olanlar (ilk paket başlangıç tarihine göre)
+      const filtered = rawRealMembers.filter(m => m.reg_date >= yearStart && m.reg_date <= selectedDate)
       const groups = new Map<string, any[]>()
-      for (const m of rawRealMembers) {
+      for (const m of filtered) {
         const y = m.reg_date.slice(0, 4)
         if (!groups.has(y)) groups.set(y, [])
         groups.get(y)!.push(m)
@@ -98,16 +110,15 @@ export default function AdminDashboard() {
         members: groups.get(y)!.sort((a, b) => b.reg_date.localeCompare(a.reg_date)),
       })))
     } else if (type === 'member') {
-      const cutoff = period === 'today' ? today : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
-      const filtered = rawRealMembers.filter(m => m.reg_date >= cutoff)
+      const cutoff = period === 'today' ? selectedDate : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
+      const upper  = period === 'total' ? selectedDate : selectedDate
+      const filtered = rawRealMembers.filter(m => m.reg_date >= cutoff && m.reg_date <= upper)
       setGenericData(filtered.sort((a, b) => b.reg_date.localeCompare(a.reg_date)))
     }
 
     if (type === 'package') {
-      // Satış/onay tarihi olarak purchase_date kullanılır
-      const cutoff = period === 'today' ? today : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
-      const filtered = rawPackages.filter(p => p.purchase_date >= cutoff)
-      // Üye adlarını çek
+      const cutoff = period === 'today' ? selectedDate : period === 'week' ? weekStart : period === 'month' ? monthStart : '2000-01-01'
+      const filtered = rawPackages.filter(p => p.purchase_date >= cutoff && p.purchase_date <= selectedDate)
       const memberIds = [...new Set(filtered.map((p: any) => p.member_id))]
       const { data: mems } = await supabase.from('members').select('id, name, surname').in('id', memberIds)
       const memMap = new Map((mems ?? []).map((m: any) => [m.id, `${m.name} ${m.surname}`]))
@@ -115,8 +126,7 @@ export default function AdminDashboard() {
     }
 
     if (type === 'visit' && period !== 'year') {
-      const members = rawVisits[period]
-      setGenericData(members)
+      setGenericData(rawVisits[period])
     }
 
     setGenericLoading(false)
@@ -130,22 +140,11 @@ export default function AdminDashboard() {
     void supabase.rpc('auto_complete_past_lessons')
   }, [])
 
-  // ---- Veri yükle ----
+  // ---- Ham veri yükle (bir kez) ----
   useEffect(() => {
     const supabase = createClient()
 
-    // Ders istatistikleri (bugün) — cancelled ve no_show hariç
-    supabase.from('reservations').select('status').eq('scheduled_date', today).in('status', ['pending','approved','completed'])
-      .then(({ data }) => {
-        setLessonStats({
-          total:     data?.length ?? 0,
-          completed: data?.filter(r => r.status === 'completed').length ?? 0,
-          pending:   data?.filter(r => r.status === 'pending' || r.status === 'approved').length ?? 0,
-          remaining: data?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
-        })
-      })
-
-    // Bekleyen başvurular
+    // Bekleyen başvurular (tarihten bağımsız)
     supabase.from('membership_requests').select('id, member_id, members!inner(member_status)').eq('status', 'pending')
       .then(({ data: reqs }) => {
         setPendingFirst((reqs ?? []).filter((r: any) => {
@@ -158,7 +157,7 @@ export default function AdminDashboard() {
         }).length)
       })
 
-    // Yeni kayıt — kayıt tarihi, üyenin ilk paketinin alım/onay tarihine (purchase_date) göre belirlenir
+    // Üyeler (raw)
     supabase.from('members').select('id, name, surname, email, created_at, member_status').is('deleted_at', null).then(async ({ data: allMems }) => {
       const mems = allMems ?? []
       const { data: allMemberships } = await supabase.from('memberships').select('member_id, purchase_date')
@@ -170,35 +169,15 @@ export default function AdminDashboard() {
       }
       const realMembers = mems
         .filter(m => firstPurchaseDate.has(m.id) || m.member_status === 'active')
-        .map(m => ({
-          ...m,
-          reg_date: firstPurchaseDate.get(m.id) ?? m.created_at.slice(0, 10),
-        }))
+        .map(m => ({ ...m, reg_date: firstPurchaseDate.get(m.id) ?? m.created_at.slice(0, 10) }))
       setRawRealMembers(realMembers)
-      const yearStart = `${now.getFullYear()}-01-01`
-      setMemberStats({
-        today: realMembers.filter(m => m.reg_date >= today).length,
-        week:  realMembers.filter(m => m.reg_date >= weekStart).length,
-        month: realMembers.filter(m => m.reg_date >= monthStart).length,
-        year:  realMembers.filter(m => m.reg_date >= yearStart).length,
-      })
     })
 
-    // Satılan paket — legacy paketler (payment_amount = 0) hariç, TL cinsinden
-    // Sınıflandırma purchase_date'e göre yapılır (paketin onaylandığı/satıldığı tarih)
-    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, purchase_date, start_date, created_at').gt('payment_amount', 0).then(({ data: pkgs }) => {
-      const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
-      const all = pkgs ?? []
-      setRawPackages(all)
-      setPackageStats({
-        today: sum(all.filter(p => p.purchase_date >= today)),
-        week:  sum(all.filter(p => p.purchase_date >= weekStart)),
-        month: sum(all.filter(p => p.purchase_date >= monthStart)),
-        total: sum(all),
-      })
-    })
+    // Paketler (raw)
+    supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, purchase_date, start_date, created_at').gt('payment_amount', 0)
+      .then(({ data: pkgs }) => setRawPackages(pkgs ?? []))
 
-    // Gelen üye (distinct member_id — completed ders)
+    // Tamamlanan dersler (raw — gelen üye için)
     supabase.from('reservations').select('member_id, scheduled_date, members(name, surname)').eq('status', 'completed')
       .then(({ data: allCompleted }) => {
         const all = allCompleted ?? []
@@ -212,19 +191,79 @@ export default function AdminDashboard() {
           }
           return [...seen.entries()].map(([id, name]) => ({ id, name }))
         }
-        const todayRows  = all.filter(r => r.scheduled_date === today)
-        const weekRows   = all.filter(r => r.scheduled_date >= weekStart && r.scheduled_date <= today)
-        const monthRows  = all.filter(r => r.scheduled_date >= monthStart && r.scheduled_date <= today)
-        const visits = {
-          today: toMemList(todayRows),
-          week:  toMemList(weekRows),
-          month: toMemList(monthRows),
+        setRawVisits({
+          today: toMemList(all), // placeholder, filtreleme selectedDate effect'inde
+          week:  toMemList(all),
+          month: toMemList(all),
           total: toMemList(all),
-        }
-        setRawVisits(visits)
-        setVisitStats({ today: visits.today.length, week: visits.week.length, month: visits.month.length, total: visits.total.length })
+        })
+        // raw tüm completed rezervasyonları sakla
+        setAllCompletedRaw(all)
       })
   }, [])
+
+  // ---- Seçili tarihe göre istatistikleri yeniden hesapla ----
+  useEffect(() => {
+    const weekStart  = weekStartForDate(selectedDate)
+    const monthStart = monthStartForDate(selectedDate)
+    const yearStart  = selectedDate.substring(0, 4) + '-01-01'
+
+    // Üye istatistikleri
+    setMemberStats({
+      today: rawRealMembers.filter(m => m.reg_date === selectedDate).length,
+      week:  rawRealMembers.filter(m => m.reg_date >= weekStart && m.reg_date <= selectedDate).length,
+      month: rawRealMembers.filter(m => m.reg_date >= monthStart && m.reg_date <= selectedDate).length,
+      year:  rawRealMembers.filter(m => m.reg_date >= yearStart && m.reg_date <= selectedDate).length,
+    })
+
+    // Paket istatistikleri
+    const sum = (items: any[]) => items.reduce((acc, p) => acc + parseFloat(p.payment_amount ?? 0), 0)
+    setPackageStats({
+      today: sum(rawPackages.filter(p => p.purchase_date === selectedDate)),
+      week:  sum(rawPackages.filter(p => p.purchase_date >= weekStart && p.purchase_date <= selectedDate)),
+      month: sum(rawPackages.filter(p => p.purchase_date >= monthStart && p.purchase_date <= selectedDate)),
+      total: sum(rawPackages.filter(p => p.purchase_date <= selectedDate)),
+    })
+
+    // Gelen üye istatistikleri
+    if (allCompletedRaw.length > 0) {
+      const toMemList = (rows: any[]) => {
+        const seen = new Map<string, string>()
+        for (const r of rows) {
+          if (!seen.has(r.member_id)) {
+            const m = Array.isArray(r.members) ? r.members[0] : r.members
+            seen.set(r.member_id, m ? `${m.name} ${m.surname}` : '—')
+          }
+        }
+        return [...seen.entries()].map(([id, name]) => ({ id, name }))
+      }
+      const todayRows  = allCompletedRaw.filter(r => r.scheduled_date === selectedDate)
+      const weekRows   = allCompletedRaw.filter(r => r.scheduled_date >= weekStart && r.scheduled_date <= selectedDate)
+      const monthRows  = allCompletedRaw.filter(r => r.scheduled_date >= monthStart && r.scheduled_date <= selectedDate)
+      const visits = {
+        today: toMemList(todayRows),
+        week:  toMemList(weekRows),
+        month: toMemList(monthRows),
+        total: toMemList(allCompletedRaw.filter(r => r.scheduled_date <= selectedDate)),
+      }
+      setRawVisits(visits)
+      setVisitStats({ today: visits.today.length, week: visits.week.length, month: visits.month.length, total: visits.total.length })
+    }
+  }, [selectedDate, rawRealMembers, rawPackages, allCompletedRaw])
+
+  // ---- Ders istatistikleri (seçili güne göre) ----
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('reservations').select('status').eq('scheduled_date', selectedDate).in('status', ['pending','approved','completed'])
+      .then(({ data }) => {
+        setLessonStats({
+          total:     data?.length ?? 0,
+          completed: data?.filter(r => r.status === 'completed').length ?? 0,
+          pending:   data?.filter(r => r.status === 'pending' || r.status === 'approved').length ?? 0,
+          remaining: data?.filter(r => r.status === 'approved' || r.status === 'pending').length ?? 0,
+        })
+      })
+  }, [selectedDate])
 
   // ---- Modal ----
   const openCard = async (key: LessonCardKey) => {
@@ -234,7 +273,7 @@ export default function AdminDashboard() {
     const supabase = createClient()
     let q = supabase.from('reservations')
       .select('id, start_time, end_time, status, members(name, surname), trainers(name, surname)')
-      .eq('scheduled_date', today).in('status', ['pending','approved','completed']).order('start_time')
+      .eq('scheduled_date', selectedDate).in('status', ['pending','approved','completed']).order('start_time')
     if (key === 'completed') q = q.eq('status', 'completed')
     if (key === 'pending')   q = q.in('status', ['pending', 'approved'])
     if (key === 'remaining') q = q.in('status', ['approved', 'pending'])
@@ -301,8 +340,31 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#7b93c4' }}>Bugün</p>
-        <h1 className="text-2xl font-bold text-white">{dateLabel}</h1>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#7b93c4' }}>
+          {selectedDate === realToday ? 'Bugün' : 'Seçili Gün'}
+        </p>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">{dateLabelFor(selectedDate)}</h1>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setSelectedDate(d => shiftDay(d, -1))}
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-lg font-bold active:opacity-60"
+              style={{ background: 'rgba(255,255,255,0.07)', color: '#c8d6f0' }}>‹</button>
+            <button
+              onClick={() => setSelectedDate(d => shiftDay(d, 1))}
+              disabled={selectedDate >= realToday}
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-lg font-bold active:opacity-60 disabled:opacity-30"
+              style={{ background: 'rgba(255,255,255,0.07)', color: '#c8d6f0' }}>›</button>
+            {selectedDate !== realToday && (
+              <button
+                onClick={() => setSelectedDate(realToday)}
+                className="px-3 h-9 flex items-center justify-center rounded-xl text-xs font-bold active:opacity-60"
+                style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                Bugün
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Satır 1 — Dersler */}
@@ -318,7 +380,7 @@ export default function AdminDashboard() {
         { title: 'Bugün',  value: memberStats.today, color: '#a78bfa', onClick: () => openGenericModal('member','today','Bugün Yeni Kayıtlar') },
         { title: 'Hafta',  value: memberStats.week,  color: '#a78bfa', onClick: () => openGenericModal('member','week','Bu Hafta Yeni Kayıtlar') },
         { title: 'Ay',     value: memberStats.month, color: '#a78bfa', onClick: () => openGenericModal('member','month','Bu Ay Yeni Kayıtlar') },
-        { title: String(now.getFullYear()), value: memberStats.year, color: '#c8d6f0', onClick: () => openGenericModal('member','year',`${now.getFullYear()} ve Önceki Yıllar`) },
+        { title: selectedDate.substring(0,4), value: memberStats.year, color: '#c8d6f0', onClick: () => openGenericModal('member','year',`${selectedDate.substring(0,4)} Kayıtlar`) },
       ]} />
 
       {/* Satır 3 — Satılan Paket */}
@@ -393,7 +455,7 @@ export default function AdminDashboard() {
                 <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Kayıt bulunamadı.</p>
               )}
               {!modalLoading && modalData.map((r, i) => (
-                <button key={i} onClick={() => { setEditItem(r); setEditDate(today); setEditStatus(r.status) }}
+                <button key={i} onClick={() => { setEditItem(r); setEditDate(selectedDate); setEditStatus(r.status) }}
                   className="w-full rounded-2xl p-3 flex justify-between items-center text-left active:opacity-70"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div>
@@ -404,6 +466,7 @@ export default function AdminDashboard() {
                     {STATUS_LABEL[r.status] ?? r.status}
                   </span>
                 </button>
+
               ))}
             </div>
           </div>
