@@ -22,6 +22,7 @@ const DURATION: Record<number, string> = {
   20: '5 Aylık Tesis Üyeliği',
   30: '8 Aylık Tesis Üyeliği',
   60: '12 Aylık Tesis Üyeliği',
+  90: '18 Aylık Tesis Üyeliği',
 }
 
 function formatPrice(p: number) {
@@ -33,7 +34,8 @@ const AMBER = { accent: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: '1px sol
 const ORANGE= { accent: '#f97316', bg: 'rgba(249,115,22,0.12)',  border: '1px solid rgba(249,115,22,0.3)' }
 
 export default function PackagesPage() {
-  const [packages, setPackages]     = useState<Package[]>([])
+  const [packages, setPackages]         = useState<Package[]>([])
+  const [familyPackages, setFamilyPackages] = useState<Package[]>([])
   const [loading, setLoading]       = useState(true)
   const [selected, setSelected]     = useState<Selection | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -78,14 +80,14 @@ export default function PackagesPage() {
 
   const loadPackages = async () => {
     const supabase = createClient()
-    const { data } = await supabase
-      .from('membership_packages')
-      .select('id, lesson_count, weekday_price, general_price')
-      .eq('is_active', true)
-      .eq('is_family', false)
-      .gt('weekday_price', 0)
-      .order('lesson_count', { ascending: true })
-    if (data) setPackages(data)
+    const [{ data: ind }, { data: fam }] = await Promise.all([
+      supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price')
+        .eq('is_active', true).eq('is_family', false).gt('general_price', 0).order('lesson_count', { ascending: true }),
+      supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price')
+        .eq('is_active', true).eq('is_family', true).gt('general_price', 0).order('lesson_count', { ascending: true }),
+    ])
+    if (ind) setPackages(ind)
+    if (fam) setFamilyPackages(fam)
     setLoading(false)
   }
 
@@ -246,21 +248,72 @@ export default function PackagesPage() {
                     </div>
                     <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders</p>
                   </div>
-
                   <button
                     onClick={() => setSelected({ pkg })}
                     className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
                     style={{ background: AMBER.bg, border: AMBER.border }}
                   >
-                    <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>
-                      {formatPrice(pkg.general_price)}
-                    </p>
+                    <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>{formatPrice(pkg.general_price)}</p>
                     <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(245,158,11,0.6)' }}>Satın Al</p>
                   </button>
                 </div>
               )
             })}
           </div>
+
+          {/* Aile Üyelikleri */}
+          {familyPackages.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-bold uppercase tracking-widest mb-2 px-1" style={{ color: '#a78bfa' }}>Aile Üyelikleri</p>
+              <div
+                className="grid rounded-t-2xl px-4 py-3 mb-0.5"
+                style={{
+                  gridTemplateColumns: '1fr 110px',
+                  background: 'rgba(167,139,250,0.12)',
+                  border: '1px solid rgba(167,139,250,0.2)',
+                  borderBottom: 'none',
+                }}
+              >
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#a78bfa' }}>Tesis Üyelik Süresi</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#7b93c4' }}>İçerik</p>
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#a78bfa' }}>Fiyat</p>
+              </div>
+              <div className="space-y-0.5">
+                {familyPackages.map((pkg, i) => {
+                  const isLast = i === familyPackages.length - 1
+                  return (
+                    <div
+                      key={pkg.id}
+                      className={`grid items-center px-4 py-3.5 ${isLast ? 'rounded-b-2xl' : ''}`}
+                      style={{
+                        gridTemplateColumns: '1fr 110px',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(167,139,250,0.12)',
+                        borderTop: 'none',
+                      }}
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-white leading-tight">
+                          {DURATION[pkg.lesson_count] ?? `${pkg.lesson_count} Ders`}
+                        </p>
+                        <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders · Aile</p>
+                      </div>
+                      <button
+                        onClick={() => setSelected({ pkg })}
+                        className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
+                        style={{ background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)' }}
+                      >
+                        <p className="text-xs font-bold leading-tight" style={{ color: '#a78bfa' }}>{formatPrice(pkg.general_price)}</p>
+                        <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(167,139,250,0.6)' }}>Satın Al</p>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
