@@ -16,6 +16,7 @@ interface Selection {
 }
 
 const DURATION: Record<number, string> = {
+  4:  '1 Aylık Tesis Üyeliği',
   8:  '2 Aylık Tesis Üyeliği',
   12: '3 Aylık Tesis Üyeliği',
   20: '5 Aylık Tesis Üyeliği',
