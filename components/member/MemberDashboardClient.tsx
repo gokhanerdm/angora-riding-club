@@ -224,40 +224,13 @@ export default function MemberDashboardClient({
         ? ['completed', 'no_show']
         : ['pending', 'approved']
 
-      // Aile üyeliği varsa tüm aile üyelerinin derslerini membership_id üzerinden getir
-      const { data: fmData } = await supabase
-        .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
-
-      if (fmData?.family_id) {
-        const { data: fmIds } = await supabase
-          .from('memberships').select('id').eq('family_id', fmData.family_id)
-        const msIds = (fmIds ?? []).map((m: any) => m.id)
-        if (msIds.length > 0) {
-          const { data } = await supabase
-            .from('reservations')
-            .select('id, scheduled_date, start_time, end_time, status, member_id')
-            .in('membership_id', msIds)
-            .in('status', statusFilter)
-            .order('scheduled_date', { ascending: type === 'reserved' })
-          // Üye isimlerini tek sorguda getir
-          const memberIds = [...new Set((data ?? []).map((r: any) => r.member_id))]
-          const { data: memberNames } = await supabase
-            .from('members').select('id, name, surname').in('id', memberIds)
-          const nameMap = Object.fromEntries((memberNames ?? []).map((m: any) => [m.id, `${m.name} ${m.surname}`]))
-          setReservations((data ?? []).map((r: any) => ({ ...r, member_name: nameMap[r.member_id] })))
-        } else {
-          setReservations([])
-        }
-      } else {
-        // Aile üyeliği yok — sadece kendi derslerini getir
-        const { data } = await supabase
-          .from('reservations')
-          .select('id, scheduled_date, start_time, end_time, status')
-          .eq('member_id', memberId)
-          .in('status', statusFilter)
-          .order('scheduled_date', { ascending: type === 'reserved' })
-        setReservations(data ?? [])
-      }
+      // get_family_reservations RPC (SECURITY DEFINER) — RLS bypass, aile üyelerini de gösterir
+      const { data } = await supabase.rpc('get_family_reservations', {
+        p_member_id: memberId,
+        p_status:    statusFilter,
+      })
+      const rows = (data ?? []) as any[]
+      setReservations(type === 'reserved' ? rows : rows.reverse())
     }
     setLoading(false)
   }
