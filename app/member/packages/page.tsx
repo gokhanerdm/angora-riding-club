@@ -13,7 +13,6 @@ interface Package {
 
 interface Selection {
   pkg: Package
-  type: 'weekday' | 'general'
 }
 
 const DURATION: Record<number, string> = {
@@ -104,15 +103,14 @@ export default function PackagesPage() {
     const { error: rpcError } = await supabase.rpc('create_membership_request', {
       user_id: overrideUid ?? user.id,
       p_package_id: selected.pkg.id,
-      p_request_type: selected.type,
+      p_request_type: 'general',
     })
     setSubmitting(false)
     if (rpcError) setError(rpcError.message)
     else { setSelected(null); setSubmitted(true); setHasPackage(true) }
   }
 
-  const price = (s: Selection) =>
-    s.type === 'weekday' ? s.pkg.weekday_price : s.pkg.general_price
+  const price = (s: Selection) => s.pkg.general_price
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
@@ -197,11 +195,14 @@ export default function PackagesPage() {
       ) : (
         <div className="px-4 pb-12">
 
+          {/* Başlık */}
+          <p className="text-xs font-bold uppercase tracking-widest mb-2 px-1" style={{ color: '#f59e0b' }}>Üyelikler</p>
+
           {/* Tablo başlıkları */}
           <div
             className="grid rounded-t-2xl px-4 py-3 mb-0.5"
             style={{
-              gridTemplateColumns: '1fr 100px 100px',
+              gridTemplateColumns: '1fr 110px',
               background: 'rgba(245,158,11,0.12)',
               border: '1px solid rgba(245,158,11,0.2)',
               borderBottom: 'none',
@@ -211,37 +212,33 @@ export default function PackagesPage() {
               <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>Tesis Üyelik Süresi</p>
               <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#7b93c4' }}>İçerik</p>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f59e0b' }}>Hafta İçi</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f97316' }}>Genel Kullanım</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f59e0b' }}>Fiyat</p>
           </div>
 
           {/* Satırlar */}
           <div className="space-y-0.5">
             {packages.map((pkg, i) => {
-              const isPopular  = pkg.lesson_count === 20
-              const isLast     = i === packages.length - 1
+              const isPopular = pkg.lesson_count === 20
+              const isLast    = i === packages.length - 1
               return (
                 <div
                   key={pkg.id}
                   className={`grid items-center px-4 py-3.5 ${isLast ? 'rounded-b-2xl' : ''}`}
                   style={{
-                    gridTemplateColumns: '1fr 100px 100px',
+                    gridTemplateColumns: '1fr 110px',
                     background: isPopular ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.04)',
                     border: isPopular ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.06)',
                     borderTop: 'none',
                   }}
                 >
-                  {/* İsim + ders */}
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-white leading-tight">
                         {DURATION[pkg.lesson_count] ?? `${pkg.lesson_count} Ders`}
                       </p>
                       {isPopular && (
-                        <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: 'rgba(245,158,11,0.25)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)' }}
-                        >
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'rgba(245,158,11,0.25)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)' }}>
                           ⭐ En Popüler
                         </span>
                       )}
@@ -249,44 +246,19 @@ export default function PackagesPage() {
                     <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders</p>
                   </div>
 
-                  {/* Hafta İçi fiyat */}
                   <button
-                    onClick={() => setSelected({ pkg, type: 'weekday' })}
+                    onClick={() => setSelected({ pkg })}
                     className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
                     style={{ background: AMBER.bg, border: AMBER.border }}
                   >
                     <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>
-                      {formatPrice(pkg.weekday_price)}
-                    </p>
-                    <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(245,158,11,0.6)' }}>Satın Al</p>
-                  </button>
-
-                  {/* Genel fiyat */}
-                  <button
-                    onClick={() => setSelected({ pkg, type: 'general' })}
-                    className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
-                    style={{ background: ORANGE.bg, border: ORANGE.border }}
-                  >
-                    <p className="text-xs font-bold leading-tight" style={{ color: '#f97316' }}>
                       {formatPrice(pkg.general_price)}
                     </p>
-                    <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(249,115,22,0.6)' }}>Satın Al</p>
+                    <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(245,158,11,0.6)' }}>Satın Al</p>
                   </button>
                 </div>
               )
             })}
-          </div>
-
-          {/* Renk açıklaması */}
-          <div className="flex items-center gap-5 mt-4 px-1">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ background: '#f59e0b' }} />
-              <span className="text-xs" style={{ color: '#7b93c4' }}>Hafta İçi</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ background: '#f97316' }} />
-              <span className="text-xs" style={{ color: '#7b93c4' }}>Genel Kullanım</span>
-            </div>
           </div>
         </div>
       )}
@@ -298,17 +270,9 @@ export default function PackagesPage() {
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <h3 className="text-lg font-bold text-white mb-4">Paketi Onaylıyor musunuz?</h3>
 
-            <div
-              className="rounded-2xl p-4 mb-5 space-y-1.5"
-              style={selected.type === 'weekday'
-                ? { background: AMBER.bg, border: AMBER.border }
-                : { background: ORANGE.bg, border: ORANGE.border }}
-            >
+            <div className="rounded-2xl p-4 mb-5 space-y-1.5" style={{ background: AMBER.bg, border: AMBER.border }}>
               <p className="font-bold text-white">{DURATION[selected.pkg.lesson_count]}</p>
               <p className="text-sm" style={{ color: '#c8d6f0' }}>{selected.pkg.lesson_count} Ders</p>
-              <p className="text-sm font-bold" style={{ color: selected.type === 'weekday' ? '#f59e0b' : '#f97316' }}>
-                {selected.type === 'weekday' ? 'Hafta İçi' : 'Genel Kullanım'}
-              </p>
               <p className="text-2xl font-bold text-white">{formatPrice(price(selected))}</p>
             </div>
 
@@ -333,12 +297,7 @@ export default function PackagesPage() {
                 onClick={handleRequest}
                 disabled={submitting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{
-                  background: selected.type === 'weekday'
-                    ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                    : 'linear-gradient(135deg, #f97316, #ea580c)',
-                  color: '#fff',
-                }}
+                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' }}
               >{submitting ? 'Gönderiliyor...' : 'Talep Oluştur'}</button>
             </div>
           </div>
