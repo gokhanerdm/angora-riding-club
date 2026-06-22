@@ -32,6 +32,7 @@ interface Reservation {
   start_time: string
   end_time: string
   status: string
+  member_name?: string
 }
 
 const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
@@ -222,13 +223,39 @@ export default function MemberDashboardClient({
       const statusFilter = type === 'used'
         ? ['completed', 'no_show']
         : ['pending', 'approved']
-      const { data } = await supabase
-        .from('reservations')
-        .select('id, scheduled_date, start_time, end_time, status')
-        .eq('member_id', memberId)
-        .in('status', statusFilter)
-        .order('scheduled_date', { ascending: type === 'reserved' })
-      setReservations(data ?? [])
+
+      // Aile üyeliği varsa tüm aile üyelerinin derslerini membership_id üzerinden getir
+      const { data: fmData } = await supabase
+        .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
+      let rows: any[] = []
+      if (fmData?.family_id) {
+        const { data: fmIds } = await supabase
+          .from('memberships').select('id').eq('family_id', fmData.family_id)
+        const msIds = (fmIds ?? []).map((m: any) => m.id)
+        if (msIds.length > 0) {
+          const { data } = await supabase
+            .from('reservations')
+            .select('id, scheduled_date, start_time, end_time, status, members(name, surname)')
+            .in('membership_id', msIds)
+            .in('status', statusFilter)
+            .order('scheduled_date', { ascending: type === 'reserved' })
+          rows = (data ?? []).map((r: any) => ({
+            ...r,
+            member_name: r.members ? `${r.members.name} ${r.members.surname}` : undefined,
+          }))
+        }
+      }
+      // Aile üyeliği yoksa sadece kendi derslerini getir
+      if (rows.length === 0) {
+        const { data } = await supabase
+          .from('reservations')
+          .select('id, scheduled_date, start_time, end_time, status')
+          .eq('member_id', memberId)
+          .in('status', statusFilter)
+          .order('scheduled_date', { ascending: type === 'reserved' })
+        rows = data ?? []
+      }
+      setReservations(rows)
     }
     setLoading(false)
   }
@@ -709,6 +736,7 @@ export default function MemberDashboardClient({
                       <div>
                         <p className="font-bold text-white text-sm">{formatDate(res.scheduled_date)}</p>
                         <p className="text-xs" style={{ color: '#7b93c4' }}>{formatTime(res.start_time)} — {formatTime(res.end_time)}</p>
+                        {res.member_name && <p className="text-xs mt-0.5" style={{ color: '#a78bfa' }}>{res.member_name}</p>}
                       </div>
                       <span
                         className="text-xs px-2 py-0.5 rounded-full font-bold"
