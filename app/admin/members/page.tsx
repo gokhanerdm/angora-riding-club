@@ -19,6 +19,8 @@ type Member = {
   member_status: string
   created_at: string
   default_trainer_id: string | null
+  pending_legacy_setup: boolean
+  pending_family_setup: boolean
   remaining_lessons: number
   total_lessons: number
   trainer_name: string | null
@@ -60,7 +62,7 @@ export default function MembersPage() {
     setLoadError('')
     const supabase = createClient()
     const { data: membersData, error: membersErr } = await supabase
-      .from('members').select('id, name, surname, email, phone, member_status, created_at, default_trainer_id')
+      .from('members').select('id, name, surname, email, phone, member_status, created_at, default_trainer_id, pending_legacy_setup, pending_family_setup')
       .is('deleted_at', null)
       .order('name', { ascending: true })
     if (membersErr) { setLoadError('Üyeler yüklenirken bir hata oluştu: ' + membersErr.message); setLoading(false); return }
@@ -209,8 +211,8 @@ export default function MembersPage() {
     await loadMembers()
   }
 
-  const clubMembers    = members.filter(m => m.total_lessons > 0)
-  const programMembers = members.filter(m => m.total_lessons === 0)
+  const clubMembers    = members.filter(m => m.total_lessons > 0 || m.pending_legacy_setup || m.pending_family_setup)
+  const programMembers = members.filter(m => m.total_lessons === 0 && !m.pending_legacy_setup && !m.pending_family_setup)
 
   const filtered = (tab === 'kulup' ? clubMembers : programMembers).filter(m => {
     const matchSearch = `${m.name} ${m.surname} ${m.email}`.toLowerCase().includes(search.toLowerCase())
