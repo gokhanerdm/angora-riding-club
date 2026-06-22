@@ -68,72 +68,33 @@ export default function MembersPage() {
     if (membersErr) { setLoadError('Üyeler yüklenirken bir hata oluştu: ' + membersErr.message); setLoading(false); return }
     if (!membersData) { setLoading(false); return }
 
+    // user_id'leri tek sorguda çek
     const memberIds = membersData.map(m => m.id)
-    // NOT: "kalan ders" hesabı member_dashboard_stats RPC'siyle AYNI mantığı kullanır —
-    // havuz (kişisel / aile) ayrımı rezervasyonun BAĞLI OLDUĞU paketin family_id'sine göre yapılır,
-    // sadece "bu kişi aile üyesi mi" diye bakılmaz (bkz. migration 20260608000006).
-    const [{ data: allMemberships }, { data: trainers }, { data: familyMemberRows }, { data: allRes }] = await Promise.all([
-      supabase.from('memberships').select('id, member_id, family_id, total_lessons'),
+    const [{ data: memberUserIds }, { data: trainers }] = await Promise.all([
+      supabase.from('members').select('id, user_id').in('id', memberIds),
       supabase.from('trainers').select('id, name, surname'),
-      supabase.from('family_members').select('family_id, member_id'),
-      supabase.from('reservations').select('member_id, membership_id, status').in('status', ['completed','no_show','pending','approved']),
     ])
+    const userIdMap = new Map((memberUserIds ?? []).map((m: any) => [m.id, m.user_id]))
 
-    // Aile haritaları
-    const memberFamilyMap = new Map<string, string>()
-    for (const fm of familyMemberRows ?? []) memberFamilyMap.set(fm.member_id, fm.family_id)
+    // Stats'ı member_dashboard_stats RPC ile al (SECURITY DEFINER — RLS'i bypass eder)
+    const statsResults = await Promise.all(
+      membersData.map(m => {
+        const uid = userIdMap.get(m.id)
+        if (!uid) return Promise.resolve({ member_id: m.id, total: 0, remaining: 0 })
+        return supabase.rpc('member_dashboard_stats', { user_id: uid }).then(({ data }) => ({
+          member_id: m.id,
+          total:     data?.[0]?.total_lessons     ?? 0,
+          remaining: data?.[0]?.remaining_lessons ?? 0,
+        }))
+      })
+    )
+    const statsMap = new Map(statsResults.map(s => [s.member_id, s]))
 
-    // membership_id -> family_id (rezervasyonun hangi havuza ait olduğunu bulmak için)
-    const msFamilyMap = new Map<string, string | null>()
-    for (const ms of allMemberships ?? []) msFamilyMap.set(ms.id, ms.family_id)
-
-    const familyTotalMap = new Map<string, number>()
-    for (const ms of allMemberships ?? []) {
-      if (ms.family_id) familyTotalMap.set(ms.family_id, (familyTotalMap.get(ms.family_id) ?? 0) + ms.total_lessons)
-    }
-
-    // Aile havuzu kullanım/rezerve sayıları — sadece o ailenin paketine bağlı rezervasyonlar
-    const familyUsedMap = new Map<string, number>()
-    const familyReservedMap = new Map<string, number>()
-    // Kişisel (family_id=null pakete bağlı) kullanım/rezerve — kişi bazlı
-    const personalUsedMap = new Map<string, number>()
-    const personalReservedMap = new Map<string, number>()
-
-    for (const r of allRes ?? []) {
-      const famId = r.membership_id ? msFamilyMap.get(r.membership_id) : null
-      const isUsed = r.status === 'completed' || r.status === 'no_show'
-      const targetMap = isUsed
-        ? (famId ? familyUsedMap : personalUsedMap)
-        : (famId ? familyReservedMap : personalReservedMap)
-      const key = famId ?? r.member_id
-      targetMap.set(key, (targetMap.get(key) ?? 0) + 1)
-    }
-
-    const remainingMap = new Map<string, number>()
-    const totalMap = new Map<string, number>()
-
-    for (const member of membersData) {
-      const familyId = memberFamilyMap.get(member.id)
-      // Kendi (aileye bağlı olmayan) paketleri
-      const myMs = (allMemberships ?? []).filter(m => m.member_id === member.id && !m.family_id)
-      const ownTotal = myMs.reduce((s, m) => s + m.total_lessons, 0)
-      const ownUsed = personalUsedMap.get(member.id) ?? 0
-      const ownReserved = personalReservedMap.get(member.id) ?? 0
-      const ownRemaining = ownTotal - ownUsed - ownReserved
-
-      if (familyId) {
-        const famTotal = familyTotalMap.get(familyId) ?? 0
-        const famUsed = familyUsedMap.get(familyId) ?? 0
-        const famReserved = familyReservedMap.get(familyId) ?? 0
-        totalMap.set(member.id, ownTotal + famTotal)
-        remainingMap.set(member.id, ownRemaining + (famTotal - famUsed - famReserved))
-      } else {
-        totalMap.set(member.id, ownTotal)
-        remainingMap.set(member.id, ownRemaining)
-      }
-    }
     const trainerMap = new Map((trainers ?? []).map(t => [t.id, `${t.name} ${t.surname}`]))
-    setMembers(membersData.map(m => ({ ...m, remaining_lessons: remainingMap.get(m.id) ?? 0, total_lessons: totalMap.get(m.id) ?? 0, trainer_name: m.default_trainer_id ? (trainerMap.get(m.default_trainer_id) ?? null) : null })))
+    setMembers(membersData.map(m => {
+      const s = statsMap.get(m.id)
+      return { ...m, remaining_lessons: s?.remaining ?? 0, total_lessons: s?.total ?? 0, trainer_name: m.default_trainer_id ? (trainerMap.get(m.default_trainer_id) ?? null) : null }
+    }))
     setLoading(false)
   }
 
@@ -141,19 +102,26 @@ export default function MembersPage() {
     setSelected(member)
     setDetailLoading(true)
     const supabase = createClient()
-    const [{ data: memberships }, { data: reservations }, { data: trainers }, { data: activeRes }] = await Promise.all([
+    const [{ data: ownMemberships }, { data: fmRow }, { data: reservations }, { data: trainers }, { data: activeRes }] = await Promise.all([
       supabase.from('memberships').select('*').eq('member_id', member.id).order('created_at', { ascending: false }),
+      supabase.from('family_members').select('family_id').eq('member_id', member.id).limit(1).maybeSingle(),
       supabase.from('reservations').select('id, scheduled_date, start_time, status, trainers(name, surname)').eq('member_id', member.id).order('scheduled_date', { ascending: false }).limit(20),
       supabase.from('trainers').select('id, name, surname').is('deleted_at', null),
-      // reserved_lessons sayaç sütunu zamanla sapabiliyor (drift) — "Kalan" hesabı için gerçek bekleyen/onaylı rezervasyonu canlı say
       supabase.from('reservations').select('membership_id').eq('member_id', member.id).in('status', ['pending', 'approved']),
     ])
+    // Aile paketlerini de getir
+    let familyMemberships: any[] = []
+    if (fmRow?.family_id) {
+      const { data: fms } = await supabase.from('memberships').select('*').eq('family_id', fmRow.family_id).order('created_at', { ascending: false })
+      familyMemberships = (fms ?? []).map((m: any) => ({ ...m, _isFamily: true }))
+    }
+    const allMemberships = [...(ownMemberships ?? []), ...familyMemberships]
     const reservedByMs = new Map<string, number>()
     for (const r of activeRes ?? []) {
       if (!r.membership_id) continue
       reservedByMs.set(r.membership_id, (reservedByMs.get(r.membership_id) ?? 0) + 1)
     }
-    const membershipsLive = (memberships ?? []).map((m: any) => ({ ...m, live_reserved: reservedByMs.get(m.id) ?? m.reserved_lessons }))
+    const membershipsLive = allMemberships.map((m: any) => ({ ...m, live_reserved: reservedByMs.get(m.id) ?? m.reserved_lessons }))
     setDetail({ memberships: membershipsLive, reservations: reservations ?? [], trainers: trainers ?? [] })
     setDetailLoading(false)
   }
