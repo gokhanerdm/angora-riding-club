@@ -91,7 +91,7 @@ export default function PackagesPage() {
   const handleRequest = async () => {
     if (!selected) return
     if (!profileCompleted) {
-      router.push(`/member/profile-setup?action=package&package_id=${selected.pkg.id}&type=${selected.type}`)
+      router.push(`/member/profile-setup?action=package&package_id=${selected.pkg.id}&type=general`)
       return
     }
     setSubmitting(true)
