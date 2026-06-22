@@ -25,6 +25,12 @@ const DURATION: Record<number, string> = {
   90: '18 Aylık Tesis Üyeliği',
 }
 
+const FAMILY_DURATION: Record<number, string> = {
+  30: '8 Aylık Tesis Üyeliği',
+  60: '6 Aylık Tesis Üyeliği',
+  90: '12 Aylık Tesis Üyeliği',
+}
+
 function formatPrice(p: number) {
   return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0 }).format(p) + ' ₺'
 }
@@ -296,7 +302,7 @@ export default function PackagesPage() {
                     >
                       <div>
                         <p className="text-sm font-bold text-white leading-tight">
-                          {DURATION[pkg.lesson_count] ?? `${pkg.lesson_count} Ders`}
+                          {FAMILY_DURATION[pkg.lesson_count] ?? DURATION[pkg.lesson_count] ?? `${pkg.lesson_count} Ders`}
                         </p>
                         <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders · Aile</p>
                       </div>
