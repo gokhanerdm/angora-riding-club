@@ -185,7 +185,7 @@ export default function MemberDashboardClient({
     setModal(type)
     setLoading(true)
     const supabase = createClient()
-    const memberId = await getMemberId(supabase)
+    const memberId = adminMemberId ?? await getMemberId(supabase)
 
     if (type === 'total') {
       // Kendi paketleri
