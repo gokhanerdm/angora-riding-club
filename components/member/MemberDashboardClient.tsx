@@ -227,7 +227,7 @@ export default function MemberDashboardClient({
       // Aile üyeliği varsa tüm aile üyelerinin derslerini membership_id üzerinden getir
       const { data: fmData } = await supabase
         .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
-      let rows: any[] = []
+
       if (fmData?.family_id) {
         const { data: fmIds } = await supabase
           .from('memberships').select('id').eq('family_id', fmData.family_id)
@@ -235,27 +235,29 @@ export default function MemberDashboardClient({
         if (msIds.length > 0) {
           const { data } = await supabase
             .from('reservations')
-            .select('id, scheduled_date, start_time, end_time, status, members(name, surname)')
+            .select('id, scheduled_date, start_time, end_time, status, member_id')
             .in('membership_id', msIds)
             .in('status', statusFilter)
             .order('scheduled_date', { ascending: type === 'reserved' })
-          rows = (data ?? []).map((r: any) => ({
-            ...r,
-            member_name: r.members ? `${r.members.name} ${r.members.surname}` : undefined,
-          }))
+          // Üye isimlerini tek sorguda getir
+          const memberIds = [...new Set((data ?? []).map((r: any) => r.member_id))]
+          const { data: memberNames } = await supabase
+            .from('members').select('id, name, surname').in('id', memberIds)
+          const nameMap = Object.fromEntries((memberNames ?? []).map((m: any) => [m.id, `${m.name} ${m.surname}`]))
+          setReservations((data ?? []).map((r: any) => ({ ...r, member_name: nameMap[r.member_id] })))
+        } else {
+          setReservations([])
         }
-      }
-      // Aile üyeliği yoksa sadece kendi derslerini getir
-      if (rows.length === 0) {
+      } else {
+        // Aile üyeliği yok — sadece kendi derslerini getir
         const { data } = await supabase
           .from('reservations')
           .select('id, scheduled_date, start_time, end_time, status')
           .eq('member_id', memberId)
           .in('status', statusFilter)
           .order('scheduled_date', { ascending: type === 'reserved' })
-        rows = data ?? []
+        setReservations(data ?? [])
       }
-      setReservations(rows)
     }
     setLoading(false)
   }
