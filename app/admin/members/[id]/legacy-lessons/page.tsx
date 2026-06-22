@@ -48,25 +48,22 @@ export default function LegacyLessonsPage() {
       supabase.from('members').select('name, surname, default_trainer_id').eq('id', memberId).is('deleted_at', null).single(),
       supabase.from('trainers').select('id, name, surname').is('deleted_at', null).order('name'),
       supabase.from('membership_packages').select('id, lesson_count, weekday_price, general_price, is_family').eq('is_active', true).order('lesson_count'),
-      supabase.from('memberships').select('id').eq('member_id', memberId).eq('is_current', true).limit(1).maybeSingle(),
+      supabase.from('memberships').select('id').eq('member_id', memberId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ]).then(async ([{ data: m }, { data: t }, { data: p }, { data: ms }]) => {
       setMember(m)
       setTrainers(t ?? [])
       setPackages(p ?? [])
 
-      // Kendi üyeliği yoksa aile üyeliğine bak
+      // Kendi üyeliği yoksa aile üyeliğine bak (is_current fark etmez, en son üyeliği al)
       let activeMembership = ms
       if (!activeMembership) {
         const supabase2 = createClient()
-        const { data: memberRow } = await supabase2.from('members').select('id').eq('id', memberId).single()
-        if (memberRow) {
-          const { data: fm } = await supabase2
-            .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
-          if (fm) {
-            const { data: fms } = await supabase2
-              .from('memberships').select('id').eq('family_id', fm.family_id).eq('is_current', true).limit(1).maybeSingle()
-            activeMembership = fms ?? null
-          }
+        const { data: fm } = await supabase2
+          .from('family_members').select('family_id').eq('member_id', memberId).limit(1).maybeSingle()
+        if (fm) {
+          const { data: fms } = await supabase2
+            .from('memberships').select('id').eq('family_id', fm.family_id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+          activeMembership = fms ?? null
         }
       }
       setMemberships(activeMembership ? [activeMembership] : [])
@@ -141,6 +138,7 @@ export default function LegacyLessonsPage() {
     }
 
     // Geçerli dersleri ekle
+    if (validLessons.length > 0 && !membershipId) { showToast('Ders eklemek için önce bir paket oluşturun'); setSaving(false); return }
     if (validLessons.length > 0 && membershipId) {
       const lessonsData = validLessons.map(l => ({
         scheduled_date: l.date,
