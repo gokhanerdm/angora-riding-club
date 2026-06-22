@@ -108,6 +108,37 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const [bookingState, setBookingState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [bookingMsg, setBookingMsg]     = useState('')
 
+  // Slot aç/kapat (admin)
+  const [toggleSlot,   setToggleSlot]   = useState<TimeSlot | null>(null)
+  const [toggleSaving, setToggleSaving] = useState(false)
+
+  const handleToggleSlot = async () => {
+    if (!toggleSlot || !selectedDate) return
+    setToggleSaving(true)
+    const supabase = createClient()
+    if (toggleSlot.slot_status === 'closed') {
+      await supabase.from('trainer_schedules')
+        .delete()
+        .eq('trainer_id', toggleSlot.trainer_id)
+        .eq('scheduled_date', selectedDate)
+        .eq('start_time', toggleSlot.slot_time)
+        .eq('is_available', false)
+    } else {
+      const endTime = slotEnd(toggleSlot.slot_time) + ':00'
+      await supabase.from('trainer_schedules').insert({
+        trainer_id:     toggleSlot.trainer_id,
+        scheduled_date: selectedDate,
+        start_time:     toggleSlot.slot_time,
+        end_time:       endTime,
+        is_available:   false,
+      })
+    }
+    setToggleSaving(false)
+    setToggleSlot(null)
+    const { data } = await supabase.rpc('get_available_slots', { user_id: overrideUserId, selected_date: selectedDate })
+    if (data) setSlots((data as TimeSlot[]).filter(s => isAdmin || s.slot_status !== 'past'))
+  }
+
   const maxMonth = (today.getMonth() + 3) % 12
   const maxYear  = today.getFullYear() + Math.floor((today.getMonth() + 3) / 12)
   const isAdmin  = !!overrideUserId
@@ -421,23 +452,63 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                     const st = slotIsPastItem
                       ? { bg: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', color: '#a78bfa', label: '+ Ders Ekle' }
                       : slotStyle(slot.slot_status)
+                    const isClosedSlot    = slot.slot_status === 'closed'
+                    const isAvailableSlot = slot.slot_status === 'available'
                     return (
-                      <button
-                        key={idx}
-                        onClick={() => handleSlotClick(slot)}
-                        disabled={(!['available','own_reservation'].includes(slot.slot_status) && !(isAdmin && ['past','available'].includes(slot.slot_status))) || bookingState === 'loading'}
-                        className="rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
-                        style={{ background: st.bg, border: st.border }}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          {slot.slot_time.substring(0,5)} – {slotEnd(slot.slot_time)}
-                        </p>
-                        <p className="text-xs font-bold mt-0.5" style={{ color: st.color }}>{st.label}</p>
-                      </button>
+                      <div key={idx} className="relative">
+                        <button
+                          onClick={() => isAdmin && isClosedSlot ? setToggleSlot(slot) : handleSlotClick(slot)}
+                          disabled={(!['available','own_reservation'].includes(slot.slot_status) && !(isAdmin && ['past','available','closed'].includes(slot.slot_status))) || bookingState === 'loading'}
+                          className="w-full rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
+                          style={{ background: st.bg, border: isAdmin && isClosedSlot ? '1px solid rgba(248,113,113,0.3)' : st.border }}
+                        >
+                          <p className="text-sm font-bold text-white">
+                            {slot.slot_time.substring(0,5)} – {slotEnd(slot.slot_time)}
+                          </p>
+                          <p className="text-xs font-bold mt-0.5" style={{ color: isAdmin && isClosedSlot ? '#f87171' : st.color }}>
+                            {isAdmin && isClosedSlot ? '🔓 Aç' : st.label}
+                          </p>
+                        </button>
+                        {isAdmin && isAvailableSlot && !slotIsPastItem && (
+                          <button
+                            onClick={e => { e.stopPropagation(); setToggleSlot(slot) }}
+                            className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded-md text-xs active:opacity-60"
+                            style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171' }}
+                            title="Slotu kapat"
+                          >🔒</button>
+                        )}
+                      </div>
                     )
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slot aç/kapat modal (admin) */}
+      {toggleSlot && (
+        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+            <p className="text-white font-bold text-base mb-1">{toggleSlot.trainer_name}</p>
+            <p className="text-sm mb-1" style={{ color: '#7b93c4' }}>
+              {selectedDate && formatDisplayDate(selectedDate)} · {toggleSlot.slot_time.substring(0,5)} – {slotEnd(toggleSlot.slot_time)}
+            </p>
+            <p className="text-sm font-bold mb-6" style={{ color: toggleSlot.slot_status === 'closed' ? '#34d399' : '#f87171' }}>
+              {toggleSlot.slot_status === 'closed' ? 'Bu slotu açmak istiyor musunuz?' : 'Bu slotu kapatmak istiyor musunuz?'}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setToggleSlot(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+              <button onClick={handleToggleSlot} disabled={toggleSaving}
+                className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
+                style={toggleSlot.slot_status === 'closed'
+                  ? { background: 'rgba(52,211,153,0.2)', color: '#34d399', border: '1px solid rgba(52,211,153,0.4)' }
+                  : { background: 'rgba(248,113,113,0.2)', color: '#f87171', border: '1px solid rgba(248,113,113,0.4)' }}>
+                {toggleSaving ? '...' : toggleSlot.slot_status === 'closed' ? '🔓 Slotu Aç' : '🔒 Slotu Kapat'}
+              </button>
             </div>
           </div>
         </div>
