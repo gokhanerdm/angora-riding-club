@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
-  const [newPkg, setNewPkg] = useState({ lesson_count: '', general_price: '' })
+  const [newPkg, setNewPkg] = useState({ lesson_count: '', weekday_price: '', general_price: '' })
   const [adding, setAdding] = useState(false)
   const [toast, setToast] = useState('')
 
@@ -32,24 +32,23 @@ export default function SettingsPage() {
   const updatePackage = async (pkg: Package) => {
     setSaving(pkg.id)
     const supabase = createClient()
-    await supabase.from('membership_packages').update({ weekday_price: pkg.general_price, general_price: pkg.general_price, is_active: pkg.is_active }).eq('id', pkg.id)
+    await supabase.from('membership_packages').update({ weekday_price: pkg.weekday_price, general_price: pkg.general_price, is_active: pkg.is_active }).eq('id', pkg.id)
     setSaving(null)
     showToast('Kaydedildi.')
   }
 
   const addPackage = async () => {
-    if (!newPkg.lesson_count || !newPkg.general_price) { showToast('Tüm alanları doldurun.'); return }
+    if (!newPkg.lesson_count || !newPkg.weekday_price || !newPkg.general_price) { showToast('Tüm alanları doldurun.'); return }
     setAdding(true)
     const supabase = createClient()
-    const price = parseFloat(newPkg.general_price)
-    await supabase.from('membership_packages').insert({ lesson_count: parseInt(newPkg.lesson_count), weekday_price: price, general_price: price, is_active: true })
-    setNewPkg({ lesson_count: '', general_price: '' })
+    await supabase.from('membership_packages').insert({ lesson_count: parseInt(newPkg.lesson_count), weekday_price: parseFloat(newPkg.weekday_price), general_price: parseFloat(newPkg.general_price), is_active: true })
+    setNewPkg({ lesson_count: '', weekday_price: '', general_price: '' })
     await loadPackages()
     setAdding(false)
   }
 
   const toggleActive = (id: string, current: boolean) => setPackages(prev => prev.map(p => p.id === id ? { ...p, is_active: !current } : p))
-  const updatePrice = (id: string, value: string) => setPackages(prev => prev.map(p => p.id === id ? { ...p, general_price: parseFloat(value) || 0 } : p))
+  const updatePrice = (id: string, field: 'weekday_price' | 'general_price', value: string) => setPackages(prev => prev.map(p => p.id === id ? { ...p, [field]: parseFloat(value) || 0 } : p))
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -104,10 +103,17 @@ export default function SettingsPage() {
                   {pkg.is_active ? 'Aktif' : 'Pasif'}
                 </button>
               </div>
-              <div className="mb-3">
-                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Fiyat (₺)</p>
-                <input type="number" value={pkg.general_price} onChange={e => updatePrice(pkg.id, e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Hafta İçi (₺)</p>
+                  <input type="number" value={pkg.weekday_price} onChange={e => updatePrice(pkg.id, 'weekday_price', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+                </div>
+                <div>
+                  <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Hafta Sonu (₺)</p>
+                  <input type="number" value={pkg.general_price} onChange={e => updatePrice(pkg.id, 'general_price', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+                </div>
               </div>
               <button onClick={() => updatePackage(pkg)} disabled={saving === pkg.id}
                 className="w-full py-2 rounded-xl text-sm font-bold disabled:opacity-50"
@@ -128,10 +134,17 @@ export default function SettingsPage() {
             <input type="number" value={newPkg.lesson_count} onChange={e => setNewPkg(p => ({ ...p, lesson_count: e.target.value }))}
               placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
-          <div>
-            <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Fiyat (₺)</p>
-            <input type="number" value={newPkg.general_price} onChange={e => setNewPkg(p => ({ ...p, general_price: e.target.value }))}
-              placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Hafta İçi (₺)</p>
+              <input type="number" value={newPkg.weekday_price} onChange={e => setNewPkg(p => ({ ...p, weekday_price: e.target.value }))}
+                placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+            </div>
+            <div>
+              <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Hafta Sonu (₺)</p>
+              <input type="number" value={newPkg.general_price} onChange={e => setNewPkg(p => ({ ...p, general_price: e.target.value }))}
+                placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
+            </div>
           </div>
           <button onClick={addPackage} disabled={adding}
             className="w-full py-2 rounded-xl text-sm font-bold disabled:opacity-50"

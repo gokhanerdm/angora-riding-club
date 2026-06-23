@@ -13,6 +13,7 @@ interface Package {
 
 interface Selection {
   pkg: Package
+  type: 'weekday' | 'general'
 }
 
 const DURATION: Record<number, string> = {
@@ -100,7 +101,7 @@ export default function PackagesPage() {
   const handleRequest = async () => {
     if (!selected) return
     if (!profileCompleted) {
-      router.push(`/member/profile-setup?action=package&package_id=${selected.pkg.id}&type=general`)
+      router.push(`/member/profile-setup?action=package&package_id=${selected.pkg.id}&type=${selected.type}`)
       return
     }
     setSubmitting(true)
@@ -112,14 +113,14 @@ export default function PackagesPage() {
     const { error: rpcError } = await supabase.rpc('create_membership_request', {
       user_id: overrideUid ?? user.id,
       p_package_id: selected.pkg.id,
-      p_request_type: 'general',
+      p_request_type: selected.type,
     })
     setSubmitting(false)
     if (rpcError) setError(rpcError.message)
     else { setSelected(null); setSubmitted(true); setHasPackage(true) }
   }
 
-  const price = (s: Selection) => s.pkg.general_price
+  const price = (s: Selection) => s.type === 'weekday' ? s.pkg.weekday_price : s.pkg.general_price
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
@@ -211,7 +212,7 @@ export default function PackagesPage() {
           <div
             className="grid rounded-t-2xl px-4 py-3 mb-0.5"
             style={{
-              gridTemplateColumns: '1fr 110px',
+              gridTemplateColumns: '1fr 100px 100px',
               background: 'rgba(245,158,11,0.12)',
               border: '1px solid rgba(245,158,11,0.2)',
               borderBottom: 'none',
@@ -221,7 +222,8 @@ export default function PackagesPage() {
               <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>Tesis Üyelik Süresi</p>
               <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#7b93c4' }}>İçerik</p>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f59e0b' }}>Fiyat</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f59e0b' }}>Hafta İçi</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f97316' }}>Hafta Sonu</p>
           </div>
 
           {/* Satırlar */}
@@ -234,7 +236,7 @@ export default function PackagesPage() {
                   key={pkg.id}
                   className={`grid items-center px-4 py-3.5 ${isLast ? 'rounded-b-2xl' : ''}`}
                   style={{
-                    gridTemplateColumns: '1fr 110px',
+                    gridTemplateColumns: '1fr 100px 100px',
                     background: isPopular ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.04)',
                     border: isPopular ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.06)',
                     borderTop: 'none',
@@ -255,12 +257,20 @@ export default function PackagesPage() {
                     <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders</p>
                   </div>
                   <button
-                    onClick={() => setSelected({ pkg })}
+                    onClick={() => setSelected({ pkg, type: 'weekday' })}
                     className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
                     style={{ background: AMBER.bg, border: AMBER.border }}
                   >
-                    <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>{formatPrice(pkg.general_price)}</p>
+                    <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>{formatPrice(pkg.weekday_price)}</p>
                     <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(245,158,11,0.6)' }}>Satın Al</p>
+                  </button>
+                  <button
+                    onClick={() => setSelected({ pkg, type: 'general' })}
+                    className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
+                    style={{ background: ORANGE.bg, border: ORANGE.border }}
+                  >
+                    <p className="text-xs font-bold leading-tight" style={{ color: '#f97316' }}>{formatPrice(pkg.general_price)}</p>
+                    <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(249,115,22,0.6)' }}>Satın Al</p>
                   </button>
                 </div>
               )
@@ -274,7 +284,7 @@ export default function PackagesPage() {
               <div
                 className="grid rounded-t-2xl px-4 py-3 mb-0.5"
                 style={{
-                  gridTemplateColumns: '1fr 110px',
+                  gridTemplateColumns: '1fr 100px 100px',
                   background: 'rgba(167,139,250,0.12)',
                   border: '1px solid rgba(167,139,250,0.2)',
                   borderBottom: 'none',
@@ -284,7 +294,8 @@ export default function PackagesPage() {
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#a78bfa' }}>Tesis Üyelik Süresi</p>
                   <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: '#7b93c4' }}>İçerik</p>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#a78bfa' }}>Fiyat</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f59e0b' }}>Hafta İçi</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: '#f97316' }}>Hafta Sonu</p>
               </div>
               <div className="space-y-0.5">
                 {familyPackages.map((pkg, i) => {
@@ -294,7 +305,7 @@ export default function PackagesPage() {
                       key={pkg.id}
                       className={`grid items-center px-4 py-3.5 ${isLast ? 'rounded-b-2xl' : ''}`}
                       style={{
-                        gridTemplateColumns: '1fr 110px',
+                        gridTemplateColumns: '1fr 100px 100px',
                         background: 'rgba(255,255,255,0.04)',
                         border: '1px solid rgba(167,139,250,0.12)',
                         borderTop: 'none',
@@ -307,12 +318,20 @@ export default function PackagesPage() {
                         <p className="text-xs mt-0.5 font-bold" style={{ color: '#7b93c4' }}>{pkg.lesson_count} Ders · Aile</p>
                       </div>
                       <button
-                        onClick={() => setSelected({ pkg })}
+                        onClick={() => setSelected({ pkg, type: 'weekday' })}
                         className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
-                        style={{ background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)' }}
+                        style={{ background: AMBER.bg, border: AMBER.border }}
                       >
-                        <p className="text-xs font-bold leading-tight" style={{ color: '#a78bfa' }}>{formatPrice(pkg.general_price)}</p>
-                        <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(167,139,250,0.6)' }}>Satın Al</p>
+                        <p className="text-xs font-bold leading-tight" style={{ color: '#f59e0b' }}>{formatPrice(pkg.weekday_price)}</p>
+                        <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(245,158,11,0.6)' }}>Satın Al</p>
+                      </button>
+                      <button
+                        onClick={() => setSelected({ pkg, type: 'general' })}
+                        className="flex flex-col items-center justify-center py-2 px-1 rounded-xl active:scale-95 transition-transform"
+                        style={{ background: ORANGE.bg, border: ORANGE.border }}
+                      >
+                        <p className="text-xs font-bold leading-tight" style={{ color: '#f97316' }}>{formatPrice(pkg.general_price)}</p>
+                        <p className="text-[9px] font-bold mt-0.5" style={{ color: 'rgba(249,115,22,0.6)' }}>Satın Al</p>
                       </button>
                     </div>
                   )
@@ -330,9 +349,10 @@ export default function PackagesPage() {
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <h3 className="text-lg font-bold text-white mb-4">Paketi Onaylıyor musunuz?</h3>
 
-            <div className="rounded-2xl p-4 mb-5 space-y-1.5" style={{ background: AMBER.bg, border: AMBER.border }}>
-              <p className="font-bold text-white">{DURATION[selected.pkg.lesson_count]}</p>
-              <p className="text-sm" style={{ color: '#c8d6f0' }}>{selected.pkg.lesson_count} Ders</p>
+            <div className="rounded-2xl p-4 mb-5 space-y-1.5"
+              style={selected.type === 'weekday' ? { background: AMBER.bg, border: AMBER.border } : { background: ORANGE.bg, border: ORANGE.border }}>
+              <p className="font-bold text-white">{FAMILY_DURATION[selected.pkg.lesson_count] ?? DURATION[selected.pkg.lesson_count] ?? `${selected.pkg.lesson_count} Ders`}</p>
+              <p className="text-sm" style={{ color: '#c8d6f0' }}>{selected.pkg.lesson_count} Ders · {selected.type === 'weekday' ? 'Hafta İçi' : 'Hafta Sonu'}</p>
               <p className="text-2xl font-bold text-white">{formatPrice(price(selected))}</p>
             </div>
 
