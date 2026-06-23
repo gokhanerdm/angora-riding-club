@@ -186,14 +186,14 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
                           className="w-full rounded-xl px-2 py-2 text-left transition-opacity disabled:cursor-default"
                           style={{ background: bg, border }}
                         >
-                          <p className="text-xs font-bold text-white">
+                          <p className="text-xs font-bold" style={{ color: '#1B3B2F' }}>
                             {slot.substring(0,5)}
                             {isTrial && (
                               <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
                                 style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
                             )}
                           </p>
-                          <p className="text-xs truncate" style={{ color: '#c8d6f0' }}>
+                          <p className="text-xs truncate" style={{ color: '#1B3B2F' }}>
                             {reservation.member_name}
                           </p>
                           <p className="text-[10px] font-bold mt-0.5" style={{ color: isTrial ? '#f59e0b' : color }}>{STATUS_LABELS[slotStatus ?? reservation.status]}</p>
@@ -226,7 +226,7 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
                         className="w-full rounded-xl px-2 py-2 text-left hover:opacity-80 transition-opacity"
                         style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.12)' }}
                       >
-                        <p className="text-xs font-bold text-white">{slot.substring(0,5)}</p>
+                        <p className="text-xs font-bold text-[#1B3B2F]">{slot.substring(0,5)}</p>
                         <p className="text-[10px] font-bold" style={{ color: '#34d399' }}>{isLoading ? "..." : "Müsait"}</p>
                       </button>
                     </li>

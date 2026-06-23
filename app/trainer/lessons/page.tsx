@@ -1,19 +1,19 @@
-import { requireTrainer } from "@/lib/auth/server-protection";
+﻿import { requireTrainer } from "@/lib/auth/server-protection";
 import { createClient } from "@/lib/supabase/server";
 
-const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara']
+const MONTHS_TR = ['Oca','Åub','Mar','Nis','May','Haz','Tem','AÄŸu','Eyl','Eki','Kas','Ara']
 
 function formatDateTime(date: string, time: string) {
   const [y, m, d] = date.split('-').map(Number)
-  return `${d} ${MONTHS_TR[m - 1]} ${y} · ${time.substring(0, 5)}`
+  return `${d} ${MONTHS_TR[m - 1]} ${y} Â· ${time.substring(0, 5)}`
 }
 
 const STATUS_LABELS: Record<string, string> = {
   pending:   'Beklemede',
-  approved:  'Onaylı',
-  completed: 'Tamamlandı',
+  approved:  'OnaylÄ±',
+  completed: 'TamamlandÄ±',
   no_show:   'Gelmedi',
-  cancelled: 'İptal',
+  cancelled: 'Ä°ptal',
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -40,7 +40,7 @@ export default async function TrainerLessonsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Dersler</h1>
+      <h1 className="text-2xl font-bold text-[#1B3B2F] mb-6">Dersler</h1>
 
       <div className="rounded-2xl overflow-hidden" style={CARD}>
         {lessons && lessons.length > 0 ? (
@@ -58,7 +58,7 @@ export default async function TrainerLessonsPage() {
                   }}
                 >
                   <div>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold text-[#1B3B2F]">
                       {formatDateTime(lesson.scheduled_date, lesson.start_time)}
                       {isTrial && (
                         <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
@@ -84,7 +84,7 @@ export default async function TrainerLessonsPage() {
           </ul>
         ) : (
           <p className="text-center py-10 text-sm" style={{ color: '#7b93c4' }}>
-            Henüz ders bulunmuyor.
+            HenÃ¼z ders bulunmuyor.
           </p>
         )}
       </div>

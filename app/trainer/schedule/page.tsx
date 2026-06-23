@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { requireTrainer } from "@/lib/auth/server-protection";
 import { formatWeekRange, getWeekQueryRange, parseWeekOffset, toDayKey } from "@/lib/lessons/week";
 import { createClient } from "@/lib/supabase/server";
@@ -57,7 +57,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-white">Takvim</h1>
+      <h1 className="mb-6 text-2xl font-bold text-[#1B3B2F]">Takvim</h1>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-bold" style={{ color: '#c8d6f0' }}>{formatWeekRange(days)}</p>
@@ -67,7 +67,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
             className="px-4 py-2 rounded-xl font-bold transition-opacity active:opacity-60"
             style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            ←
+            â†
           </Link>
           {weekOffset !== 0 && (
             <Link
@@ -83,7 +83,7 @@ export default async function TrainerSchedulePage({ searchParams }: PageProps) {
             className="px-4 py-2 rounded-xl font-bold transition-opacity active:opacity-60"
             style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            →
+            â†’
           </Link>
         </div>
       </div>
