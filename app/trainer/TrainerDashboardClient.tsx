@@ -90,7 +90,7 @@ function statusLabel(s: string) {
 function statusColor(s: string) {
   if (s === 'completed') return '#34d399'
   if (s === 'no_show') return '#f87171'
-  return '#c8d6f0'
+  return '#1B3B2F'
 }
 
 function addHalfHour(t: string) {
@@ -551,21 +551,21 @@ export default function TrainerDashboardClient({
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e 0%, #0d1b4b 40%, #071428 100%)' }}
+      style={{ background: '#FBFBFB' }}
     >
       {/* Header */}
       <div className="px-5 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <div
             className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(245,158,11,0.4)' }}
+            style={{ background: 'rgba(27,59,47,0.06)', border: '2px solid rgba(245,158,11,0.4)' }}
           >
             <span className="text-2xl">🏇</span>
           </div>
           <a href={isAdminView ? `/admin/trainers/${trainerId}/profile-edit` : `/trainer/profile-edit`}
             className="block">
-            <p className="text-[10px] font-medium tracking-widest" style={{ color: '#7b93c4' }}>Hoş geldin</p>
-            <h1 className="text-2xl font-bold text-white">{trainerName}</h1>
+            <p className="text-[10px] font-medium tracking-widest" style={{ color: 'rgba(27,59,47,0.55)' }}>Hoş geldin</p>
+            <h1 className="text-2xl font-bold">{trainerName}</h1>
             <div className="flex items-center gap-1.5 mt-1">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               <p className="text-xs font-medium" style={{ color: '#f59e0b' }}>Eğitmen ✏️</p>
@@ -575,7 +575,7 @@ export default function TrainerDashboardClient({
         <button
           onClick={() => setShowShiftPicker(true)}
           className="text-xs font-bold px-3 py-2 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.12)' }}
+          style={{ background: 'rgba(27,59,47,0.08)', color: '#1B3B2F', border: '1px solid rgba(27,59,47,0.12)' }}
         >
           Slotlar
         </button>
@@ -583,7 +583,7 @@ export default function TrainerDashboardClient({
 
       {/* Toast */}
       {toast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold text-white mx-4"
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold mx-4"
           style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)', backdropFilter: 'blur(8px)' }}>
           {toast}
         </div>
@@ -593,45 +593,45 @@ export default function TrainerDashboardClient({
       <div className="grid grid-cols-3 gap-1.5 px-5 mb-2 flex-shrink-0">
         {/* Günün dersleri */}
         <div className="rounded-xl flex flex-col items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>Günün dersleri</p>
-          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{stats.today_lessons}</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>Günün dersleri</p>
+          <p className="text-base font-bold text-center" style={{ color: '#1B3B2F' }}>{stats.today_lessons}</p>
         </div>
         {/* Bu ay yapılacak */}
         <div className="rounded-xl flex flex-col items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} yapılacak</p>
-          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{liveReserved === null ? '…' : liveReserved}</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>{currentMonth} yapılacak</p>
+          <p className="text-base font-bold text-center" style={{ color: '#1B3B2F' }}>{liveReserved === null ? '…' : liveReserved}</p>
         </div>
         {/* Sonraki ay yapılacak */}
         <div className="rounded-xl flex flex-col items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{nextMonthName} yapılacak</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>{nextMonthName} yapılacak</p>
           <p className="text-base font-bold text-center" style={{ color: '#38bdf8' }}>{stats.next_month_reserved}</p>
         </div>
         {/* Yapılan — ay navigasyonlu */}
         <div className="rounded-xl flex flex-col items-center justify-center col-span-1"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '4px 4px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight text-center" style={{ color: '#7b93c4' }}>{yapilanMonthName} yapılan</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '4px 4px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>{yapilanMonthName} yapılan</p>
           <div className="flex items-center gap-1 mt-1">
-            <button onClick={() => changeYapilanMonth(-1)} className="text-[10px] px-1" style={{ color: '#7b93c4' }}>←</button>
+            <button onClick={() => changeYapilanMonth(-1)} className="text-[10px] px-1" style={{ color: 'rgba(27,59,47,0.55)' }}>←</button>
             <p className="text-base font-bold text-center w-6" style={{ color: '#34d399' }}>{yapilanLoading || yapilanCount === null ? '…' : yapilanCount}</p>
             <button onClick={() => changeYapilanMonth(1)} className="text-[10px] px-1"
-              style={{ color: yapilanMonth >= nowMonthKey ? 'rgba(123,147,196,0.3)' : '#7b93c4' }}>→</button>
+              style={{ color: yapilanMonth >= nowMonthKey ? 'rgba(123,147,196,0.3)' : 'rgba(27,59,47,0.55)' }}>→</button>
           </div>
         </div>
         {/* Prim */}
         <div className="rounded-xl flex flex-col items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{currentMonth} prim</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>{currentMonth} prim</p>
           <p className="text-base font-bold text-center" style={{ color: '#f59e0b' }}>{Math.round(stats.monthly_prim ?? 0).toLocaleString('tr-TR')}₺</p>
         </div>
         {/* Öğrencilerim */}
         <button onClick={() => setShowStudents(p => !p)}
           className="rounded-xl flex flex-col items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 6px', height: 52 }}>
-          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>Öğrencilerim</p>
-          <p className="text-base font-bold text-center" style={{ color: '#c8d6f0' }}>{members.length}</p>
+          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', padding: '6px 6px', height: 52 }}>
+          <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>Öğrencilerim</p>
+          <p className="text-base font-bold text-center" style={{ color: '#1B3B2F' }}>{members.length}</p>
         </button>
       </div>
 
@@ -639,11 +639,11 @@ export default function TrainerDashboardClient({
       <div className="flex items-center justify-between px-5 mb-2 flex-shrink-0">
         <button onClick={() => changeDate(-1)}
           className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+          style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}>
           ←
         </button>
         <div className="text-center">
-          <p className="text-sm font-bold text-white">{formatDayLabel(currentDate)}</p>
+          <p className="text-sm font-bold">{formatDayLabel(currentDate)}</p>
           {!scheduleLoading && (
             <p className="text-[11px] font-medium" style={{ color: '#f59e0b' }}>
               {Object.keys(reservations).length > 0
@@ -655,7 +655,7 @@ export default function TrainerDashboardClient({
         </div>
         <button onClick={() => changeDate(1)}
           className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+          style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}>
           →
         </button>
       </div>
@@ -663,7 +663,7 @@ export default function TrainerDashboardClient({
       {/* Slot grid */}
       <div className="flex-1 px-5 pb-24">
         {scheduleLoading
-          ? <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+          ? <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
           : (
             <div className="grid grid-cols-2 gap-1">
               {visibleSlots.map(slot => {
@@ -674,9 +674,9 @@ export default function TrainerDashboardClient({
                 const currentStatus = localStatuses[slot] ?? res?.status
                 const isSelected = selectedSlot === slot
 
-                let bg = 'rgba(255,255,255,0.04)'
-                let borderColor = 'rgba(255,255,255,0.07)'
-                let timeColor = past && !res && !isClosed ? 'rgba(74,97,144,0.4)' : '#c8d6f0'
+                let bg = 'rgba(27,59,47,0.04)'
+                let borderColor = 'rgba(27,59,47,0.08)'
+                let timeColor = past && !res && !isClosed ? 'rgba(27,59,47,0.3)' : '#1B3B2F'
                 let subText = ''
                 let subColor = '#34d399'
 
@@ -686,17 +686,17 @@ export default function TrainerDashboardClient({
                   // Nötr: henüz gelmemiş (future, approved/pending)
                   const isOrangeSlot = (past || currentStatus === 'completed') && currentStatus !== 'no_show' && currentStatus !== 'cancelled'
                   bg = currentStatus === 'no_show' ? 'rgba(248,113,113,0.08)' :
-                       isOrangeSlot                ? 'rgba(245,158,11,0.10)'  : 'rgba(255,255,255,0.07)'
+                       isOrangeSlot                ? 'rgba(245,158,11,0.10)'  : 'rgba(27,59,47,0.08)'
                   borderColor = currentStatus === 'no_show' ? 'rgba(248,113,113,0.25)' :
-                                isOrangeSlot                 ? 'rgba(245,158,11,0.35)'  : 'rgba(255,255,255,0.15)'
+                                isOrangeSlot                 ? 'rgba(245,158,11,0.35)'  : 'rgba(27,59,47,0.15)'
                   subText = res.member_name.split(' ')[0]
                   subColor = currentStatus === 'no_show' ? '#f87171' :
-                             isOrangeSlot                 ? '#f59e0b' : '#c8d6f0'
+                             isOrangeSlot                 ? '#f59e0b' : '#1B3B2F'
                 } else if (isClosed) {
-                  bg = 'rgba(255,255,255,0.02)'
-                  timeColor = 'rgba(74,97,144,0.4)'
+                  bg = 'rgba(27,59,47,0.02)'
+                  timeColor = 'rgba(27,59,47,0.3)'
                   subText = 'Kapalı'
-                  subColor = 'rgba(74,97,144,0.5)'
+                  subColor = 'rgba(27,59,47,0.35)'
                 } else if (isExtra) {
                   subText = 'Özel açık'
                   subColor = '#f59e0b'
@@ -712,8 +712,8 @@ export default function TrainerDashboardClient({
                     disabled={past && !isAdminView && !res && !isClosed && !isExtra}
                     className="flex items-center justify-between px-3 rounded-lg transition-all text-left"
                     style={{
-                      background: isSelected ? 'rgba(255,255,255,0.14)' : bg,
-                      border: `1px solid ${isSelected ? 'rgba(255,255,255,0.35)' : borderColor}`,
+                      background: isSelected ? 'rgba(27,59,47,0.14)' : bg,
+                      border: `1px solid ${isSelected ? 'rgba(27,59,47,0.30)' : borderColor}`,
                       cursor: past && !isAdminView && !res && !isClosed && !isExtra ? 'default' : 'pointer',
                       height: 32,
                     }}
@@ -756,14 +756,14 @@ export default function TrainerDashboardClient({
           onClick={() => { setSelectedSlot(null); setSlotAction(null) }}>
           <div
             className="w-full rounded-t-3xl px-5 pt-5 pb-24"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <p className="font-bold text-white text-base">{formatTime(selectedSlot)}</p>
+              <p className="font-bold text-base">{formatTime(selectedSlot)}</p>
               <button onClick={() => { setSelectedSlot(null); setSlotAction(null) }}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
 
             {slotAction === 'menu' && (
@@ -777,8 +777,8 @@ export default function TrainerDashboardClient({
                   const isFuture  = !isOrange && !isNoShow && currentStatus !== 'cancelled'
                   return (
                     <div className="space-y-2">
-                      <p className="font-bold text-white">{selectedRes.member_name}</p>
-                      <p className="text-xs mb-1" style={{ color: isNoShow ? '#f87171' : isOrange ? '#f59e0b' : '#7b93c4' }}>
+                      <p className="font-bold">{selectedRes.member_name}</p>
+                      <p className="text-xs mb-1" style={{ color: isNoShow ? '#f87171' : isOrange ? '#f59e0b' : 'rgba(27,59,47,0.55)' }}>
                         {isNoShow ? 'Gelmedi' : isOrange ? 'Ders saati geldi' : 'Onaylı'}
                       </p>
 
@@ -794,7 +794,7 @@ export default function TrainerDashboardClient({
                           <button onClick={() => isAdminView ? handleAdminCancelCompleted(selectedRes.id) : setCancelTarget(selectedRes.id)}
                             disabled={actionLoading}
                             className="w-full py-3 rounded-2xl text-sm font-bold"
-                            style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
+                            style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F' }}>
                             İptal Et {isAdminView ? '(ders geri döner)' : ''}
                           </button>
                         </>
@@ -815,7 +815,7 @@ export default function TrainerDashboardClient({
                         <button onClick={() => setCancelTarget(selectedRes.id)}
                           disabled={actionLoading}
                           className="w-full py-3 rounded-2xl text-sm font-bold"
-                          style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
+                          style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F' }}>
                           İptal Et
                         </button>
                       )}
@@ -827,7 +827,7 @@ export default function TrainerDashboardClient({
                   <button onClick={() => handleToggleClosed(selectedSlot, true)}
                     disabled={actionLoading}
                     className="w-full py-3 rounded-2xl text-sm font-bold"
-                    style={{ background: 'rgba(255,255,255,0.08)', color: '#c8d6f0' }}>
+                    style={{ background: 'rgba(27,59,47,0.08)', color: '#1B3B2F' }}>
                     Slotu Aç
                   </button>
                 )}
@@ -848,7 +848,7 @@ export default function TrainerDashboardClient({
                       <button onClick={() => handleToggleClosed(selectedSlot, false)}
                         disabled={actionLoading}
                         className="w-full py-3 rounded-2xl text-sm font-bold"
-                        style={{ background: 'rgba(255,255,255,0.06)', color: '#c8d6f0', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F', border: '1px solid rgba(27,59,47,0.10)' }}>
                         Slotu Kapat
                       </button>
                     )}
@@ -864,14 +864,14 @@ export default function TrainerDashboardClient({
 
             {slotAction === 'addLesson' && (
               <div>
-                <button onClick={() => setSlotAction('menu')} className="text-sm mb-4" style={{ color: '#7b93c4' }}>
+                <button onClick={() => setSlotAction('menu')} className="text-sm mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>
                   ← Geri
                 </button>
-                <p className="text-sm font-bold text-white mb-3">Öğrenci seç:</p>
+                <p className="text-sm font-bold mb-3">Öğrenci seç:</p>
                 {membersLoading
-                  ? <p className="text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+                  ? <p className="text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
                   : members.length === 0
-                    ? <p className="text-sm" style={{ color: '#7b93c4' }}>Atanmış öğrenci yok.</p>
+                    ? <p className="text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Atanmış öğrenci yok.</p>
                     : (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {members.map(member => (
@@ -879,8 +879,8 @@ export default function TrainerDashboardClient({
                             onClick={() => handleBookMember(member)}
                             disabled={actionLoading}
                             className="w-full rounded-2xl p-3 text-left flex justify-between items-center"
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <p className="text-sm font-bold text-white">{member.name} {member.surname}</p>
+                            style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }}>
+                            <p className="text-sm font-bold">{member.name} {member.surname}</p>
                             <p className="text-xs font-bold" style={{ color: member.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
                               {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
                             </p>
@@ -901,28 +901,28 @@ export default function TrainerDashboardClient({
           onClick={() => { setShowStudents(false); setSelectedMember(null) }}>
           <div
             className="w-full rounded-t-3xl px-5 pt-5 pb-24"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '75vh', overflowY: 'auto' }}
+            style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)', maxHeight: '75vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
               {selectedMember ? (
-                <button onClick={() => setSelectedMember(null)} className="text-sm flex items-center gap-1" style={{ color: '#7b93c4' }}>
+                <button onClick={() => setSelectedMember(null)} className="text-sm flex items-center gap-1" style={{ color: 'rgba(27,59,47,0.55)' }}>
                   ← Geri
                 </button>
               ) : (
-                <p className="font-bold text-white text-base">Öğrencilerim</p>
+                <p className="font-bold text-base">Öğrencilerim</p>
               )}
               <button onClick={() => { setShowStudents(false); setSelectedMember(null) }}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
 
             {/* Öğrenci listesi */}
             {!selectedMember && (
               membersLoading
-                ? <p className="text-sm text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+                ? <p className="text-sm text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
                 : members.length === 0
-                  ? <p className="text-sm text-center py-8" style={{ color: '#7b93c4' }}>Atanmış öğrenci yok.</p>
+                  ? <p className="text-sm text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Atanmış öğrenci yok.</p>
                   : (
                     <div className="space-y-2">
                       {members.map(m => (
@@ -930,9 +930,9 @@ export default function TrainerDashboardClient({
                           key={m.id}
                           onClick={() => handleMemberClick(m)}
                           className="w-full rounded-2xl px-4 py-3 flex justify-between items-center text-left"
-                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }}
                         >
-                          <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
+                          <p className="text-sm font-bold">{m.name} {m.surname}</p>
                           <p className="text-xs font-bold" style={{ color: m.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
                             {m.remaining_lessons <= 0 ? 'Ders yok' : `${m.remaining_lessons} ders`}
                           </p>
@@ -945,20 +945,20 @@ export default function TrainerDashboardClient({
             {/* Öğrenci detay */}
             {selectedMember && (
               <div>
-                <p className="text-lg font-bold text-white mb-4">{selectedMember.name} {selectedMember.surname}</p>
+                <p className="text-lg font-bold mb-4">{selectedMember.name} {selectedMember.surname}</p>
                 {memberStatsLoading
-                  ? <p className="text-sm text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+                  ? <p className="text-sm text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
                   : selectedMemberStats && (
                     <div className="grid grid-cols-4 gap-2">
                       {[
-                        { label: 'Toplam ders', value: selectedMemberStats.total_lessons, color: '#c8d6f0' },
-                        { label: 'Kullanılan', value: selectedMemberStats.used_lessons, color: '#c8d6f0' },
+                        { label: 'Toplam ders', value: selectedMemberStats.total_lessons, color: '#1B3B2F' },
+                        { label: 'Kullanılan', value: selectedMemberStats.used_lessons, color: '#1B3B2F' },
                         { label: 'Kalan ders', value: selectedMemberStats.remaining_lessons, color: '#34d399' },
                         { label: 'Bekleyen', value: selectedMemberStats.reserved_lessons, color: '#38bdf8' },
                       ].map(card => (
                         <div key={card.label} className="rounded-2xl p-3 text-center"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <p className="text-[9px] font-medium uppercase tracking-wide mb-1" style={{ color: '#7b93c4' }}>{card.label}</p>
+                          style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }}>
+                          <p className="text-[9px] font-medium uppercase tracking-wide mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>{card.label}</p>
                           <p className="text-xl font-bold" style={{ color: card.color }}>{card.value}</p>
                         </div>
                       ))}
@@ -981,12 +981,12 @@ export default function TrainerDashboardClient({
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3 sticky top-0 pt-1 -mt-1" style={{ background: '#0d1b4b' }}>
-              <p className="font-bold text-white text-base">Slot Seçimi</p>
+              <p className="font-bold text-base">Slot Seçimi</p>
               <button onClick={() => setShowShiftPicker(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
-            <p className="text-xs mb-2" style={{ color: '#7b93c4' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır.</p>
+            <p className="text-xs mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Seçtiğin slot aralığı tüm günlerde varsayılan olarak uygulanır.</p>
             <div className="space-y-1.5">
               {[
                 { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
@@ -1000,23 +1000,23 @@ export default function TrainerDashboardClient({
                   disabled={shiftSaving}
                   className="w-full rounded-2xl p-2.5 text-left flex justify-between items-center"
                   style={{
-                    background: shift === opt.key ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${shift === opt.key ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                    background: shift === opt.key ? 'rgba(56,189,248,0.12)' : 'rgba(27,59,47,0.05)',
+                    border: `1px solid ${shift === opt.key ? 'rgba(56,189,248,0.35)' : 'rgba(27,59,47,0.10)'}`,
                   }}
                 >
                   <div>
-                    <p className="text-sm font-bold text-white">{opt.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{opt.desc}</p>
+                    <p className="text-sm font-bold">{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{opt.desc}</p>
                   </div>
                   {shift === opt.key && <span style={{ color: '#38bdf8' }}>✓</span>}
                 </button>
               ))}
             </div>
 
-            <div className="h-px my-3" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <div className="h-px my-3" style={{ background: 'rgba(27,59,47,0.10)' }} />
 
-            <p className="font-bold text-white text-sm mb-1">Sadece bu gün — {formatDayLabel(currentDate)}</p>
-            <p className="text-xs mb-2" style={{ color: '#7b93c4' }}>Bu günü farklı bir mesaiye çevir, diğer günler varsayılanı kullanmaya devam eder.</p>
+            <p className="font-bold text-sm mb-1">Sadece bu gün — {formatDayLabel(currentDate)}</p>
+            <p className="text-xs mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu günü farklı bir mesaiye çevir, diğer günler varsayılanı kullanmaya devam eder.</p>
             <div className="space-y-1.5">
               {[
                 { key: 'morning', label: '☀️ Sabah', desc: '10:30 — 20:00' },
@@ -1030,13 +1030,13 @@ export default function TrainerDashboardClient({
                   disabled={dailyShiftSaving}
                   className="w-full rounded-2xl p-2.5 text-left flex justify-between items-center"
                   style={{
-                    background: dailyShift === opt.key ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${dailyShift === opt.key ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                    background: dailyShift === opt.key ? 'rgba(245,158,11,0.12)' : 'rgba(27,59,47,0.05)',
+                    border: `1px solid ${dailyShift === opt.key ? 'rgba(245,158,11,0.35)' : 'rgba(27,59,47,0.10)'}`,
                   }}
                 >
                   <div>
-                    <p className="text-sm font-bold text-white">{opt.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{opt.desc}</p>
+                    <p className="text-sm font-bold">{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{opt.desc}</p>
                   </div>
                   {dailyShift === opt.key && <span style={{ color: '#f59e0b' }}>✓</span>}
                 </button>
@@ -1046,7 +1046,7 @@ export default function TrainerDashboardClient({
                   onClick={() => saveDailyShift(null)}
                   disabled={dailyShiftSaving}
                   className="w-full rounded-2xl p-2.5 text-center text-sm font-bold"
-                  style={{ background: 'rgba(255,255,255,0.05)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+                  style={{ background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}
                 >
                   Varsayılana dön ({SHIFT_LABELS[shift] ?? shift})
                 </button>
@@ -1059,14 +1059,14 @@ export default function TrainerDashboardClient({
       {/* İptal onay modalı */}
       {cancelTarget && (
         <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-2">Dersi İptal Et</h3>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu dersi iptal etmek istediğinize emin misiniz?</p>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.15)' }} />
+            <h3 className="text-lg font-bold mb-2">Dersi İptal Et</h3>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu dersi iptal etmek istediğinize emin misiniz?</p>
             <div className="flex gap-3">
               <button onClick={() => setCancelTarget(null)} disabled={actionLoading}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 Vazgeç
               </button>
               <button onClick={handleCancelReservation} disabled={actionLoading}

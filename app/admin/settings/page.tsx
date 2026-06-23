@@ -6,8 +6,8 @@ import LogoutButton from '@/components/logout-button'
 
 type Package = { id: string; lesson_count: number; weekday_price: number; general_price: number; is_active: boolean }
 
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
-const INPUT = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const CARD = { background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }
+const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
 export default function SettingsPage() {
   const [packages, setPackages] = useState<Package[]>([])
@@ -74,38 +74,38 @@ export default function SettingsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#7b93c4' }}>Angora Admin Paneli</p>
-          <h1 className="text-2xl font-bold text-white">Ayarlar</h1>
+          <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>Angora Admin Paneli</p>
+          <h1 className="text-2xl font-bold">Ayarlar</h1>
         </div>
         <LogoutButton className="text-xs font-bold px-4 py-2 rounded-xl"
           style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }} />
       </div>
 
-      <p className="text-sm font-bold mb-4" style={{ color: '#7b93c4' }}>Paket Fiyatları</p>
+      <p className="text-sm font-bold mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>Paket Fiyatları</p>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+        <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
       ) : (
         <div className="space-y-3">
           {packages.map(pkg => (
             <div key={pkg.id} className="rounded-2xl p-4" style={CARD}>
               <div className="flex items-center justify-between mb-3">
                 <button className="flex items-center gap-2" onClick={() => setDeleteTarget(pkg.id)}>
-                  <span className="text-2xl font-bold text-white">{pkg.lesson_count}</span>
-                  <span className="text-sm" style={{ color: '#7b93c4' }}>Ders</span>
+                  <span className="text-2xl font-bold">{pkg.lesson_count}</span>
+                  <span className="text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Ders</span>
                 </button>
                 <button
                   onClick={() => toggleActive(pkg.id, pkg.is_active)}
                   className="px-3 py-1 rounded-full text-xs font-bold"
                   style={pkg.is_active
                     ? { background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }
-                    : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+                    : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}
                 >
                   {pkg.is_active ? 'Aktif' : 'Pasif'}
                 </button>
               </div>
               <div className="mb-3">
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Fiyat (₺)</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Fiyat (₺)</p>
                 <input type="number" value={pkg.general_price} onChange={e => updatePrice(pkg.id, e.target.value)}
                   className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
               </div>
@@ -121,15 +121,15 @@ export default function SettingsPage() {
 
       {/* Yeni paket */}
       <div className="mt-6 rounded-2xl p-4" style={CARD}>
-        <p className="text-sm font-bold text-white mb-4">Yeni Paket Ekle</p>
+        <p className="text-sm font-bold mb-4">Yeni Paket Ekle</p>
         <div className="space-y-3">
           <div>
-            <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ders Sayısı</p>
+            <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ders Sayısı</p>
             <input type="number" value={newPkg.lesson_count} onChange={e => setNewPkg(p => ({ ...p, lesson_count: e.target.value }))}
               placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
           <div>
-            <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Fiyat (₺)</p>
+            <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Fiyat (₺)</p>
             <input type="number" value={newPkg.general_price} onChange={e => setNewPkg(p => ({ ...p, general_price: e.target.value }))}
               placeholder="0" className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
@@ -146,14 +146,14 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-2">Paketi Kaldır</h3>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>
+            <h3 className="text-lg font-bold mb-2">Paketi Kaldır</h3>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>
               Bu paket pasif yapılacak ve üyelik seçeneklerinden kaldırılacak. Mevcut üyelikler etkilenmez.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteTarget(null)} disabled={deleting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 Vazgeç
               </button>
               <button onClick={handleDelete} disabled={deleting}
@@ -168,7 +168,7 @@ export default function SettingsPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl text-sm font-bold text-white"
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl text-sm font-bold"
           style={{ background: 'rgba(52,211,153,0.2)', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(8px)' }}>
           {toast}
         </div>

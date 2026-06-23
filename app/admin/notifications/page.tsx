@@ -191,10 +191,10 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">İstekler</h1>
+      <h1 className="text-2xl font-bold mb-6">İstekler</h1>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+        <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
       ) : (
         <div className="space-y-3">
           {/* 4 akordeon başlık */}
@@ -202,54 +202,54 @@ export default function NotificationsPage() {
             const isOpen = openSections.has(key)
             const count  = SECTION_COUNTS[key]
             return (
-              <div key={key} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div key={key} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }}>
                 <button onClick={() => toggleSection(key)} className="w-full flex items-center justify-between px-4 py-3.5">
                   <span className="flex items-center gap-3">
                     <span className="text-xl">{SECTION_ICONS[key]}</span>
-                    <span className="font-bold text-white text-sm">{SECTION_LABELS[key]}</span>
+                    <span className="font-bold text-sm">{SECTION_LABELS[key]}</span>
                     {count > 0 && (
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>{count}</span>
                     )}
                   </span>
-                  <span className="text-sm" style={{ color: '#7b93c4' }}>{isOpen ? '▲' : '▼'}</span>
+                  <span className="text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>{isOpen ? '▲' : '▼'}</span>
                 </button>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="px-4 pb-4 space-y-2" style={{ borderTop: '1px solid rgba(27,59,47,0.08)' }}>
                     {/* Yeni üye kaydı */}
                     {key === 'new_member' && (
-                      newMembers.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Bekleyen yeni üye kaydı yok.</p> :
+                      newMembers.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen yeni üye kaydı yok.</p> :
                       newMembers.map(m => (
                         <Link key={m.id} href={`/admin/members/${m.id}/view`}
-                          className="block rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="font-bold text-white text-sm">{m.name} {m.surname}</p>
-                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
-                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>{formatDateTime(m.created_at)}</p>
+                          className="block rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
+                          <p className="font-bold text-sm">{m.name} {m.surname}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(m.created_at)}</p>
                         </Link>
                       ))
                     )}
 
                     {/* Paket talebi */}
                     {key === 'package_request' && (
-                      packageRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Bekleyen paket talebi yok.</p> :
+                      packageRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen paket talebi yok.</p> :
                       packageRequests.map(r => (
                         <Link key={r.id} href="/admin/membership-requests"
-                          className="block rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="font-bold text-white text-sm">{r.member_name}</p>
-                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.member_email}</p>
-                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>{formatDateTime(r.created_at)} — {r.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
+                          className="block rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
+                          <p className="font-bold text-sm">{r.member_name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.member_email}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(r.created_at)} — {r.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
                         </Link>
                       ))
                     )}
 
                     {/* Eski üye kaydı */}
                     {key === 'legacy' && (
-                      legacyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Bekleyen eski üye kaydı yok.</p> :
+                      legacyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen eski üye kaydı yok.</p> :
                       legacyRequests.map(m => (
-                        <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="font-bold text-white text-sm">{m.name} {m.surname}</p>
-                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
-                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>{formatDateTime(m.created_at)}</p>
+                        <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
+                          <p className="font-bold text-sm">{m.name} {m.surname}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(m.created_at)}</p>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
                             {m._approved ? (
                               <span className="text-xs font-bold" style={{ color: '#34d399' }}>✓ Onaylandı — üye listesinde görünüyor</span>
@@ -272,28 +272,28 @@ export default function NotificationsPage() {
 
                     {/* Deneme dersi */}
                     {key === 'trial' && (
-                      trialLessons.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Deneme dersi talebi yok.</p> :
+                      trialLessons.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Deneme dersi talebi yok.</p> :
                       trialLessons.map(t => (
-                        <div key={t.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="font-bold text-white text-sm">
+                        <div key={t.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
+                          <p className="font-bold text-sm">
                             {t.member_name}
                             <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
                               style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b' }}>DD</span>
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{formatDate(t.scheduled_date)} — {t.start_time.substring(0,5)}</p>
-                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>Talep: {formatDateTime(t.created_at)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{formatDate(t.scheduled_date)} — {t.start_time.substring(0,5)}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>Talep: {formatDateTime(t.created_at)}</p>
                         </div>
                       ))
                     )}
 
                     {/* Aile üyesi */}
                     {key === 'family' && (
-                      familyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: '#7b93c4' }}>Bekleyen aile üyesi talebi yok.</p> :
+                      familyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen aile üyesi talebi yok.</p> :
                       familyRequests.map(m => (
-                        <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="font-bold text-white text-sm">{m.name} {m.surname}</p>
-                          <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email}</p>
-                          <p className="text-xs mt-1" style={{ color: '#4a6190' }}>{formatDateTime(m.created_at)}</p>
+                        <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
+                          <p className="font-bold text-sm">{m.name} {m.surname}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(m.created_at)}</p>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
                             {m._resolved ? (
                               <span className="text-xs font-bold" style={{ color: '#34d399' }}>✓ Tamamlandı</span>
@@ -328,12 +328,12 @@ export default function NotificationsPage() {
             >
               <span className="text-2xl flex-shrink-0">{ICON[n.type]}</span>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-white text-sm">{n.message}</p>
-                {n.member_email && <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{n.member_email}</p>}
+                <p className="font-bold text-sm">{n.message}</p>
+                {n.member_email && <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{n.member_email}</p>}
               </div>
               <button onClick={() => dismiss(n.message)}
                 className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 Tamam
               </button>
             </div>

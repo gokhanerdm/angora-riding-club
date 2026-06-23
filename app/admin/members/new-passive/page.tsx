@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
-const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const CARD = { background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.10)' }
+const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 const SLOTS = ['10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00']
 
 export default function NewPassiveMemberPage() {
@@ -97,22 +97,22 @@ export default function NewPassiveMemberPage() {
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
+      style={{ background: '#FBFBFB' }}>
 
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
           style={{ background: 'rgba(248,113,113,0.25)', border: '1px solid rgba(248,113,113,0.4)' }}>
           {toast}
         </div>
       )}
 
       <div className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0"
-        style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
-          style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>← Geri</button>
+          style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
         <div>
-          <h2 className="font-bold text-white">Pasif Üye Ekle</h2>
-          <p className="text-xs" style={{ color: '#7b93c4' }}>Adım {step}/3</p>
+          <h2 className="font-bold">Pasif Üye Ekle</h2>
+          <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Adım {step}/3</p>
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export default function NewPassiveMemberPage() {
             <div className="flex gap-2">
               {(['weekday','general'] as const).map(t => (
                 <button key={t} onClick={()=>setPkgType(t)} className="flex-1 py-2 rounded-xl text-xs font-bold"
-                  style={pkgType===t?{background:'#f59e0b',color:'#0a0f2e'}:{background:'rgba(255,255,255,0.06)',color:'#7b93c4'}}>
+                  style={pkgType===t?{background:'#f59e0b',color:'#0a0f2e'}:{background:'rgba(27,59,47,0.06)',color:'rgba(27,59,47,0.55)'}}>
                   {t==='weekday'?'Hafta İçi':'Genel'}
                 </button>
               ))}
@@ -149,7 +149,7 @@ export default function NewPassiveMemberPage() {
             <div className="flex gap-2">
               {(['nakit','havale','kart'] as const).map(m=>(
                 <button key={m} onClick={()=>setPkgMethod(m)} className="flex-1 py-2 rounded-xl text-xs font-bold capitalize"
-                  style={pkgMethod===m?{background:'#f59e0b',color:'#0a0f2e'}:{background:'rgba(255,255,255,0.06)',color:'#7b93c4'}}>{m}</button>
+                  style={pkgMethod===m?{background:'#f59e0b',color:'#0a0f2e'}:{background:'rgba(27,59,47,0.06)',color:'rgba(27,59,47,0.55)'}}>{m}</button>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -169,7 +169,7 @@ export default function NewPassiveMemberPage() {
             {lessons.map((l,i) => (
               <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="flex justify-between items-center">
-                  <p className="text-xs font-bold" style={{ color: '#7b93c4' }}>Ders {i+1}</p>
+                  <p className="text-xs font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ders {i+1}</p>
                   {lessons.length > 1 && <button onClick={() => removeLesson(i)} className="text-xs" style={{ color: '#f87171' }}>Sil</button>}
                 </div>
                 <input type="date" value={l.date} onChange={e=>updateLesson(i,'date',e.target.value)} className="w-full px-3 py-2 rounded-xl text-xs outline-none" style={INPUT} />
@@ -182,9 +182,9 @@ export default function NewPassiveMemberPage() {
                     {SLOTS.map(s=><option key={s} value={s}>{s}</option>)}
                   </select>
                   <button onClick={()=>updateLesson(i,'status','completed')} className="flex-1 py-2 rounded-xl text-xs font-bold"
-                    style={l.status==='completed'?{background:'rgba(52,211,153,0.2)',color:'#34d399'}:{background:'rgba(255,255,255,0.05)',color:'#7b93c4'}}>Yapıldı</button>
+                    style={l.status==='completed'?{background:'rgba(52,211,153,0.2)',color:'#34d399'}:{background:'rgba(27,59,47,0.05)',color:'rgba(27,59,47,0.55)'}}>Yapıldı</button>
                   <button onClick={()=>updateLesson(i,'status','no_show')} className="flex-1 py-2 rounded-xl text-xs font-bold"
-                    style={l.status==='no_show'?{background:'rgba(245,158,11,0.2)',color:'#f59e0b'}:{background:'rgba(255,255,255,0.05)',color:'#7b93c4'}}>Gelmedi</button>
+                    style={l.status==='no_show'?{background:'rgba(245,158,11,0.2)',color:'#f59e0b'}:{background:'rgba(27,59,47,0.05)',color:'rgba(27,59,47,0.55)'}}>Gelmedi</button>
                 </div>
               </div>
             ))}

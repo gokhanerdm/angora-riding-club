@@ -6,7 +6,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireAdmin()
 
   return (
-    <div style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)', minHeight: '100vh' }}>
+    <div style={{ background: '#FBFBFB', minHeight: '100vh' }}>
 
       <main className="px-4 pt-14 pb-44">
         {children}

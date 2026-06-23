@@ -33,8 +33,8 @@ export default async function AdminTrainersPage() {
   if (!trainers || trainers.length === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-white mb-6">Eğitmenler</h1>
-        <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+        <h1 className="text-2xl font-bold mb-6">Eğitmenler</h1>
+        <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)', color: 'rgba(27,59,47,0.55)' }}>
           Henüz eğitmen yok.
         </div>
       </div>
@@ -74,15 +74,15 @@ export default async function AdminTrainersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Eğitmenler</h1>
+      <h1 className="text-2xl font-bold mb-6">Eğitmenler</h1>
       <div className="space-y-3">
         {cards.map(t => (
           <Link key={t.id} href={`/admin/trainers/${t.id}`}>
             <div
               className="rounded-2xl px-4 py-3 flex items-center justify-between active:opacity-70"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }}
             >
-              <p className="text-sm font-bold text-white">{t.name} {t.surname}</p>
+              <p className="text-sm font-bold">{t.name} {t.surname}</p>
               <p className="text-xs font-bold flex-shrink-0" style={{ color: '#f59e0b' }}>
                 Bugün {t.today_lessons} ders
               </p>

@@ -132,7 +132,7 @@ export default function AdminDashboard() {
     setGenericLoading(false)
   }
 
-  const INPUT_S = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+  const INPUT_S = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
   // ---- Auto complete ----
   useEffect(() => {
@@ -322,14 +322,14 @@ export default function AdminDashboard() {
   function StatRow({ label, items }: { label: string; items: { title: string; value: number | string; color: string; onClick?: () => void }[] }) {
     return (
       <div className="mb-3">
-        <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5 px-0.5" style={{ color: '#7b93c4' }}>{label}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest mb-1.5 px-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{label}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {items.map((item, i) => (
             <button key={i} onClick={item.onClick} disabled={!item.onClick}
               className="rounded-xl flex flex-col items-center justify-center"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+              style={{ background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)',
                        padding: '6px 4px', height: 52, cursor: item.onClick ? 'pointer' : 'default' }}>
-              <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: '#7b93c4' }}>{item.title}</p>
+              <p className="text-[8px] font-medium uppercase tracking-wide leading-tight mb-1 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>{item.title}</p>
               <p className="text-base font-bold text-center" style={{ color: item.color }}>{item.value}</p>
             </button>
           ))}
@@ -341,21 +341,21 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#7b93c4' }}>
+        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>
           {selectedDate === realToday ? 'Bugün' : 'Seçili Gün'}
         </p>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">{dateLabelFor(selectedDate)}</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#1B3B2F' }}>{dateLabelFor(selectedDate)}</h1>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setSelectedDate(d => shiftDay(d, -1))}
               className="w-9 h-9 flex items-center justify-center rounded-xl text-lg font-bold active:opacity-60"
-              style={{ background: 'rgba(255,255,255,0.07)', color: '#c8d6f0' }}>‹</button>
+              style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F' }}>‹</button>
             <button
               onClick={() => setSelectedDate(d => shiftDay(d, 1))}
               disabled={selectedDate >= realToday}
               className="w-9 h-9 flex items-center justify-center rounded-xl text-lg font-bold active:opacity-60 disabled:opacity-30"
-              style={{ background: 'rgba(255,255,255,0.07)', color: '#c8d6f0' }}>›</button>
+              style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F' }}>›</button>
             {selectedDate !== realToday && (
               <button
                 onClick={() => setSelectedDate(realToday)}
@@ -373,7 +373,7 @@ export default function AdminDashboard() {
         { title: 'Toplam', value: lessonStats.total,     color: '#38bdf8', onClick: () => openCard('total') },
         { title: 'Tamamlanan', value: lessonStats.completed, color: '#34d399', onClick: () => openCard('completed') },
         { title: 'Bekleyen', value: lessonStats.pending,   color: '#f59e0b', onClick: () => openCard('pending') },
-        { title: 'Kalan',    value: lessonStats.remaining, color: '#c8d6f0', onClick: () => openCard('remaining') },
+        { title: 'Kalan',    value: lessonStats.remaining, color: '#1B3B2F', onClick: () => openCard('remaining') },
       ]} />
 
       {/* Satır 2 — Yeni Kayıt */}
@@ -381,7 +381,7 @@ export default function AdminDashboard() {
         { title: 'Bugün',  value: memberStats.today, color: '#a78bfa', onClick: () => openGenericModal('member','today','Bugün Yeni Kayıtlar') },
         { title: 'Hafta',  value: memberStats.week,  color: '#a78bfa', onClick: () => openGenericModal('member','week','Bu Hafta Yeni Kayıtlar') },
         { title: 'Ay',     value: memberStats.month, color: '#a78bfa', onClick: () => openGenericModal('member','month','Bu Ay Yeni Kayıtlar') },
-        { title: selectedDate.substring(0,4), value: memberStats.year, color: '#c8d6f0', onClick: () => openGenericModal('member','year',`${selectedDate.substring(0,4)} Kayıtlar`) },
+        { title: selectedDate.substring(0,4), value: memberStats.year, color: '#1B3B2F', onClick: () => openGenericModal('member','year',`${selectedDate.substring(0,4)} Kayıtlar`) },
       ]} />
 
       {/* Satır 3 — Satılan Paket */}
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
         { title: 'Bugün',  value: packageStats.today  ? `${(packageStats.today/1000).toFixed(0)}K`  : '0', color: '#34d399', onClick: () => openGenericModal('package','today','Bugün Satılan Paketler') },
         { title: 'Hafta',  value: packageStats.week   ? `${(packageStats.week/1000).toFixed(0)}K`   : '0', color: '#34d399', onClick: () => openGenericModal('package','week','Bu Hafta Satılan Paketler') },
         { title: 'Ay',     value: packageStats.month  ? `${(packageStats.month/1000).toFixed(0)}K`  : '0', color: '#34d399', onClick: () => openGenericModal('package','month','Bu Ay Satılan Paketler') },
-        { title: 'Toplam', value: packageStats.total  ? `${(packageStats.total/1000).toFixed(0)}K`  : '0', color: '#c8d6f0', onClick: () => openGenericModal('package','total','Tüm Satılan Paketler') },
+        { title: 'Toplam', value: packageStats.total  ? `${(packageStats.total/1000).toFixed(0)}K`  : '0', color: '#1B3B2F', onClick: () => openGenericModal('package','total','Tüm Satılan Paketler') },
       ]} />
 
       {/* Satır 4 — Gelen Üye */}
@@ -397,7 +397,7 @@ export default function AdminDashboard() {
         { title: 'Bugün',  value: visitStats.today, color: '#f59e0b', onClick: () => openGenericModal('visit','today','Bugün Gelen Üyeler') },
         { title: 'Hafta',  value: visitStats.week,  color: '#f59e0b', onClick: () => openGenericModal('visit','week','Bu Hafta Gelen Üyeler') },
         { title: 'Ay',     value: visitStats.month, color: '#f59e0b', onClick: () => openGenericModal('visit','month','Bu Ay Gelen Üyeler') },
-        { title: 'Toplam', value: visitStats.total, color: '#c8d6f0', onClick: () => openGenericModal('visit','total','Tüm Zamanlar Gelen Üyeler') },
+        { title: 'Toplam', value: visitStats.total, color: '#1B3B2F', onClick: () => openGenericModal('visit','total','Tüm Zamanlar Gelen Üyeler') },
       ]} />
 
       {/* Bekleyen başvurular */}
@@ -407,7 +407,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
               style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)' }}>
               <div>
-                <p className="font-bold text-white text-sm">{pendingFirst} İlk Paket Başvurusu</p>
+                <p className="font-bold text-sm">{pendingFirst} İlk Paket Başvurusu</p>
                 <p className="text-xs mt-0.5" style={{ color: '#f59e0b' }}>Yeni üye onayı bekliyor →</p>
               </div>
               <span className="text-2xl">🆕</span>
@@ -419,7 +419,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
               style={{ background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.3)' }}>
               <div>
-                <p className="font-bold text-white text-sm">{pendingNew} Yeni Paket Başvurusu</p>
+                <p className="font-bold text-sm">{pendingNew} Yeni Paket Başvurusu</p>
                 <p className="text-xs mt-0.5" style={{ color: '#38bdf8' }}>Paket onayı bekliyor →</p>
               </div>
               <span className="text-2xl">📦</span>
@@ -430,7 +430,7 @@ export default function AdminDashboard() {
           <div className="rounded-2xl p-4 flex items-center justify-between active:opacity-80"
             style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
             <div>
-              <p className="font-bold text-white text-sm">Aile Grupları</p>
+              <p className="font-bold text-sm">Aile Grupları</p>
               <p className="text-xs mt-0.5" style={{ color: '#a78bfa' }}>Aile üyeliklerini yönet →</p>
             </div>
             <span className="text-2xl">👨‍👩‍👧‍👦</span>
@@ -445,25 +445,25 @@ export default function AdminDashboard() {
             style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="text-base font-bold text-white">{MODAL_TITLE[activeCard]}</h3>
+              <h3 className="text-base font-bold">{MODAL_TITLE[activeCard]}</h3>
               <button onClick={() => setActiveCard(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-4 space-y-2">
-              {modalLoading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
+              {modalLoading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
               {!modalLoading && modalData.length === 0 && (
-                <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Kayıt bulunamadı.</p>
+                <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Kayıt bulunamadı.</p>
               )}
               {!modalLoading && modalData.map((r, i) => (
                 <button key={i} onClick={() => { setEditItem(r); setEditDate(selectedDate); setEditStatus(r.status) }}
                   className="w-full rounded-2xl p-3 flex justify-between items-center text-left active:opacity-70"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.08)' }}>
                   <div>
-                    <p className="text-sm font-bold text-white">{r.member}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.time} · {r.trainer}</p>
+                    <p className="text-sm font-bold">{r.member}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.time} · {r.trainer}</p>
                   </div>
-                  <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_COLOR[r.status] ?? '#c8d6f0' }}>
+                  <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_COLOR[r.status] ?? '#1B3B2F' }}>
                     {STATUS_LABEL[r.status] ?? r.status}
                   </span>
                 </button>
@@ -481,23 +481,23 @@ export default function AdminDashboard() {
             style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="text-base font-bold text-white">{genericModal.title}</h3>
+              <h3 className="text-base font-bold">{genericModal.title}</h3>
               <button onClick={() => setGenericModal(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-4 space-y-2">
-              {genericLoading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
+              {genericLoading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
               {!genericLoading && genericData.length === 0 && (
-                <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Kayıt bulunamadı.</p>
+                <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Kayıt bulunamadı.</p>
               )}
               {/* Yeni kayıt listesi */}
               {!genericLoading && genericModal.type === 'member' && genericModal.period !== 'year' && genericData.map((m, i) => (
                 <a key={i} href={`/admin/members/${m.id}/settings`}
                   className="block rounded-2xl p-3 active:opacity-70"
                   style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                  <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.reg_date)}</p>
+                  <p className="text-sm font-bold">{m.name} {m.surname}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email} · {fmtDate(m.reg_date)}</p>
                 </a>
               ))}
               {/* Yeni kayıt — yıllara göre gruplu liste */}
@@ -508,8 +508,8 @@ export default function AdminDashboard() {
                     <a key={i} href={`/admin/members/${m.id}/settings`}
                       className="block rounded-2xl p-3 active:opacity-70"
                       style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                      <p className="text-sm font-bold text-white">{m.name} {m.surname}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{m.email} · {fmtDate(m.reg_date)}</p>
+                      <p className="text-sm font-bold">{m.name} {m.surname}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email} · {fmtDate(m.reg_date)}</p>
                     </a>
                   ))}
                 </div>
@@ -519,8 +519,8 @@ export default function AdminDashboard() {
                 <div key={i} className="rounded-2xl p-3 flex justify-between items-center"
                   style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.15)' }}>
                   <div>
-                    <p className="text-sm font-bold text-white">{p.member_name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{p.total_lessons} ders · {fmtDate(p.start_date)}</p>
+                    <p className="text-sm font-bold">{p.member_name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{p.total_lessons} ders · {fmtDate(p.start_date)}</p>
                   </div>
                   <p className="text-sm font-bold" style={{ color: '#34d399' }}>{parseFloat(p.payment_amount).toLocaleString('tr-TR')}₺</p>
                 </div>
@@ -529,7 +529,7 @@ export default function AdminDashboard() {
               {!genericLoading && genericModal.type === 'visit' && genericData.map((m, i) => (
                 <div key={i} className="rounded-2xl p-3"
                   style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                  <p className="text-sm font-bold text-white">{m.name}</p>
+                  <p className="text-sm font-bold">{m.name}</p>
                 </div>
               ))}
             </div>
@@ -542,20 +542,20 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-base font-bold text-white mb-1">{editItem.member}</h3>
-            <p className="text-xs mb-4" style={{ color: '#7b93c4' }}>{editItem.time} · {editItem.trainer}</p>
+            <h3 className="text-base font-bold mb-1">{editItem.member}</h3>
+            <p className="text-xs mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>{editItem.time} · {editItem.trainer}</p>
             <div className="space-y-3 mb-4">
               <div>
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Tarih</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Tarih</p>
                 <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT_S} />
               </div>
               <div>
-                <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Durum</p>
+                <p className="text-xs mb-2 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Durum</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[{v:'completed',l:'Tamamlandı',c:'#34d399'},{v:'no_show',l:'Gelmedi',c:'#f59e0b'},{v:'cancelled',l:'İptal',c:'#f87171'}].map(s => (
                     <button key={s.v} onClick={() => setEditStatus(s.v)} className="py-2.5 rounded-xl text-xs font-bold"
-                      style={editStatus===s.v ? {background:`${s.c}22`,color:s.c,border:`1px solid ${s.c}55`} : {background:'rgba(255,255,255,0.05)',color:'#7b93c4'}}>
+                      style={editStatus===s.v ? {background:`${s.c}22`,color:s.c,border:`1px solid ${s.c}55`} : {background:'rgba(27,59,47,0.05)',color:'rgba(27,59,47,0.55)'}}>
                       {s.l}
                     </button>
                   ))}
@@ -564,7 +564,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setEditItem(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={() => handleDeleteRes(editItem.id)} className="py-3 px-4 rounded-2xl font-bold text-sm"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>Sil</button>
               <button onClick={handleEditRes} disabled={editSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"

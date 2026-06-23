@@ -7,10 +7,10 @@ import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 const BTN = {
   base: 'w-full rounded-2xl px-5 py-4 text-left text-sm font-bold transition-opacity active:opacity-70',
-  card: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' },
+  card: { background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.10)' },
 }
 
-const INPUT_STYLE = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const INPUT_STYLE = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
 const SHIFT_OPTIONS = [
   { value: 'morning', label: 'Sabah' },
@@ -146,17 +146,17 @@ export default function AdminMemberSettingsPage() {
 
   if (loading) return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
-      <p style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      style={{ background: '#FBFBFB' }}>
+      <p style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
     </div>
   )
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
+      style={{ background: '#FBFBFB' }}>
 
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
           style={{ background: toast.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
           {toast}
         </div>
@@ -164,12 +164,12 @@ export default function AdminMemberSettingsPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0"
-        style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
-          style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>← Geri</button>
+          style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
         <div>
-          <h2 className="font-bold text-white">{member?.name} {member?.surname}</h2>
-          <p className="text-xs" style={{ color: '#7b93c4' }}>⚙️ Ayarlar</p>
+          <h2 className="font-bold">{member?.name} {member?.surname}</h2>
+          <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>⚙️ Ayarlar</p>
         </div>
       </div>
 
@@ -179,15 +179,15 @@ export default function AdminMemberSettingsPage() {
         <a href={`/admin/members/${memberId}/profile-edit`}
           className={BTN.base + ' flex items-center justify-between'}
           style={BTN.card}>
-          <span className="text-white">✏️ Profili Düzenle</span>
-          <span style={{ color: '#7b93c4' }}>→</span>
+          <span style={{ color: '#1B3B2F' }}>✏️ Profili Düzenle</span>
+          <span style={{ color: 'rgba(27,59,47,0.55)' }}>→</span>
         </a>
 
         {/* 2. Üye Durumu */}
         <button onClick={toggleStatus} disabled={updatingStatus}
           className={BTN.base + ' flex items-center justify-between disabled:opacity-50'}
           style={BTN.card}>
-          <span className="text-white">
+          <span style={{ color: '#1B3B2F' }}>
             {member?.member_status === 'active' ? '🟢' : '🔴'} Üye Durumu
           </span>
           <span className="text-xs font-bold px-3 py-1 rounded-xl"
@@ -203,19 +203,19 @@ export default function AdminMemberSettingsPage() {
           <button onClick={() => setTrainerOpen(p => !p)}
             className={BTN.base + ' flex items-center justify-between'}
             style={{ background: 'transparent', border: 'none' }}>
-            <span className="text-white">👤 Eğitmen</span>
+            <span style={{ color: '#1B3B2F' }}>👤 Eğitmen</span>
             <div className="flex items-center gap-2">
               <span className="text-xs" style={{ color: '#f59e0b' }}>{trainerName}</span>
-              <span style={{ color: '#7b93c4' }}>{trainerOpen ? '▲' : '▼'}</span>
+              <span style={{ color: 'rgba(27,59,47,0.55)' }}>{trainerOpen ? '▲' : '▼'}</span>
             </div>
           </button>
           {trainerOpen && (
-            <div className="px-4 pb-3 space-y-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-4 pb-3 space-y-1.5" style={{ borderTop: '1px solid rgba(27,59,47,0.08)' }}>
               <button onClick={() => updateTrainer('')} disabled={updatingTrainer}
                 className="w-full py-2.5 px-3 rounded-xl text-sm font-bold text-left mt-2"
                 style={!member?.default_trainer_id
                   ? { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b' }
-                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                  : { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 Atanmamış
               </button>
               {trainers.map(t => (
@@ -223,7 +223,7 @@ export default function AdminMemberSettingsPage() {
                   className="w-full py-2.5 px-3 rounded-xl text-sm font-bold text-left"
                   style={member?.default_trainer_id === t.id
                     ? { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b' }
-                    : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: '#c8d6f0' }}>
+                    : { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.08)', color: '#1B3B2F' }}>
                   {t.name} {t.surname}
                 </button>
               ))}
@@ -235,8 +235,8 @@ export default function AdminMemberSettingsPage() {
         <a href={`/admin/members/${memberId}/legacy-lessons`}
           className={BTN.base + ' flex items-center justify-between'}
           style={BTN.card}>
-          <span className="text-white">🕐 Geçmiş Ders Ekle</span>
-          <span style={{ color: '#7b93c4' }}>→</span>
+          <span style={{ color: '#1B3B2F' }}>🕐 Geçmiş Ders Ekle</span>
+          <span style={{ color: 'rgba(27,59,47,0.55)' }}>→</span>
         </a>
 
         {/* 5. Ekstra Ders Ekle */}
@@ -244,11 +244,11 @@ export default function AdminMemberSettingsPage() {
           <button onClick={() => setBonusOpen(p => !p)}
             className={BTN.base + ' flex items-center justify-between'}
             style={{ background: 'transparent', border: 'none' }}>
-            <span className="text-white">➕ Ekstra Ders Ekle</span>
-            <span style={{ color: '#7b93c4' }}>{bonusOpen ? '▲' : '▼'}</span>
+            <span style={{ color: '#1B3B2F' }}>➕ Ekstra Ders Ekle</span>
+            <span style={{ color: 'rgba(27,59,47,0.55)' }}>{bonusOpen ? '▲' : '▼'}</span>
           </button>
           {bonusOpen && (
-            <div className="px-4 pb-3 flex gap-2 items-center" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-4 pb-3 flex gap-2 items-center" style={{ borderTop: '1px solid rgba(27,59,47,0.08)' }}>
               <input type="number" min="1" max="50" value={bonusInput}
                 onChange={e => setBonusInput(e.target.value)}
                 className="w-20 mt-3 px-3 py-2 rounded-xl text-sm outline-none text-center"
@@ -266,15 +266,15 @@ export default function AdminMemberSettingsPage() {
         <button onClick={() => { setLinkModal(true); loadPassiveMembers() }}
           className={BTN.base + ' flex items-center justify-between'}
           style={BTN.card}>
-          <span className="text-white">🔗 Eski Hesap Bağla</span>
-          <span style={{ color: '#7b93c4' }}>→</span>
+          <span style={{ color: '#1B3B2F' }}>🔗 Eski Hesap Bağla</span>
+          <span style={{ color: 'rgba(27,59,47,0.55)' }}>→</span>
         </button>
 
         {/* 7. Eğitmen Olarak Ata */}
         <button onClick={() => { setPromoteModal(true); setBonusRate('0'); setShift('fullday'); setPromoteMsg('') }}
           className={BTN.base + ' flex items-center justify-between'}
           style={{ background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)' }}>
-          <span className="text-white">🏇 Eğitmen Olarak Ata</span>
+          <span style={{ color: '#1B3B2F' }}>🏇 Eğitmen Olarak Ata</span>
           <span style={{ color: '#38bdf8' }}>→</span>
         </button>
       </div>
@@ -282,18 +282,18 @@ export default function AdminMemberSettingsPage() {
       {/* Eski hesap modal */}
       {linkModal && (
         <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-4">Eski Hesap Bağla</h3>
+            <h3 className="text-lg font-bold mb-4">Eski Hesap Bağla</h3>
             <select value={linkTarget} onChange={e => setLinkTarget(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE}>
               <option value="">Pasif üye seç...</option>
               {passiveMembers.map(m => <option key={m.id} value={m.id}>{m.name} {m.surname}</option>)}
             </select>
-            {passiveMembers.length === 0 && <p className="text-xs mb-4 text-center" style={{ color: '#7b93c4' }}>Pasif üye yok.</p>}
+            {passiveMembers.length === 0 && <p className="text-xs mb-4 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>Pasif üye yok.</p>}
             <div className="flex gap-3">
               <button onClick={() => setLinkModal(false)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleLink} disabled={linking || !linkTarget}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'rgba(248,113,113,0.2)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
@@ -307,23 +307,23 @@ export default function AdminMemberSettingsPage() {
       {/* Promote modal */}
       {promoteModal && (
         <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-1">Eğitmen Olarak Ata</h3>
-            <p className="text-sm mb-4" style={{ color: '#7b93c4' }}>{member?.name} {member?.surname} eğitmen paneline taşınır.</p>
+            <h3 className="text-lg font-bold mb-1">Eğitmen Olarak Ata</h3>
+            <p className="text-sm mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>{member?.name} {member?.surname} eğitmen paneline taşınır.</p>
             <div className="space-y-3 mb-4">
               <div>
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Prim Oranı (%)</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Prim Oranı (%)</p>
                 <input type="number" min="0" max="100" value={bonusRate} onChange={e => setBonusRate(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT_STYLE} />
               </div>
               <div>
-                <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Vardiya</p>
+                <p className="text-xs mb-2 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Vardiya</p>
                 <div className="grid grid-cols-3 gap-2">
                   {SHIFT_OPTIONS.map(s => (
                     <button key={s.value} onClick={() => setShift(s.value)}
                       className="py-2.5 rounded-xl text-sm font-bold"
-                      style={shift === s.value ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                      style={shift === s.value ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>
                       {s.label}
                     </button>
                   ))}
@@ -334,7 +334,7 @@ export default function AdminMemberSettingsPage() {
             <div className="flex gap-3">
               <button onClick={() => setPromoteModal(false)} disabled={promoting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handlePromote} disabled={promoting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #38bdf8, #0284c7)', color: '#fff' }}>

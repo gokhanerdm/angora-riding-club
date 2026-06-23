@@ -11,8 +11,8 @@ interface Request {
 
 interface Trainer { id: string; name: string; surname: string }
 
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
-const INPUT_STYLE = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const CARD = { background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }
+const INPUT_STYLE = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
 export default function MembershipsPage() {
   const [requests, setRequests] = useState<Request[]>([])
@@ -74,29 +74,29 @@ export default function MembershipsPage() {
     setSubmitting(false)
   }
 
-  if (loading) return <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+  if (loading) return <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
 
   const pending   = requests.filter(r => r.status === 'pending')
   const processed = requests.filter(r => r.status !== 'pending')
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Üyelikler</h1>
+      <h1 className="text-2xl font-bold mb-6">Üyelikler</h1>
 
-      <p className="text-sm font-bold mb-3" style={{ color: '#7b93c4' }}>Bekleyen Talepler ({pending.length})</p>
+      <p className="text-sm font-bold mb-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen Talepler ({pending.length})</p>
       <div className="space-y-3 mb-8">
-        {pending.length === 0 && <p style={{ color: '#4a6190' }}>Bekleyen talep yok.</p>}
+        {pending.length === 0 && <p style={{ color: 'rgba(27,59,47,0.4)' }}>Bekleyen talep yok.</p>}
         {pending.map(r => (
           <div key={r.id} className="rounded-2xl p-4" style={CARD}>
             <div className="flex justify-between items-start mb-3 gap-2">
               <div>
-                <p className="font-bold text-white">{r.member_name}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.member_email}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#4a6190' }}>{formatDate(r.created_at)}</p>
+                <p className="font-bold">{r.member_name}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.member_email}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDate(r.created_at)}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-2xl font-bold text-white">{r.lesson_count}</p>
-                <p className="text-xs" style={{ color: '#7b93c4' }}>{r.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
+                <p className="text-2xl font-bold">{r.lesson_count}</p>
+                <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
                 <p className="font-bold" style={{ color: '#f59e0b' }}>{formatPrice(r.price)}</p>
               </div>
             </div>
@@ -116,13 +116,13 @@ export default function MembershipsPage() {
         ))}
       </div>
 
-      <p className="text-sm font-bold mb-3" style={{ color: '#7b93c4' }}>İşlenen Talepler</p>
+      <p className="text-sm font-bold mb-3" style={{ color: 'rgba(27,59,47,0.55)' }}>İşlenen Talepler</p>
       <div className="space-y-2">
         {processed.map(r => (
           <div key={r.id} className="rounded-2xl p-4 flex justify-between items-center" style={CARD}>
             <div>
-              <span className="font-bold text-white">{r.member_name}</span>
-              <span className="text-xs ml-3" style={{ color: '#7b93c4' }}>{r.lesson_count} Ders</span>
+              <span className="font-bold">{r.member_name}</span>
+              <span className="text-xs ml-3" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.lesson_count} Ders</span>
             </div>
             <span className="text-xs font-bold px-2 py-1 rounded-lg"
               style={r.status === 'approved'
@@ -137,20 +137,20 @@ export default function MembershipsPage() {
       {approveModal && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-10" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 className="text-lg font-bold text-white mb-4">Üyelik Onaylama</h3>
-            <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.05)' }}>
-              <p className="font-bold text-white">{approveModal.member_name}</p>
-              <p className="text-sm mt-0.5" style={{ color: '#7b93c4' }}>{approveModal.lesson_count} Ders — {approveModal.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#4a6190' }}>Liste fiyatı: {formatPrice(approveModal.price)}</p>
+            <h3 className="text-lg font-bold mb-4">Üyelik Onaylama</h3>
+            <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(27,59,47,0.05)' }}>
+              <p className="font-bold">{approveModal.member_name}</p>
+              <p className="text-sm mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{approveModal.lesson_count} Ders — {approveModal.request_type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.4)' }}>Liste fiyatı: {formatPrice(approveModal.price)}</p>
             </div>
-            <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Eğitmen <span style={{ color: '#f59e0b' }}>*</span></p>
+            <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Eğitmen <span style={{ color: '#f59e0b' }}>*</span></p>
             <select value={selectedTrainer} onChange={e => setSelectedTrainer(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE}>
               <option value="">Eğitmen seçin...</option>
               {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
             </select>
 
-            <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Ödeme Yöntemi</p>
+            <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Ödeme Yöntemi</p>
             <div className="flex gap-2 mb-4">
               {(['nakit','havale','kart'] as const).map(m => (
                 <button key={m} onClick={() => setPaymentMethod(m)}
@@ -160,7 +160,7 @@ export default function MembershipsPage() {
                 </button>
               ))}
             </div>
-            <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Ödenen Tutar (₺)</p>
+            <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Ödenen Tutar (₺)</p>
             <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)}
               placeholder="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE} />
             {!selectedTrainer && (
@@ -176,7 +176,7 @@ export default function MembershipsPage() {
               </button>
               <button onClick={() => setApproveModal(null)} disabled={submitting}
                 className="flex-1 py-3 rounded-xl font-bold disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 İptal
               </button>
             </div>
@@ -188,12 +188,12 @@ export default function MembershipsPage() {
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-2">Talebi Reddet</h3>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu üyelik talebini reddetmek istediğinize emin misiniz?</p>
+            <h3 className="text-lg font-bold mb-2">Talebi Reddet</h3>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu üyelik talebini reddetmek istediğinize emin misiniz?</p>
             <div className="flex gap-3">
               <button onClick={() => setRejectTarget(null)} disabled={rejecting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleReject} disabled={rejecting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
@@ -205,7 +205,7 @@ export default function MembershipsPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold text-white"
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold"
           style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)' }}>
           {toast}
         </div>

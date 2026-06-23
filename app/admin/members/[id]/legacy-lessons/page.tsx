@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
 
-const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
-const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
+const CARD  = { background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.10)' }
 
 type LessonStatus = 'completed' | 'no_show'
 type Lesson = { date: string; trainer: string; status: LessonStatus }
@@ -170,17 +170,17 @@ export default function LegacyLessonsPage() {
 
   if (loading) return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
-      <p style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      style={{ background: '#FBFBFB' }}>
+      <p style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
     </div>
   )
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
+      style={{ background: '#FBFBFB' }}>
 
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
           style={{ background: toast.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
           {toast}
         </div>
@@ -188,11 +188,11 @@ export default function LegacyLessonsPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0 z-10"
-        style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
-          style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>← Geri</button>
+          style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
         <div>
-          <h2 className="font-bold text-white">Geçmiş Paket & Ders Ekle</h2>
+          <h2 className="font-bold">Geçmiş Paket & Ders Ekle</h2>
           <p className="text-xs" style={{ color: '#a78bfa' }}>{member?.name} {member?.surname}</p>
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function LegacyLessonsPage() {
             {(['weekday','general'] as const).map(t => (
               <button key={t} onClick={() => setPkgType(t)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                style={pkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                style={pkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>
                 {t === 'weekday' ? 'Hafta İçi' : 'Genel'}
               </button>
             ))}
@@ -231,7 +231,7 @@ export default function LegacyLessonsPage() {
             {(['nakit','havale','kart'] as const).map(m => (
               <button key={m} onClick={() => setPkgMethod(m)}
                 className="flex-1 py-2 rounded-xl text-xs font-bold capitalize"
-                style={pkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                style={pkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>
                 {m}
               </button>
             ))}
@@ -239,7 +239,7 @@ export default function LegacyLessonsPage() {
 
           {/* Tarih */}
           <div>
-            <p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Başlangıç tarihi</p>
+            <p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Başlangıç tarihi</p>
             <input type="date" value={pkgStart} max={today} onChange={e => setPkgStart(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT} />
           </div>
@@ -248,7 +248,7 @@ export default function LegacyLessonsPage() {
           {endDate && (
             <div className="flex items-center justify-between px-3 py-2 rounded-xl"
               style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
-              <span className="text-xs" style={{ color: '#7b93c4' }}>Bitiş tarihi</span>
+              <span className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Bitiş tarihi</span>
               <span className="text-sm font-bold" style={{ color: '#34d399' }}>{endDate}</span>
             </div>
           )}
@@ -283,12 +283,12 @@ export default function LegacyLessonsPage() {
                   className="flex-1 py-1.5 rounded-lg text-[10px] font-bold"
                   style={l.status === 'completed'
                     ? { background: 'rgba(52,211,153,0.25)', color: '#34d399' }
-                    : { background: 'rgba(255,255,255,0.05)', color: '#4a6190' }}>✓</button>
+                    : { background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.4)' }}>✓</button>
                 <button onClick={() => updateLesson(i, 'status', 'no_show')}
                   className="flex-1 py-1.5 rounded-lg text-[10px] font-bold"
                   style={l.status === 'no_show'
                     ? { background: 'rgba(245,158,11,0.25)', color: '#f59e0b' }
-                    : { background: 'rgba(255,255,255,0.05)', color: '#4a6190' }}>✗</button>
+                    : { background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.4)' }}>✗</button>
               </div>
             </div>
           ))}

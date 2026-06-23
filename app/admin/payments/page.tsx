@@ -79,28 +79,28 @@ export default function PaymentsPage() {
 
   const dayLabel   = `${day.getDate()} ${MS[day.getMonth()]} ${DS[day.getDay()]}`
   const monthLabel = `${MS[month.m]} ${month.y}`
-  const HDR = { color: '#7b93c4', fontSize: 9, fontWeight: 700, letterSpacing: 1 }
+  const HDR = { color: 'rgba(27,59,47,0.55)', fontSize: 9, fontWeight: 700, letterSpacing: 1 }
   const COL = 'flex flex-col items-center justify-center text-center'
 
   const Nav = ({ onPrev, onNext, label, sub }: { onPrev:()=>void; onNext:()=>void; label:string; sub:string }) => (
-    <div className="flex items-center justify-center gap-1.5 py-3 px-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
-      <button onClick={onPrev} className="w-5 h-5 flex items-center justify-center rounded text-xs flex-shrink-0" style={{ color:'#7b93c4', background:'rgba(255,255,255,0.08)' }}>‹</button>
+    <div className="flex items-center justify-center gap-1.5 py-3 px-1" style={{ borderLeft: '1px solid rgba(27,59,47,0.08)' }}>
+      <button onClick={onPrev} className="w-5 h-5 flex items-center justify-center rounded text-xs flex-shrink-0" style={{ color:'rgba(27,59,47,0.55)', background:'rgba(27,59,47,0.08)' }}>‹</button>
       <div className={COL}>
         <p style={{ ...HDR, color: sub === 'BUGÜN' ? '#f59e0b' : sub === 'BU AY' ? '#38bdf8' : '#a78bfa', fontSize: 8 }}>{sub}</p>
-        <p className="text-[9px] font-bold text-white">{label}</p>
+        <p className="text-[9px] font-bold">{label}</p>
       </div>
-      <button onClick={onNext} className="w-5 h-5 flex items-center justify-center rounded text-xs flex-shrink-0" style={{ color:'#7b93c4', background:'rgba(255,255,255,0.08)' }}>›</button>
+      <button onClick={onNext} className="w-5 h-5 flex items-center justify-center rounded text-xs flex-shrink-0" style={{ color:'rgba(27,59,47,0.55)', background:'rgba(27,59,47,0.08)' }}>›</button>
     </div>
   )
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="text-2xl font-bold text-white">Hesaplamalar</h1>
+      <h1 className="text-2xl font-bold">Hesaplamalar</h1>
 
-      <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.10)' }}>
 
         {/* Başlık */}
-        <div className="grid" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+        <div className="grid" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(27,59,47,0.10)', background: 'rgba(27,59,47,0.03)' }}>
           <div className="px-3 py-3" />
           <Nav
             sub="BUGÜN" label={dayLabel}
@@ -112,26 +112,26 @@ export default function PaymentsPage() {
             onPrev={() => month.m===0?setMonth({y:month.y-1,m:11}):setMonth({y:month.y,m:month.m-1})}
             onNext={() => month.m===11?setMonth({y:month.y+1,m:0}):setMonth({y:month.y,m:month.m+1})}
           />
-          <div className={`${COL} py-3`} style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className={`${COL} py-3`} style={{ borderLeft: '1px solid rgba(27,59,47,0.08)' }}>
             <p style={{ ...HDR, color: '#a78bfa', fontSize: 8 }}>TOPLAM</p>
-            <p className="text-[9px] font-bold text-white">Tüm Zaman</p>
+            <p className="text-[9px] font-bold">Tüm Zaman</p>
           </div>
         </div>
 
         {/* Satırlar */}
         {!data ? (
-          <p className="text-center py-10 text-xs" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+          <p className="text-center py-10 text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
         ) : (
           <>
             {data.rows.map((row: any) => (
-              <div key={row.label} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div key={row.label} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(27,59,47,0.07)' }}>
                 <div className="px-3 py-4 flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: row.color }} />
-                  <span className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{row.label}</span>
+                  <span className="text-xs font-bold" style={{ color: '#1B3B2F' }}>{row.label}</span>
                 </div>
-                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.day, row.money)}</p>
-                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.month, row.money)}</p>
-                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{fmt(row.all, row.money)}</p>
+                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{fmt(row.day, row.money)}</p>
+                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{fmt(row.month, row.money)}</p>
+                <p className="text-center text-sm font-bold py-4" style={{ color: row.color, borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{fmt(row.all, row.money)}</p>
               </div>
             ))}
 
@@ -141,13 +141,13 @@ export default function PaymentsPage() {
                   <p style={{ ...HDR, color: '#a78bfa' }}>EĞİTMEN DERSLERİ</p>
                 </div>
                 {data.trainerRows.map((t: any) => (
-                  <div key={t.id} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div key={t.id} className="grid items-center" style={{ gridTemplateColumns: '2fr 3fr 3fr 3fr', borderBottom: '1px solid rgba(27,59,47,0.06)' }}>
                     <div className="px-3 py-3">
-                      <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>{t.name}</p>
+                      <p className="text-xs font-bold" style={{ color: '#1B3B2F' }}>{t.name}</p>
                     </div>
-                    <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.day}</p>
-                    <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.month}</p>
-                    <p className="text-center text-sm font-bold py-3" style={{ color: '#c8d6f0', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>{t.all}</p>
+                    <p className="text-center text-sm font-bold py-3" style={{ color: '#1B3B2F', borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{t.day}</p>
+                    <p className="text-center text-sm font-bold py-3" style={{ color: '#1B3B2F', borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{t.month}</p>
+                    <p className="text-center text-sm font-bold py-3" style={{ color: '#1B3B2F', borderLeft: '1px solid rgba(27,59,47,0.06)' }}>{t.all}</p>
                   </div>
                 ))}
               </>

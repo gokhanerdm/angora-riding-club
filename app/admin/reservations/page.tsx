@@ -57,8 +57,8 @@ type SlotReservation = { id: string; member_name: string; member_id: string; sta
 type Trainer = { id: string; name: string; surname: string }
 type Member = { id: string; name: string; surname: string; remaining_lessons: number }
 
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
-const INPUT_STYLE = { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const CARD = { background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }
+const INPUT_STYLE = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
 export default function ReservationsPage() {
   const [tab, setTab] = useState<'list' | 'calendar'>('list')
@@ -228,12 +228,12 @@ export default function ReservationsPage() {
     <div>
       {/* Tab seçici */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">Rezervasyonlar</h1>
-        <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <h1 className="text-2xl font-bold">Rezervasyonlar</h1>
+        <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(27,59,47,0.06)' }}>
           {(['list','calendar'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className="px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
-              style={tab === t ? { background: '#f59e0b', color: '#0a0f2e' } : { color: '#7b93c4' }}>
+              style={tab === t ? { background: '#f59e0b', color: '#0a0f2e' } : { color: 'rgba(27,59,47,0.55)' }}>
               {t === 'list' ? 'Liste' : 'Takvim'}
             </button>
           ))}
@@ -259,7 +259,7 @@ export default function ReservationsPage() {
               {['Tümü','Beklemede','Onaylı','Tamamlandı','İptal','Gelmedi'].map(f => (
                 <button key={f} onClick={() => setStatusFilter(f)}
                   className="px-3 py-1 rounded-full text-xs font-bold"
-                  style={statusFilter === f ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  style={statusFilter === f ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}>
                   {f}
                 </button>
               ))}
@@ -267,30 +267,30 @@ export default function ReservationsPage() {
           </div>
 
           {loading ? (
-            <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+            <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
           ) : (
             <div className="space-y-2">
-              {filtered.length === 0 && <p style={{ color: '#7b93c4' }}>Rezervasyon bulunamadı.</p>}
+              {filtered.length === 0 && <p style={{ color: 'rgba(27,59,47,0.55)' }}>Rezervasyon bulunamadı.</p>}
               {filtered.map(r => (
                 <div key={r.id} className="rounded-2xl p-4" style={r.type === 'trial' ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' } : CARD}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <p className="font-bold text-white">{r.member_name}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{r.trainer_name}</p>
+                      <p className="font-bold">{r.member_name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.trainer_name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xs font-bold" style={{ color: '#c8d6f0' }}>
+                      <p className="text-xs font-bold" style={{ color: '#1B3B2F' }}>
                         {formatDate(r.scheduled_date)}
                         {r.type === 'trial' && (
                           <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
                             style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
                         )}
                       </p>
-                      <p className="text-xs" style={{ color: '#7b93c4' }}>{formatTime(r.start_time)} — {formatTime(r.end_time)}</p>
+                      <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{formatTime(r.start_time)} — {formatTime(r.end_time)}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: STATUS_COLOR[r.status] ?? 'rgba(255,255,255,0.08)', color: STATUS_TEXT[r.status] ?? '#c8d6f0' }}>
+                    <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: STATUS_COLOR[r.status] ?? 'rgba(27,59,47,0.06)', color: STATUS_TEXT[r.status] ?? '#1B3B2F' }}>
                       {STATUS_MAP[r.status] ?? r.status}
                     </span>
                     <select value={r.status} onChange={e => handleStatusChange(r.id, e.target.value)}
@@ -319,9 +319,9 @@ export default function ReservationsPage() {
               {trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
             </select>
             <div className="flex items-center gap-2">
-              <button onClick={() => changeDate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>←</button>
-              <p className="text-sm font-bold text-white w-40 text-center">{formatDayLabel(currentDate)}</p>
-              <button onClick={() => changeDate(1)} className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>→</button>
+              <button onClick={() => changeDate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>←</button>
+              <p className="text-sm font-bold w-40 text-center">{formatDayLabel(currentDate)}</p>
+              <button onClick={() => changeDate(1)} className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>→</button>
             </div>
           </div>
 
@@ -329,7 +329,7 @@ export default function ReservationsPage() {
             {/* Slot listesi */}
             <div className="flex-1">
               {calLoading ? (
-                <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+                <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
               ) : (
                 <div className="space-y-1.5">
                   {SLOTS.map(slot => {
@@ -337,23 +337,23 @@ export default function ReservationsPage() {
                     const closed = closedSlots.has(slot)
                     const isSelected = selectedSlot === slot
 
-                    let bg = isSelected ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)'
-                    let border = isSelected ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(255,255,255,0.07)'
+                    let bg = isSelected ? 'rgba(245,158,11,0.12)' : 'rgba(27,59,47,0.04)'
+                    let border = isSelected ? '1px solid rgba(245,158,11,0.35)' : '1px solid rgba(27,59,47,0.08)'
 
                     if (res) {
                       bg = res.status === 'completed' ? 'rgba(52,211,153,0.10)' : res.status === 'no_show' ? 'rgba(248,113,113,0.10)' : 'rgba(56,189,248,0.10)'
                       border = res.status === 'completed' ? '1px solid rgba(52,211,153,0.25)' : res.status === 'no_show' ? '1px solid rgba(248,113,113,0.25)' : '1px solid rgba(56,189,248,0.25)'
                       if (res.type === 'trial') { bg = 'rgba(245,158,11,0.15)'; border = '1px solid rgba(245,158,11,0.4)' }
                     } else if (closed) {
-                      bg = 'rgba(255,255,255,0.02)'
-                      border = '1px solid rgba(255,255,255,0.04)'
+                      bg = 'rgba(27,59,47,0.02)'
+                      border = '1px solid rgba(27,59,47,0.04)'
                     }
 
                     return (
                       <button key={slot} onClick={() => handleSlotClick(slot)}
                         className="w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all text-left"
                         style={{ background: bg, border }}>
-                        <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: '#7b93c4' }}>
+                        <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: 'rgba(27,59,47,0.55)' }}>
                           {formatTime(slot)}
                           {res?.type === 'trial' && (
                             <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
@@ -362,13 +362,13 @@ export default function ReservationsPage() {
                         </span>
                         {res ? (
                           <div className="flex-1 flex items-center justify-between gap-2">
-                            <span className="text-sm font-bold text-white truncate">
+                            <span className="text-sm font-bold truncate">
                               {res.member_name}
                             </span>
-                            <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#c8d6f0' }}>{STATUS_MAP[res.status]}</span>
+                            <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#1B3B2F' }}>{STATUS_MAP[res.status]}</span>
                           </div>
                         ) : closed ? (
-                          <span className="text-xs" style={{ color: '#4a6190' }}>Kapalı</span>
+                          <span className="text-xs" style={{ color: 'rgba(27,59,47,0.4)' }}>Kapalı</span>
                         ) : (
                           <span className="text-xs" style={{ color: '#34d399' }}>Müsait</span>
                         )}
@@ -383,19 +383,19 @@ export default function ReservationsPage() {
             {selectedSlot && (
               <div className="lg:w-64 lg:flex-shrink-0 rounded-2xl p-4" style={CARD}>
                 <div className="flex justify-between items-center mb-4">
-                  <p className="font-bold text-white">
+                  <p className="font-bold">
                     {formatTime(selectedSlot)}
                     {selectedRes?.type === 'trial' && (
                       <span className="ml-1 px-1 py-0.5 rounded font-bold text-[9px]"
                         style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
                     )}
                   </p>
-                  <button onClick={() => setSelectedSlot(null)} style={{ color: '#7b93c4' }}>✕</button>
+                  <button onClick={() => setSelectedSlot(null)} style={{ color: 'rgba(27,59,47,0.55)' }}>✕</button>
                 </div>
 
                 {selectedRes ? (
                   <div className="space-y-3">
-                    <p className="font-bold text-white text-sm">
+                    <p className="font-bold text-sm">
                       {selectedRes.member_name}
                     </p>
                     <p className="text-xs font-bold px-2 py-1 rounded-lg inline-block" style={{ background: STATUS_COLOR[selectedRes.status], color: STATUS_TEXT[selectedRes.status] }}>
@@ -432,15 +432,15 @@ export default function ReservationsPage() {
                       style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
                       Slotu Kapat
                     </button>
-                    <p className="text-xs font-bold" style={{ color: '#7b93c4' }}>Ders Koy:</p>
+                    <p className="text-xs font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ders Koy:</p>
                     <div className="space-y-1.5 max-h-48 overflow-y-auto">
                       {members.length === 0
-                        ? <p className="text-xs" style={{ color: '#4a6190' }}>Atanmış üye yok.</p>
+                        ? <p className="text-xs" style={{ color: 'rgba(27,59,47,0.4)' }}>Atanmış üye yok.</p>
                         : members.map(m => (
                           <button key={m.id} onClick={() => handleBookMember(m)} disabled={actionLoading || m.remaining_lessons <= 0}
                             className="w-full rounded-xl p-2.5 text-left disabled:opacity-40"
                             style={CARD}>
-                            <p className="text-xs font-bold text-white">{m.name} {m.surname}</p>
+                            <p className="text-xs font-bold">{m.name} {m.surname}</p>
                             <p className="text-xs mt-0.5" style={{ color: m.remaining_lessons <= 0 ? '#f87171' : '#34d399' }}>
                               {m.remaining_lessons <= 0 ? 'Ders yok' : `${m.remaining_lessons} ders`}
                             </p>
@@ -460,12 +460,12 @@ export default function ReservationsPage() {
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-2">Rezervasyonu İptal Et</h3>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>Bu rezervasyonu iptal etmek istediğinize emin misiniz?</p>
+            <h3 className="text-lg font-bold mb-2">Rezervasyonu İptal Et</h3>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu rezervasyonu iptal etmek istediğinize emin misiniz?</p>
             <div className="flex gap-3">
               <button onClick={() => setCancelTarget(null)} disabled={actionLoading}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleCancel} disabled={actionLoading}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>
@@ -477,7 +477,7 @@ export default function ReservationsPage() {
       )}
 
       {actionMsg && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold text-white"
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] px-5 py-3 rounded-2xl text-sm font-bold"
           style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)' }}>
           {actionMsg}
         </div>

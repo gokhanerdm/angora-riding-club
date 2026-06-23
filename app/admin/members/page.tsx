@@ -35,7 +35,7 @@ const SHIFT_OPTIONS  = [
   { value: 'fullday',  label: 'Tam Gün' },
 ]
 
-const CARD = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+const CARD = { background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }
 const CARD_ACTIVE = { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)' }
 
 export default function MembersPage() {
@@ -194,8 +194,8 @@ export default function MembersPage() {
   })
 
   const statusLabel = (s: string) => ({ active: 'Aktif', inactive: 'Pasif', pending_club_approval: 'Beklemede' }[s] ?? s)
-  const statusColor = (s: string) => ({ active: '#34d399', inactive: '#7b93c4', pending_club_approval: '#f59e0b' }[s] ?? '#7b93c4')
-  const resStatusColor = (s: string) => ({ completed: '#34d399', cancelled: '#f87171', no_show: '#f59e0b', pending: '#7b93c4', approved: '#38bdf8' }[s] ?? '#7b93c4')
+  const statusColor = (s: string) => ({ active: '#34d399', inactive: 'rgba(27,59,47,0.55)', pending_club_approval: '#f59e0b' }[s] ?? 'rgba(27,59,47,0.55)')
+  const resStatusColor = (s: string) => ({ completed: '#34d399', cancelled: '#f87171', no_show: '#f59e0b', pending: 'rgba(27,59,47,0.55)', approved: '#38bdf8' }[s] ?? 'rgba(27,59,47,0.55)')
   const resStatusLabel = (s: string) => ({ completed: 'Tamamlandı', cancelled: 'İptal', no_show: 'Gelmedi', pending: 'Beklemede', approved: 'Onaylı' }[s] ?? s)
 
   return (
@@ -203,7 +203,7 @@ export default function MembersPage() {
       {/* LİSTE */}
       <div className="mb-6 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Üyeler</h1>
+          <h1 className="text-2xl font-bold">Üyeler</h1>
           <a href="/admin/members/new-passive"
             className="text-xs font-bold px-3 py-2 rounded-xl"
             style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.25)' }}>
@@ -218,7 +218,7 @@ export default function MembersPage() {
             className="flex-1 py-2.5 rounded-xl text-sm font-bold"
             style={tab === 'kulup'
               ? { background: '#f59e0b', color: '#0a0f2e' }
-              : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+              : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}
           >
             Kulüp Üyeleri <span style={{ opacity: 0.7, fontSize: '0.8em' }}>({clubMembers.length})</span>
           </button>
@@ -227,7 +227,7 @@ export default function MembersPage() {
             className="flex-1 py-2.5 rounded-xl text-sm font-bold"
             style={tab === 'program'
               ? { background: '#f59e0b', color: '#0a0f2e' }
-              : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+              : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}
           >
             Program Kayıtlıları <span style={{ opacity: 0.7, fontSize: '0.8em' }}>({programMembers.length})</span>
           </button>
@@ -239,7 +239,7 @@ export default function MembersPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
+          style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }}
         />
         {tab === 'kulup' && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 flex-nowrap">
@@ -250,7 +250,7 @@ export default function MembersPage() {
                 className="px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0"
                 style={filter === f
                   ? { background: '#f59e0b', color: '#0a0f2e' }
-                  : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}
+                  : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}
               >
                 {f}
               </button>
@@ -260,14 +260,14 @@ export default function MembersPage() {
       </div>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+        <p className="text-center py-8" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
       ) : loadError ? (
         <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)' }}>
           {loadError}
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.length === 0 && <p style={{ color: '#7b93c4' }}>Üye bulunamadı.</p>}
+          {filtered.length === 0 && <p style={{ color: 'rgba(27,59,47,0.55)' }}>Üye bulunamadı.</p>}
           {filtered.map(member => (
             <a
               key={member.id}
@@ -281,7 +281,7 @@ export default function MembersPage() {
                   {member.remaining_lessons <= 0 ? 'Ders yok' : `${member.remaining_lessons} ders`}
                 </p>
               ) : (
-                <p className="text-xs flex-shrink-0" style={{ color: '#7b93c4' }}>
+                <p className="text-xs flex-shrink-0" style={{ color: 'rgba(27,59,47,0.55)' }}>
                   {formatDate(member.created_at.substring(0, 10))}
                 </p>
               )}
@@ -294,10 +294,10 @@ export default function MembersPage() {
       {selected && (
         <div
           className="fixed inset-0 z-[100] overflow-y-auto"
-          style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}
+          style={{ background: '#FBFBFB' }}
         >
           {trainerMsg && (
-            <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+            <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
               style={{
                 background: trainerMsg.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)',
                 border: trainerMsg.includes('✓') ? '1px solid rgba(52,211,153,0.5)' : '1px solid rgba(248,113,113,0.5)',
@@ -309,34 +309,34 @@ export default function MembersPage() {
           {/* Geri header */}
           <div
             className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0"
-            style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}
           >
             <button
               onClick={() => { setSelected(null); setDetail(null) }}
               className="font-bold text-sm px-3 py-2 rounded-xl"
-              style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}
+              style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}
             >
               ← Geri
             </button>
-            <h2 className="font-bold text-white truncate">{selected.name} {selected.surname}</h2>
+            <h2 className="font-bold truncate">{selected.name} {selected.surname}</h2>
           </div>
 
           <div className="px-4 py-6 space-y-4">
             {/* Bilgiler */}
             <div className="rounded-2xl p-4 space-y-1" style={CARD}>
-              <p className="text-sm text-white font-bold">{selected.name} {selected.surname}</p>
-              <p className="text-xs" style={{ color: '#7b93c4' }}>{selected.email}</p>
-              <p className="text-xs" style={{ color: '#7b93c4' }}>{selected.phone}</p>
+              <p className="text-sm font-bold">{selected.name} {selected.surname}</p>
+              <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{selected.email}</p>
+              <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{selected.phone}</p>
             </div>
 
             {/* Durum */}
             <div className="rounded-2xl p-4" style={CARD}>
-              <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Üye Durumu</p>
+              <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Üye Durumu</p>
               <select
                 value={selected.member_status}
                 onChange={e => updateStatus(selected.id, e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#c8d6f0' }}
+                style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }}
               >
                 <option value="active">Aktif</option>
                 <option value="inactive">Pasif</option>
@@ -346,12 +346,12 @@ export default function MembersPage() {
             {/* Eğitmen */}
             {detail && (
               <div className="rounded-2xl p-4" style={CARD}>
-                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Eğitmen</p>
+                <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Eğitmen</p>
                 <select
                   value={selected.default_trainer_id ?? ''}
                   onChange={e => updateTrainer(selected.id, e.target.value)}
                   className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#c8d6f0' }}
+                  style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }}
                 >
                   <option value="">Atanmamış</option>
                   {detail.trainers.map(t => <option key={t.id} value={t.id}>{t.name} {t.surname}</option>)}
@@ -360,14 +360,14 @@ export default function MembersPage() {
             )}
 
             {detailLoading ? (
-              <p className="text-center py-4" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+              <p className="text-center py-4" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
             ) : detail && (
               <>
                 {/* Paketler */}
                 <div>
-                  <p className="text-sm font-bold text-white mb-2">Paketler</p>
+                  <p className="text-sm font-bold mb-2">Paketler</p>
                   {detail.memberships.length === 0
-                    ? <p className="text-xs" style={{ color: '#7b93c4' }}>Paket yok.</p>
+                    ? <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Paket yok.</p>
                     : detail.memberships.map(m => (
                       <div
                         key={m.id}
@@ -375,11 +375,11 @@ export default function MembersPage() {
                         style={m.is_current ? { background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' } : CARD}
                       >
                         <div className="flex justify-between mb-1">
-                          <span className="font-bold text-white">{m.total_lessons} Ders</span>
-                          <span className="text-xs font-bold" style={{ color: m.is_current ? '#f59e0b' : '#4a6190' }}>{m.is_current ? 'Aktif' : 'Geçmiş'}</span>
+                          <span className="font-bold">{m.total_lessons} Ders</span>
+                          <span className="text-xs font-bold" style={{ color: m.is_current ? '#f59e0b' : 'rgba(27,59,47,0.4)' }}>{m.is_current ? 'Aktif' : 'Geçmiş'}</span>
                         </div>
-                        <p className="text-xs" style={{ color: '#7b93c4' }}>{m.end_date ? `${formatDate(m.start_date)} — ${formatDate(m.end_date)}` : 'İlk dersinizi alın'}</p>
-                        <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>Kalan: {m.total_lessons - m.used_lessons - m.live_reserved} · Kullanılan: {m.used_lessons}</p>
+                        <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.end_date ? `${formatDate(m.start_date)} — ${formatDate(m.end_date)}` : 'İlk dersinizi alın'}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>Kalan: {m.total_lessons - m.used_lessons - m.live_reserved} · Kullanılan: {m.used_lessons}</p>
                       </div>
                     ))
                   }
@@ -387,16 +387,16 @@ export default function MembersPage() {
 
                 {/* Rezervasyonlar */}
                 <div>
-                  <p className="text-sm font-bold text-white mb-2">Son Rezervasyonlar</p>
+                  <p className="text-sm font-bold mb-2">Son Rezervasyonlar</p>
                   {detail.reservations.length === 0
-                    ? <p className="text-xs" style={{ color: '#7b93c4' }}>Rezervasyon yok.</p>
+                    ? <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Rezervasyon yok.</p>
                     : detail.reservations.map(r => {
                       const trainer = Array.isArray(r.trainers) ? r.trainers[0] : r.trainers
                       return (
-                        <div key={r.id} className="flex justify-between items-center py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div key={r.id} className="flex justify-between items-center py-3" style={{ borderBottom: '1px solid rgba(27,59,47,0.08)' }}>
                           <div>
-                            <p className="text-sm font-bold text-white">{formatDate(r.scheduled_date)}</p>
-                            <p className="text-xs" style={{ color: '#7b93c4' }}>{r.start_time?.substring(0, 5)}{trainer ? ` · ${trainer.name} ${trainer.surname}` : ''}</p>
+                            <p className="text-sm font-bold">{formatDate(r.scheduled_date)}</p>
+                            <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.start_time?.substring(0, 5)}{trainer ? ` · ${trainer.name} ${trainer.surname}` : ''}</p>
                           </div>
                           <span className="text-xs font-bold" style={{ color: resStatusColor(r.status) }}>{resStatusLabel(r.status)}</span>
                         </div>
@@ -407,7 +407,7 @@ export default function MembersPage() {
               </>
             )}
           {/* Eğitmen Yap butonu */}
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(27,59,47,0.08)' }}>
             <button
               onClick={() => { setPromoteModal(true); setBonusRate('0'); setShift('fullday'); setPromoteMsg('') }}
               className="w-full py-2.5 rounded-xl text-sm font-bold"
@@ -425,30 +425,30 @@ export default function MembersPage() {
         <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-1">Eğitmen Olarak Ata</h3>
-            <p className="text-sm mb-5" style={{ color: '#7b93c4' }}>
+            <h3 className="text-lg font-bold mb-1">Eğitmen Olarak Ata</h3>
+            <p className="text-sm mb-5" style={{ color: 'rgba(27,59,47,0.55)' }}>
               {selected.name} {selected.surname} üyelikten çıkarılır ve eğitmen paneline taşınır.
             </p>
 
             <div className="space-y-4 mb-5">
               <div>
-                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Prim Oranı (%)</p>
+                <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Prim Oranı (%)</p>
                 <input
                   type="number" min="0" max="100" value={bonusRate}
                   onChange={e => setBonusRate(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }}
+                  style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }}
                 />
               </div>
               <div>
-                <p className="text-xs font-bold mb-2" style={{ color: '#7b93c4' }}>Vardiya</p>
+                <p className="text-xs font-bold mb-2" style={{ color: 'rgba(27,59,47,0.55)' }}>Vardiya</p>
                 <div className="grid grid-cols-3 gap-2">
                   {SHIFT_OPTIONS.map(s => (
                     <button key={s.value} type="button" onClick={() => setShift(s.value)}
                       className="py-2.5 rounded-xl text-sm font-bold"
                       style={shift === s.value
                         ? { background: '#f59e0b', color: '#0a0f2e' }
-                        : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}>
                       {s.label}
                     </button>
                   ))}
@@ -465,7 +465,7 @@ export default function MembersPage() {
             <div className="flex gap-3">
               <button onClick={() => setPromoteModal(false)} disabled={promoting}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>
                 Vazgeç
               </button>
               <button onClick={handlePromote} disabled={promoting}

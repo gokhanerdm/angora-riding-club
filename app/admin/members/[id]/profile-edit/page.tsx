@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
 
-const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
-const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
+const CARD  = { background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.10)' }
 const OGRETIM = ['İlkokul','Ortaokul','Lise','Ön Lisans','Lisans','Yüksek Lisans','Doktora','Diğer']
 
 export default function AdminMemberProfileEdit() {
@@ -79,68 +79,68 @@ export default function AdminMemberProfileEdit() {
 
   if (loading) return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
-      <p style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      style={{ background: '#FBFBFB' }}>
+      <p style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
     </div>
   )
 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
+      style={{ background: '#FBFBFB' }}>
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[110] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
           style={{ background: toast.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
           {toast}
         </div>
       )}
 
       <div className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0"
-        style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
-          style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>← Geri</button>
-        <h2 className="font-bold text-white">Profil Düzenle</h2>
+          style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
+        <h2 className="font-bold">Profil Düzenle</h2>
       </div>
 
       <div className="px-4 py-5 space-y-4 pb-24">
         <div className="rounded-2xl p-4 space-y-3" style={CARD}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>Kişisel Bilgiler</p>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Ad</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Ad</p>
               <input value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Soyad</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Soyad</p>
               <input value={surname} onChange={e => setSurname(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
           </div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Telefon</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Telefon</p>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>TC Kimlik No</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>TC Kimlik No</p>
             <input value={tcKimlik} onChange={e => setTcKimlik(e.target.value.replace(/\D/g,''))} maxLength={11}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Doğum Yeri</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Doğum Yeri</p>
               <input value={dogumYeri} onChange={e => setDogumYeri(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Doğum Tarihi</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Doğum Tarihi</p>
               <input type="date" value={dogumTarihi} onChange={e => setDogumTarihi(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
           </div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Acil İletişim</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Acil İletişim</p>
             <input type="tel" value={acilTel} onChange={e => setAcilTel(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
         </div>
 
         <div className="rounded-2xl p-4 space-y-3" style={CARD}>
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7b93c4' }}>Ek Bilgiler</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(27,59,47,0.55)' }}>Ek Bilgiler</p>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Baba Adı</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Baba Adı</p>
               <input value={babaAdi} onChange={e => setBabaAdi(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
-            <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Anne Adı</p>
+            <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Anne Adı</p>
               <input value={anneAdi} onChange={e => setAnneAdi(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
           </div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Meslek</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Meslek</p>
             <input value={meslek} onChange={e => setMeslek(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT} /></div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Öğrenim</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Öğrenim</p>
             <select value={ogretim} onChange={e => setOgretim(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={INPUT}>
               <option value="">Seç...</option>
               {OGRETIM.map(o => <option key={o} value={o}>{o}</option>)}
             </select></div>
-          <div><p className="text-xs mb-1" style={{ color: '#7b93c4' }}>Adres</p>
+          <div><p className="text-xs mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>Adres</p>
             <textarea value={adres} onChange={e => setAdres(e.target.value)} rows={2}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={INPUT} /></div>
         </div>

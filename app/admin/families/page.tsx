@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-const CARD  = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
-const INPUT = { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }
+const CARD  = { background: 'rgba(27,59,47,0.06)', border: '1px solid rgba(27,59,47,0.10)' }
+const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
 type Family = {
   id: string
@@ -140,15 +140,15 @@ export default function FamiliesPage() {
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center"
-      style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
-      <p style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+      style={{ background: '#FBFBFB' }}>
+      <p style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(160deg, #0a0f2e, #0d1b4b, #071428)' }}>
+    <div className="min-h-screen pb-24" style={{ background: '#FBFBFB' }}>
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold text-white whitespace-nowrap"
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[120] px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap"
           style={{ background: toast.includes('✓') ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
           {toast}
         </div>
@@ -156,12 +156,12 @@ export default function FamiliesPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-14 pb-4 sticky top-0 z-10"
-        style={{ background: '#0a0f2e', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#FBFBFB', borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
-          style={{ color: '#7b93c4', background: 'rgba(255,255,255,0.06)' }}>← Geri</button>
+          style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
         <div className="flex-1">
-          <h2 className="font-bold text-white">Aile Grupları</h2>
-          <p className="text-xs" style={{ color: '#7b93c4' }}>{families.length} grup</p>
+          <h2 className="font-bold">Aile Grupları</h2>
+          <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{families.length} grup</p>
         </div>
         <button onClick={() => setCreating(true)}
           className="px-4 py-2 rounded-xl text-sm font-bold"
@@ -172,7 +172,7 @@ export default function FamiliesPage() {
 
       <div className="px-4 py-5 space-y-4">
         {families.length === 0 && (
-          <p className="text-center py-12 text-sm" style={{ color: '#4a6190' }}>Henüz aile grubu yok</p>
+          <p className="text-center py-12 text-sm" style={{ color: 'rgba(27,59,47,0.4)' }}>Henüz aile grubu yok</p>
         )}
 
         {families.map(f => {
@@ -183,7 +183,7 @@ export default function FamiliesPage() {
             <div key={f.id} className="rounded-2xl p-4 space-y-3" style={CARD}>
               {/* Başlık */}
               <div className="flex items-center justify-between">
-                <p className="font-bold text-white">{f.name}</p>
+                <p className="font-bold">{f.name}</p>
                 {remaining !== null && (
                   <span className="text-xs font-bold px-3 py-1 rounded-full"
                     style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}>
@@ -196,7 +196,7 @@ export default function FamiliesPage() {
               {f.membership ? (
                 <div className="px-3 py-2 rounded-xl text-xs" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
                   <span style={{ color: '#a78bfa' }}>Paket: </span>
-                  <span style={{ color: '#c8d6f0' }}>
+                  <span style={{ color: '#1B3B2F' }}>
                     {f.membership.total_lessons} ders · {f.membership.used_lessons} kullanıldı · {f.membership.reserved_lessons} rezerve
                   </span>
                 </div>
@@ -212,9 +212,9 @@ export default function FamiliesPage() {
               <div className="space-y-1">
                 {f.members.map(m => (
                   <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    style={{ background: 'rgba(27,59,47,0.03)' }}>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm" style={{ color: '#c8d6f0' }}>{m.name} {m.surname}</span>
+                      <span className="text-sm" style={{ color: '#1B3B2F' }}>{m.name} {m.surname}</span>
                       {m.is_leader && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
                           style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Ana Üye</span>
@@ -243,12 +243,12 @@ export default function FamiliesPage() {
       {creating && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 className="font-bold text-white text-lg">Yeni Aile Grubu</h3>
+            <h3 className="font-bold text-lg">Yeni Aile Grubu</h3>
             <input value={newName} onChange={e => setNewName(e.target.value)}
               placeholder="Aile adı (örn. Yılmaz Ailesi)"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT} />
             <div>
-              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ana Üye</p>
+              <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ana Üye</p>
               <select value={newLeader} onChange={e => setNewLeader(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
                 <option value="">Üye seç...</option>
@@ -257,7 +257,7 @@ export default function FamiliesPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setCreating(false)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleCreate} disabled={saving || !newName || !newLeader}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
                 style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#0a0f2e' }}>
@@ -272,7 +272,7 @@ export default function FamiliesPage() {
       {addModal && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 className="font-bold text-white text-lg">Aile Üyesi Ekle</h3>
+            <h3 className="font-bold text-lg">Aile Üyesi Ekle</h3>
             <select value={addMember} onChange={e => setAddMember(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
               <option value="">Üye seç...</option>
@@ -282,7 +282,7 @@ export default function FamiliesPage() {
             </select>
             <div className="flex gap-3">
               <button onClick={() => setAddModal(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleAddMember} disabled={!addMember}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
                 style={{ background: 'linear-gradient(135deg, #34d399, #059669)', color: '#fff' }}>
@@ -297,8 +297,8 @@ export default function FamiliesPage() {
       {msModal && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 className="font-bold text-white text-lg">Üyelik Bağla</h3>
-            <p className="text-xs" style={{ color: '#7b93c4' }}>Ana üyenin aktif üyeliğini seçin</p>
+            <h3 className="font-bold text-lg">Üyelik Bağla</h3>
+            <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>Ana üyenin aktif üyeliğini seçin</p>
             <select value={addMs} onChange={e => setAddMs(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={INPUT}>
                       <option value="">Üyelik seç...</option>
@@ -314,11 +314,11 @@ export default function FamiliesPage() {
                   </option>
                 ))}
             </select>
-            <p className="text-xs text-center" style={{ color: '#7b93c4' }}>
+            <p className="text-xs text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>
               Üyeliği önce üye profilinden aile paketi olarak onaylayın, ardından buradan bağlayın.
             </p>
             <button onClick={() => setMsModal(null)} className="w-full py-3 rounded-2xl font-bold text-sm"
-              style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Kapat</button>
+              style={{ background: 'rgba(27,59,47,0.08)', color: 'rgba(27,59,47,0.55)' }}>Kapat</button>
           </div>
         </div>
       )}
