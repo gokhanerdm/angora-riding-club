@@ -1,4 +1,5 @@
 'use client'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -477,6 +478,7 @@ export default function MembersPage() {
           </div>
         </div>
       )}
+      <AdminBottomNav />
     </div>
   )
 }

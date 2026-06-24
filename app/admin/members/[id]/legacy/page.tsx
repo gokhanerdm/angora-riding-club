@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 const CARD  = { background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.10)' }
 const INPUT = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
@@ -302,6 +303,7 @@ export default function LegacyRequestPage() {
           {saving ? 'Kaydediliyor...' : '✓ Geçmiş Bilgileri Kaydet'}
         </button>
       </div>
+      <AdminBottomNav />
     </div>
   )
 }

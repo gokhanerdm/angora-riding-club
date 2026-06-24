@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import TrainerDashboardClient from '@/app/trainer/TrainerDashboardClient'
+import AdminBottomNav from '@/components/admin/AdminBottomNav'
 
 export default async function AdminTrainerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -64,6 +65,7 @@ export default async function AdminTrainerDetailPage({ params }: { params: Promi
           monthly_prim:        monthlyPrim,
         }}
       />
+      <AdminBottomNav />
     </div>
   )
 }
