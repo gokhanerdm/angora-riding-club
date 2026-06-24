@@ -489,7 +489,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
       {/* Slot aç/kapat modal (admin) */}
       {toggleSlot && (
-        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <p className="font-bold text-base mb-1 text-[#1B3B2F]">{toggleSlot.trainer_name}</p>
@@ -516,7 +516,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
       {/* Geçmiş ders ekleme seçimi */}
       {pastSlot && (
-        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <p className="font-bold text-base mb-1 text-[#1B3B2F]">{pastSlot.trainer_name}</p>
