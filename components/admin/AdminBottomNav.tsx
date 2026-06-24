@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { href: '/admin',               label: 'Anasayfa',   icon: '🏠', exact: true },
-  { href: '/admin/trainers',      label: 'Eğitmenler', icon: '🏇' },
-  { href: '/admin/members',       label: 'Üyeler',     icon: '👥' },
-  { href: '/admin/memberships',   label: 'Üyelikler',  icon: '📋' },
-  { href: '/admin/payments',      label: 'Hesaplar',   icon: '💰' },
-  { href: '/admin/notifications', label: 'İstekler',   icon: '🔔' },
+  { href: '/admin',               label: 'Anasayfa',     icon: '🏠', exact: true },
+  { href: '/admin/trainers',      label: 'Eğitmenler',   icon: '🏇' },
+  { href: '/admin/members',       label: 'Üyeler',        icon: '👥' },
+  { href: '/admin/payments',      label: 'Hesaplamalar',  icon: '💰' },
+  { href: '/admin/notifications', label: 'İstekler',      icon: '🔔' },
+  { href: '/admin/settings',      label: 'Ayarlar',       icon: '⚙️' },
 ]
 
 export default function AdminBottomNav() {
