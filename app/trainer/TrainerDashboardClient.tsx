@@ -112,6 +112,8 @@ export default function TrainerDashboardClient({
   const [currentDate, setCurrentDate] = useState(toDateKey(today))
   const [reservations, setReservations] = useState<Record<string, Reservation>>({})
   const [closedSlots, setClosedSlots] = useState<Set<string>>(new Set())
+  const [closedSlotNotes, setClosedSlotNotes] = useState<Record<string, string>>({})
+  const [slotNoteInput, setSlotNoteInput] = useState('')
   const [openExtraSlots, setOpenExtraSlots] = useState<Set<string>>(new Set())
   const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({})
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
@@ -154,7 +156,7 @@ export default function TrainerDashboardClient({
         .eq('scheduled_date', dateKey)
         .neq('status', 'cancelled'),
       supabase.from('trainer_schedules')
-        .select('start_time, is_available')
+        .select('start_time, is_available, note')
         .eq('trainer_id', trainerId)
         .eq('scheduled_date', dateKey),
       supabase.from('trainer_daily_shifts')
@@ -177,10 +179,12 @@ export default function TrainerDashboardClient({
 
     const closed = new Set<string>()
     const extra = new Set<string>()
+    const notes: Record<string, string> = {}
     for (const s of scheduleData ?? []) {
-      if (!s.is_available) closed.add(s.start_time)
+      if (!s.is_available) { closed.add(s.start_time); if (s.note) notes[s.start_time] = s.note }
       if (s.is_available && EXTRA_SLOTS.includes(s.start_time)) extra.add(s.start_time)
     }
+    setClosedSlotNotes(notes)
 
     setReservations(resMap)
     setClosedSlots(closed)
@@ -347,7 +351,7 @@ export default function TrainerDashboardClient({
     setActionLoading(false)
   }
 
-  const handleToggleClosed = async (slot: string, currentlyClosed: boolean) => {
+  const handleToggleClosed = async (slot: string, currentlyClosed: boolean, note?: string) => {
     setActionLoading(true)
     const supabase = createClient()
     if (currentlyClosed) {
@@ -358,7 +362,8 @@ export default function TrainerDashboardClient({
       endTime.setMinutes(endTime.getMinutes() + 30)
       await supabase.from('trainer_schedules').insert({
         trainer_id: trainerId, scheduled_date: currentDate,
-        start_time: slot, end_time: endTime.toTimeString().substring(0, 8), is_available: false
+        start_time: slot, end_time: endTime.toTimeString().substring(0, 8), is_available: false,
+        note: note || null,
       })
     }
     await loadSchedule(currentDate)
@@ -695,7 +700,7 @@ export default function TrainerDashboardClient({
                 } else if (isClosed) {
                   bg = 'rgba(27,59,47,0.02)'
                   timeColor = 'rgba(27,59,47,0.3)'
-                  subText = 'Kapalı'
+                  subText = closedSlotNotes[slot] ? `📝 ${closedSlotNotes[slot]}` : 'Kapalı'
                   subColor = 'rgba(27,59,47,0.35)'
                 } else if (isExtra) {
                   subText = 'Özel açık'
@@ -830,12 +835,19 @@ export default function TrainerDashboardClient({
                 })()}
 
                 {selectedClosed && !selectedRes && (
-                  <button onClick={() => handleToggleClosed(selectedSlot, true)}
-                    disabled={actionLoading}
-                    className="w-full py-3 rounded-2xl text-sm font-bold"
-                    style={{ background: 'rgba(27,59,47,0.08)', color: '#1B3B2F' }}>
-                    Slotu Aç
-                  </button>
+                  <div className="space-y-2">
+                    {closedSlotNotes[selectedSlot] && (
+                      <p className="text-xs px-3 py-2 rounded-xl" style={{ background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.6)' }}>
+                        📝 {closedSlotNotes[selectedSlot]}
+                      </p>
+                    )}
+                    <button onClick={() => handleToggleClosed(selectedSlot, true)}
+                      disabled={actionLoading}
+                      className="w-full py-3 rounded-2xl text-sm font-bold"
+                      style={{ background: 'rgba(27,59,47,0.08)', color: '#1B3B2F' }}>
+                      Slotu Aç
+                    </button>
+                  </div>
                 )}
 
                 {selectedSlot && openExtraSlots.has(selectedSlot) && !selectedRes && (
@@ -851,12 +863,22 @@ export default function TrainerDashboardClient({
                   <div className="space-y-2">
                     {/* Geçmiş slotta Slotu Kapat çıkmasın */}
                     {!isSlotPast(currentDate, selectedSlot) && (
-                      <button onClick={() => handleToggleClosed(selectedSlot, false)}
-                        disabled={actionLoading}
-                        className="w-full py-3 rounded-2xl text-sm font-bold"
-                        style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F', border: '1px solid rgba(27,59,47,0.10)' }}>
-                        Slotu Kapat
-                      </button>
+                      <div className="space-y-2">
+                        <textarea
+                          value={slotNoteInput}
+                          onChange={e => setSlotNoteInput(e.target.value)}
+                          placeholder="Not ekle (isteğe bağlı)"
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none"
+                          style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }}
+                        />
+                        <button onClick={() => { handleToggleClosed(selectedSlot, false, slotNoteInput); setSlotNoteInput(''); setSelectedSlot(null); setSlotAction(null) }}
+                          disabled={actionLoading}
+                          className="w-full py-3 rounded-2xl text-sm font-bold"
+                          style={{ background: 'rgba(27,59,47,0.06)', color: '#1B3B2F', border: '1px solid rgba(27,59,47,0.10)' }}>
+                          Slotu Kapat
+                        </button>
+                      </div>
                     )}
                     <button onClick={() => setSlotAction('addLesson')}
                       className="w-full py-3 rounded-2xl text-sm font-bold"
