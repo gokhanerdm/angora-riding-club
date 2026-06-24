@@ -66,6 +66,7 @@ export default async function TrainerMemberViewPage({
         profilePhotoUrl={member.profile_photo_url}
         referralCode={member.referral_code}
         adminMemberId={id}
+        hideSettings
       />
     </div>
   )

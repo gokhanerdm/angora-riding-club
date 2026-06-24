@@ -65,7 +65,7 @@ const GREEN_SOFT = '#E8F0EA'
 const MUTED = '#6B7280'
 
 export default function MemberDashboardClient({
-  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId, successBanner
+  stats, userId, memberName, trainerName, profilePhotoUrl, referralCode, adminMemberId, successBanner, hideSettings
 }: {
   stats: Stats
   userId: string
@@ -75,6 +75,7 @@ export default function MemberDashboardClient({
   referralCode?: string | null
   adminMemberId?: string
   successBanner?: 'legacy' | 'family'
+  hideSettings?: boolean
 }) {
   const router = useRouter()
   const [modal, setModal]           = useState<ModalType>(null)
@@ -316,7 +317,7 @@ export default function MemberDashboardClient({
       </div>
 
       {/* Ayarlar butonu — sadece admin görür, isim ile paketler arasında */}
-      {adminMemberId && (
+      {adminMemberId && !hideSettings && (
         <div className="px-5 mb-3">
           <a href={`/admin/members/${adminMemberId}/settings`}
             className="w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
