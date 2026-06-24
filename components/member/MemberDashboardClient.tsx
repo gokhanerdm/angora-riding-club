@@ -373,10 +373,10 @@ export default function MemberDashboardClient({
       {/* Profil bilgileri modalı */}
       {profileModal && (
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full rounded-t-3xl flex flex-col" style={{ background: '#0d1b4b', maxHeight: '80vh', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="flex justify-between items-center px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="w-full rounded-t-3xl flex flex-col" style={{ background: '#FBFBFB', maxHeight: '80vh', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="flex justify-between items-center px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
               <div className="flex items-center gap-3">
-                <h3 className="text-base font-bold text-white">Üye Bilgileri</h3>
+                <h3 className="text-base font-bold text-[#1B3B2F]">Üye Bilgileri</h3>
                 {!adminMemberId && (
                   <a href="/member/profile-edit" className="text-xs font-bold px-2.5 py-1 rounded-xl"
                     style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
@@ -386,7 +386,7 @@ export default function MemberDashboardClient({
               </div>
               <button onClick={() => setProfileModal(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
               {profileData ? (
@@ -405,9 +405,9 @@ export default function MemberDashboardClient({
                     { label: 'Adres', value: profileData.adres },
                     { label: 'Referans Kodu', value: profileData.referral_code },
                   ].filter(r => r.value).map(row => (
-                    <div key={row.label} className="flex justify-between items-start gap-4 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <p className="text-xs font-bold flex-shrink-0" style={{ color: '#7b93c4' }}>{row.label}</p>
-                      <p className="text-sm text-white text-right">{row.value}</p>
+                    <div key={row.label} className="flex justify-between items-start gap-4 py-2" style={{ borderBottom: '1px solid rgba(27,59,47,0.08)' }}>
+                      <p className="text-xs font-bold flex-shrink-0" style={{ color: 'rgba(27,59,47,0.55)' }}>{row.label}</p>
+                      <p className="text-sm text-[#1B3B2F] text-right">{row.value}</p>
                     </div>
                   ))}
                   {profileData.is_minor && profileData.veli_adi_soyadi && (
@@ -419,15 +419,15 @@ export default function MemberDashboardClient({
                         { label: 'Yakınlık', value: profileData.veli_iliskisi },
                       ].filter(r => r.value).map(row => (
                         <div key={row.label} className="flex justify-between py-1">
-                          <p className="text-xs" style={{ color: '#7b93c4' }}>{row.label}</p>
-                          <p className="text-xs font-bold text-white">{row.value}</p>
+                          <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{row.label}</p>
+                          <p className="text-xs font-bold text-[#1B3B2F]">{row.value}</p>
                         </div>
                       ))}
                     </div>
                   )}
                 </>
               ) : (
-                <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>
+                <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>
               )}
             </div>
           </div>
@@ -437,18 +437,18 @@ export default function MemberDashboardClient({
       {/* Ders düzenleme modalı (sadece admin) */}
       {editRes && (
         <div className="fixed inset-0 z-[90] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-base font-bold text-white mb-4">Ders Düzenle</h3>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(27,59,47,0.12)' }} />
+            <h3 className="text-base font-bold text-[#1B3B2F] mb-4">Ders Düzenle</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Tarih</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Tarih</p>
                 <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+                  style={{ background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }} />
               </div>
               <div>
-                <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Durum</p>
+                <p className="text-xs mb-2 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Durum</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { val: 'completed', label: 'Tamamlandı', color: '#34d399' },
@@ -459,7 +459,7 @@ export default function MemberDashboardClient({
                       className="py-2.5 rounded-xl text-xs font-bold"
                       style={editStatus === s.val
                         ? { background: `${s.color}22`, color: s.color, border: `1px solid ${s.color}55` }
-                        : { background: 'rgba(255,255,255,0.05)', color: '#7b93c4', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        : { background: 'rgba(27,59,47,0.04)', color: 'rgba(27,59,47,0.55)', border: '1px solid rgba(27,59,47,0.10)' }}>
                       {s.label}
                     </button>
                   ))}
@@ -468,7 +468,7 @@ export default function MemberDashboardClient({
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setEditRes(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={async () => {
                 if (!editRes) return
                 const resId = editRes.id
@@ -496,24 +496,24 @@ export default function MemberDashboardClient({
       {/* Paket düzenleme modalı */}
       {editPkg && adminMemberId && (
         <div className="fixed inset-0 z-[95] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="font-bold text-white text-base">Paket Düzenle</h3>
+          <div className="w-full rounded-t-3xl p-6 pb-32 space-y-4" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: 'rgba(27,59,47,0.12)' }} />
+            <h3 className="font-bold text-[#1B3B2F] text-base">Paket Düzenle</h3>
 
             <div>
-              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Toplam Ders</p>
+              <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Toplam Ders</p>
               <input type="number" value={editPkgTotal} onChange={e => setEditPkgTotal(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+                style={{ background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }} />
             </div>
 
             <div>
-              <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Tip</p>
+              <p className="text-xs mb-2 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Tip</p>
               <div className="flex gap-2">
                 {(['weekday','general'] as const).map(t => (
                   <button key={t} onClick={() => setEditPkgType(t)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                    style={editPkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                    style={editPkgType === t ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.55)' }}>
                     {t === 'weekday' ? 'Hafta İçi' : 'Genel'}
                   </button>
                 ))}
@@ -522,33 +522,33 @@ export default function MemberDashboardClient({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Başlangıç</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Başlangıç</p>
                 <input type="date" value={editPkgStart} onChange={e => setEditPkgStart(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+                  style={{ background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }} />
               </div>
               <div>
-                <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Bitiş</p>
+                <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Bitiş</p>
                 <input type="date" value={editPkgEnd} onChange={e => setEditPkgEnd(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+                  style={{ background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }} />
               </div>
             </div>
 
             <div>
-              <p className="text-xs mb-1 font-bold" style={{ color: '#7b93c4' }}>Ödeme Tutarı (₺)</p>
+              <p className="text-xs mb-1 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ödeme Tutarı (₺)</p>
               <input type="number" value={editPkgAmount} onChange={e => setEditPkgAmount(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: '#c8d6f0' }} />
+                style={{ background: 'rgba(27,59,47,0.05)', border: '1px solid rgba(27,59,47,0.12)', color: '#1B3B2F' }} />
             </div>
 
             <div>
-              <p className="text-xs mb-2 font-bold" style={{ color: '#7b93c4' }}>Ödeme Yöntemi</p>
+              <p className="text-xs mb-2 font-bold" style={{ color: 'rgba(27,59,47,0.55)' }}>Ödeme Yöntemi</p>
               <div className="flex gap-2">
                 {(['nakit','havale','kart'] as const).map(m => (
                   <button key={m} onClick={() => setEditPkgMethod(m)}
                     className="flex-1 py-2 rounded-xl text-xs font-bold capitalize"
-                    style={editPkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}>
+                    style={editPkgMethod === m ? { background: '#f59e0b', color: '#0a0f2e' } : { background: 'rgba(27,59,47,0.05)', color: 'rgba(27,59,47,0.55)' }}>
                     {m}
                   </button>
                 ))}
@@ -557,7 +557,7 @@ export default function MemberDashboardClient({
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => setEditPkg(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={async () => {
                 if (!editPkg) return
                 setEditPkgSaving(true)
@@ -601,13 +601,13 @@ export default function MemberDashboardClient({
         <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div
             className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '80vh', paddingBottom: 80, border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#FBFBFB', maxHeight: '80vh', paddingBottom: 80, border: '1px solid rgba(27,59,47,0.12)' }}
           >
             <div
               className="flex justify-between items-center px-5 py-4"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+              style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}
             >
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-[#1B3B2F]">
                 {modal === 'total' && 'Paketlerim'}
                 {modal === 'used' && 'Kullanılan Dersler'}
                 {modal === 'reserved' && 'Bekleyen Dersler'}
@@ -615,7 +615,7 @@ export default function MemberDashboardClient({
               <button
                 onClick={() => setModal(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
               >✕</button>
             </div>
 
@@ -632,11 +632,11 @@ export default function MemberDashboardClient({
                   {cancelFeedback.msg}
                 </div>
               )}
-              {loading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
+              {loading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
 
               {!loading && modal === 'total' && (
                 <>
-                  {packages.length === 0 && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Paket bulunamadı.</p>}
+                  {packages.length === 0 && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Paket bulunamadı.</p>}
                   {packages.map(pkg => (
                     <div
                       key={pkg.id}
@@ -655,13 +655,13 @@ export default function MemberDashboardClient({
                       }}
                     >
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-white text-sm">{pkg.total_lessons} Ders{pkg._isFamily ? ' (Aile)' : ''}</span>
+                        <span className="font-bold text-[#1B3B2F] text-sm">{pkg.total_lessons} Ders{pkg._isFamily ? ' (Aile)' : ''}</span>
                         <div className="flex items-center gap-2">
                           <span
                             className="text-xs px-2 py-0.5 rounded-full font-bold"
                             style={pkg.is_current
                               ? { background: '#f59e0b', color: '#fff' }
-                              : { background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                              : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
                           >
                             {pkg.is_current ? 'Aktif' : 'Geçmiş'}
                           </span>
@@ -687,7 +687,7 @@ export default function MemberDashboardClient({
                           )}
                         </div>
                       </div>
-                      <p className="text-xs" style={{ color: '#7b93c4' }}>{pkg.type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
+                      <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{pkg.type === 'weekday' ? 'Hafta İçi' : 'Genel'}</p>
                       <p className="text-xs mt-1" style={{ color: 'rgba(123,147,196,0.6)' }}>{pkg.end_date ? `${formatDate(pkg.start_date)} — ${formatDate(pkg.end_date)}` : 'İlk dersinizi alın'}</p>
                       <p className="text-xs" style={{ color: 'rgba(123,147,196,0.6)' }}>Kullanılan: {pkg.used_lessons} · Rezerve: {pkg.reserved_lessons}</p>
                     </div>
@@ -697,20 +697,20 @@ export default function MemberDashboardClient({
 
               {!loading && modal === 'used' && (
                 <>
-                  {reservations.length === 0 && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Geçmiş ders bulunamadı.</p>}
+                  {reservations.length === 0 && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Geçmiş ders bulunamadı.</p>}
                   {reservations.map(res => (
                     <div
                       key={res.id}
                       onClick={() => adminMemberId && openEditRes(res)}
                       className="p-3 rounded-2xl flex justify-between items-center"
                       style={{
-                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'rgba(27,59,47,0.03)', border: '1px solid rgba(27,59,47,0.10)',
                         cursor: adminMemberId ? 'pointer' : 'default'
                       }}
                     >
                       <div>
-                        <p className="font-bold text-white text-sm">{formatDate(res.scheduled_date)}</p>
-                        <p className="text-xs" style={{ color: '#7b93c4' }}>{formatTime(res.start_time)} — {formatTime(res.end_time)}</p>
+                        <p className="font-bold text-[#1B3B2F] text-sm">{formatDate(res.scheduled_date)}</p>
+                        <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{formatTime(res.start_time)} — {formatTime(res.end_time)}</p>
                         {res.member_name && <p className="text-xs mt-0.5" style={{ color: '#a78bfa' }}>{res.member_name}</p>}
                       </div>
                       <span
@@ -720,7 +720,7 @@ export default function MemberDashboardClient({
                             ? { background: 'rgba(52,211,153,0.15)', color: '#34d399' }
                             : res.status === 'cancelled'
                             ? { background: 'rgba(248,113,113,0.15)', color: '#f87171' }
-                            : { background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }
+                            : { background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }
                         }
                       >
                         {statusLabel(res.status)}
@@ -732,7 +732,7 @@ export default function MemberDashboardClient({
 
               {!loading && modal === 'reserved' && (
                 <>
-                  {reservations.length === 0 && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Bekleyen ders bulunamadı.</p>}
+                  {reservations.length === 0 && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen ders bulunamadı.</p>}
                   {reservations.map(res => (
                     <div
                       key={res.id}
@@ -741,8 +741,8 @@ export default function MemberDashboardClient({
                     >
                       <div className="flex justify-between items-center mb-3">
                         <div>
-                          <p className="font-bold text-white text-sm">{formatDate(res.scheduled_date)}</p>
-                          <p className="text-xs" style={{ color: '#7b93c4' }}>{formatTime(res.start_time)} — {formatTime(res.end_time)}</p>
+                          <p className="font-bold text-[#1B3B2F] text-sm">{formatDate(res.scheduled_date)}</p>
+                          <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>{formatTime(res.start_time)} — {formatTime(res.end_time)}</p>
                         </div>
                         <span
                           className="text-xs px-2 py-0.5 rounded-full font-bold"

@@ -756,7 +756,7 @@ export default function TrainerDashboardClient({
           onClick={() => { setSelectedSlot(null); setSlotAction(null) }}>
           <div
             className="w-full rounded-t-3xl px-5 pt-5 pb-24"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}
+            style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.10)' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -901,7 +901,7 @@ export default function TrainerDashboardClient({
           onClick={() => { setShowStudents(false); setSelectedMember(null) }}>
           <div
             className="w-full rounded-t-3xl px-5 pt-5 pb-24"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)', maxHeight: '75vh', overflowY: 'auto' }}
+            style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.10)', maxHeight: '75vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -977,10 +977,10 @@ export default function TrainerDashboardClient({
           onClick={() => setShowShiftPicker(false)}>
           <div
             className="w-full h-full px-5 pt-5 pb-8 overflow-y-auto"
-            style={{ background: '#0d1b4b' }}
+            style={{ background: '#FBFBFB' }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-3 sticky top-0 pt-1 -mt-1" style={{ background: '#0d1b4b' }}>
+            <div className="flex justify-between items-center mb-3 sticky top-0 pt-1 -mt-1" style={{ background: '#FBFBFB' }}>
               <p className="font-bold text-base">Slot Seçimi</p>
               <button onClick={() => setShowShiftPicker(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
@@ -1059,7 +1059,7 @@ export default function TrainerDashboardClient({
       {/* İptal onay modalı */}
       {cancelTarget && (
         <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.10)' }}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.15)' }} />
             <h3 className="text-lg font-bold mb-2">Dersi İptal Et</h3>
             <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu dersi iptal etmek istediğinize emin misiniz?</p>

@@ -282,8 +282,8 @@ export default function AdminMemberSettingsPage() {
       {/* Eski hesap modal */}
       {linkModal && (
         <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <h3 className="text-lg font-bold mb-4">Eski Hesap Bağla</h3>
             <select value={linkTarget} onChange={e => setLinkTarget(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-4" style={INPUT_STYLE}>
@@ -307,8 +307,8 @@ export default function AdminMemberSettingsPage() {
       {/* Promote modal */}
       {promoteModal && (
         <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(27,59,47,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.10)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <h3 className="text-lg font-bold mb-1">Eğitmen Olarak Ata</h3>
             <p className="text-sm mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>{member?.name} {member?.surname} eğitmen paneline taşınır.</p>
             <div className="space-y-3 mb-4">

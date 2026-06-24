@@ -136,7 +136,7 @@ export default function MembershipRequestsPage() {
 
       {approveModal && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-10" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-10" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
             <h3 className="text-lg font-bold mb-4">Üyelik Onaylama</h3>
             <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(27,59,47,0.05)' }}>
               <p className="font-bold">{approveModal.member_name}</p>
@@ -190,8 +190,8 @@ export default function MembershipRequestsPage() {
       {/* Reddet onay modalı */}
       {rejectTarget && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.75)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <h3 className="text-lg font-bold mb-2">Talebi Reddet</h3>
             <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu üyelik talebini reddetmek istediğinize emin misiniz?</p>
             <div className="flex gap-3">
