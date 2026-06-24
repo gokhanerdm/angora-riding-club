@@ -168,7 +168,7 @@ export default function AdminMemberSettingsPage() {
         <button onClick={() => router.back()} className="font-bold text-sm px-3 py-2 rounded-xl"
           style={{ color: 'rgba(27,59,47,0.55)', background: 'rgba(27,59,47,0.06)' }}>← Geri</button>
         <div>
-          <h2 className="font-bold">{member?.name} {member?.surname}</h2>
+          <a href={`/admin/members/${memberId}/view`} className="font-bold hover:underline">{member?.name} {member?.surname}</a>
           <p className="text-xs" style={{ color: 'rgba(27,59,47,0.55)' }}>⚙️ Ayarlar</p>
         </div>
       </div>
