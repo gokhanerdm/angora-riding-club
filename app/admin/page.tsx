@@ -63,6 +63,7 @@ export default function AdminDashboard() {
   const [memberStats, setMemberStats] = useState({ today: 0, week: 0, month: 0, year: 0 })
   const [packageStats, setPackageStats] = useState({ today: 0 as number, week: 0 as number, month: 0 as number, total: 0 as number })
   const [visitStats, setVisitStats] = useState({ today: 0, week: 0, month: 0, total: 0 })
+  const [trialStats, setTrialStats] = useState({ today: 0, week: 0, month: 0, membership: 0 })
   const [pendingFirst, setPendingFirst] = useState(0)
   const [pendingNew, setPendingNew]     = useState(0)
 
@@ -71,6 +72,8 @@ export default function AdminDashboard() {
   const [rawPackages,       setRawPackages]       = useState<any[]>([])
   const [rawVisits,         setRawVisits]         = useState<{ today: any[]; week: any[]; month: any[]; total: any[] }>({ today: [], week: [], month: [], total: [] })
   const [allCompletedRaw,   setAllCompletedRaw]   = useState<any[]>([])
+  const [rawTrials,         setRawTrials]         = useState<any[]>([])
+  const [rawTrialMembers,   setRawTrialMembers]   = useState<any[]>([])
 
   // Ders modalı
   const [activeCard, setActiveCard]     = useState<LessonCardKey | null>(null)
@@ -81,8 +84,8 @@ export default function AdminDashboard() {
   const [editStatus,  setEditStatus]  = useState('')
   const [editSaving,  setEditSaving]  = useState(false)
 
-  // Genel modal (kayıt / paket / gelen üye)
-  type GenericModal = { type: 'member' | 'package' | 'visit'; period: 'today' | 'week' | 'month' | 'total' | 'year'; title: string }
+  // Genel modal (kayıt / paket / gelen üye / deneme dersi)
+  type GenericModal = { type: 'member' | 'package' | 'visit' | 'trial' | 'trial_membership'; period: 'today' | 'week' | 'month' | 'total' | 'year' | 'membership'; title: string }
   const [genericModal, setGenericModal] = useState<GenericModal | null>(null)
   const [genericData,  setGenericData]  = useState<any[]>([])
   const [genericLoading, setGenericLoading] = useState(false)
@@ -126,7 +129,17 @@ export default function AdminDashboard() {
     }
 
     if (type === 'visit' && period !== 'year') {
-      setGenericData(rawVisits[period])
+      setGenericData(rawVisits[period as 'today' | 'week' | 'month' | 'total'])
+    }
+
+    if (type === 'trial') {
+      const cutoff = period === 'today' ? selectedDate : period === 'week' ? weekStart : monthStart
+      const filtered = rawTrials.filter(r => r.scheduled_date >= cutoff && r.scheduled_date <= selectedDate)
+      setGenericData(filtered.sort((a: any, b: any) => b.scheduled_date.localeCompare(a.scheduled_date)))
+    }
+
+    if (type === 'trial_membership') {
+      setGenericData(rawTrialMembers)
     }
 
     setGenericLoading(false)
@@ -177,6 +190,28 @@ export default function AdminDashboard() {
     // Paketler (raw)
     supabase.from('memberships').select('id, member_id, payment_amount, total_lessons, purchase_date, start_date, created_at').gt('payment_amount', 0)
       .then(({ data: pkgs }) => setRawPackages(pkgs ?? []))
+
+    // Deneme dersleri (raw)
+    supabase.from('reservations')
+      .select('id, member_id, scheduled_date, status, members(name, surname, member_status)')
+      .eq('type', 'trial')
+      .neq('status', 'cancelled')
+      .then(({ data: trials }) => {
+        const all = trials ?? []
+        setRawTrials(all.map((r: any) => {
+          const m = Array.isArray(r.members) ? r.members[0] : r.members
+          return { ...r, member_name: m ? `${m.name} ${m.surname}` : '—', member_status: m?.member_status }
+        }))
+        // Üyelik alanlar: deneme dersi olan ve member_status='active' olanlar (tekrarsız)
+        const seen = new Map<string, string>()
+        for (const r of all) {
+          const m = Array.isArray(r.members) ? r.members[0] : r.members
+          if (m?.member_status === 'active' && !seen.has(r.member_id)) {
+            seen.set(r.member_id, m ? `${m.name} ${m.surname}` : '—')
+          }
+        }
+        setRawTrialMembers([...seen.entries()].map(([id, name]) => ({ id, name })))
+      })
 
     // Tamamlanan dersler (raw — gelen üye için)
     supabase.from('reservations').select('member_id, scheduled_date, members(name, surname)').eq('status', 'completed')
@@ -250,7 +285,17 @@ export default function AdminDashboard() {
       setRawVisits(visits)
       setVisitStats({ today: visits.today.length, week: visits.week.length, month: visits.month.length, total: visits.total.length })
     }
-  }, [selectedDate, rawRealMembers, rawPackages, allCompletedRaw])
+
+    // Deneme dersi istatistikleri
+    if (rawTrials.length > 0 || rawTrialMembers.length >= 0) {
+      setTrialStats({
+        today:      rawTrials.filter(r => r.scheduled_date === selectedDate).length,
+        week:       rawTrials.filter(r => r.scheduled_date >= weekStart && r.scheduled_date <= selectedDate).length,
+        month:      rawTrials.filter(r => r.scheduled_date >= monthStart && r.scheduled_date <= selectedDate).length,
+        membership: rawTrialMembers.length,
+      })
+    }
+  }, [selectedDate, rawRealMembers, rawPackages, allCompletedRaw, rawTrials, rawTrialMembers])
 
   // ---- Ders istatistikleri (seçili güne göre) ----
   useEffect(() => {
@@ -400,6 +445,14 @@ export default function AdminDashboard() {
         { title: 'Toplam', value: visitStats.total, color: '#1B3B2F', onClick: () => openGenericModal('visit','total','Tüm Zamanlar Gelen Üyeler') },
       ]} />
 
+      {/* Satır 5 — Deneme Dersi */}
+      <StatRow label="Deneme Dersi" items={[
+        { title: 'Bugün',      value: trialStats.today,      color: '#f97316', onClick: () => openGenericModal('trial','today','Bugün Deneme Dersleri') },
+        { title: 'Hafta',      value: trialStats.week,       color: '#f97316', onClick: () => openGenericModal('trial','week','Bu Hafta Deneme Dersleri') },
+        { title: 'Ay',         value: trialStats.month,      color: '#f97316', onClick: () => openGenericModal('trial','month','Bu Ay Deneme Dersleri') },
+        { title: 'Üyelik Alan', value: trialStats.membership, color: '#34d399', onClick: () => openGenericModal('trial_membership','membership','Üyelik Alan Deneme Öğrencileri') },
+      ]} />
+
       {/* Bekleyen başvurular */}
       <div className="mt-2 space-y-3">
         {pendingFirst > 0 && (
@@ -529,6 +582,19 @@ export default function AdminDashboard() {
               {!genericLoading && genericModal.type === 'visit' && genericData.map((m, i) => (
                 <a key={i} href={`/admin/members/${m.id}/view`} className="block rounded-2xl p-3 active:opacity-70"
                   style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                  <p className="text-sm font-bold">{m.name}</p>
+                </a>
+              ))}
+              {!genericLoading && genericModal.type === 'trial' && genericData.map((r: any, i: number) => (
+                <a key={i} href={`/admin/members/${r.member_id}/view`} className="block rounded-2xl p-3 active:opacity-70"
+                  style={{ background: 'rgba(249,115,22,0.07)', border: '1px solid rgba(249,115,22,0.18)' }}>
+                  <p className="text-sm font-bold">{r.member_name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{fmtDate(r.scheduled_date)} · {STATUS_LABEL[r.status] ?? r.status}</p>
+                </a>
+              ))}
+              {!genericLoading && genericModal.type === 'trial_membership' && genericData.map((m: any, i: number) => (
+                <a key={i} href={`/admin/members/${m.id}/view`} className="block rounded-2xl p-3 active:opacity-70"
+                  style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.15)' }}>
                   <p className="text-sm font-bold">{m.name}</p>
                 </a>
               ))}
