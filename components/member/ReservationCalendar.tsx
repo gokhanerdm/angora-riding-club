@@ -543,7 +543,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
       {/* Rezervasyon onay bottom-sheet */}
       {confirmSlot && (
-        <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-[110] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div
             className="w-full rounded-t-3xl p-6"
             style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}
