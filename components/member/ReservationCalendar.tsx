@@ -402,13 +402,13 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
       {/* Slot modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
+        <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: '#FBFBFB' }}>
           <div
-            className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#FBFBFB', maxHeight: '70vh', border: '1px solid rgba(27,59,47,0.12)' }}
+            className="w-full flex flex-col"
+            style={{ flex: 1, minHeight: 0 }}
           >
             {/* Modal header */}
-            <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
+            <div className="flex justify-between items-center px-5 py-4 pt-14 flex-shrink-0" style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
               <div>
                 <h3 className="text-base font-bold text-[#1B3B2F]">
                   {selectedDate && formatDisplayDate(selectedDate)}
