@@ -52,7 +52,7 @@ const STATUS_TEXT: Record<string,string> = {
   no_show:   '#fb923c',
 }
 
-type Reservation = { id: string; scheduled_date: string; start_time: string; end_time: string; status: string; type: string; member_name: string; trainer_name: string }
+type Reservation = { id: string; scheduled_date: string; start_time: string; end_time: string; status: string; type: string; member_name: string; member_id: string; trainer_name: string }
 type SlotReservation = { id: string; member_name: string; member_id: string; status: string; end_time: string; type: string }
 type Trainer = { id: string; name: string; surname: string }
 type Member = { id: string; name: string; surname: string; remaining_lessons: number }
@@ -93,11 +93,11 @@ export default function ReservationsPage() {
   const loadReservations = async () => {
     setLoading(true)
     const supabase = createClient()
-    const { data } = await supabase.from('reservations').select('id, scheduled_date, start_time, end_time, status, type, members(name, surname), trainers(name, surname)').order('scheduled_date', { ascending: false }).limit(200)
+    const { data } = await supabase.from('reservations').select('id, scheduled_date, start_time, end_time, status, type, member_id, members(name, surname), trainers(name, surname)').order('scheduled_date', { ascending: false }).limit(200)
     setReservations((data ?? []).map((r: any) => {
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       const t = Array.isArray(r.trainers) ? r.trainers[0] : r.trainers
-      return { id: r.id, scheduled_date: r.scheduled_date, start_time: r.start_time, end_time: r.end_time, status: r.status, type: r.type, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', trainer_name: t ? `${t.name} ${t.surname}` : 'Bilinmiyor' }
+      return { id: r.id, scheduled_date: r.scheduled_date, start_time: r.start_time, end_time: r.end_time, status: r.status, type: r.type, member_id: r.member_id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor', trainer_name: t ? `${t.name} ${t.surname}` : 'Bilinmiyor' }
     }))
     setLoading(false)
   }
@@ -275,7 +275,7 @@ export default function ReservationsPage() {
                 <div key={r.id} className="rounded-2xl p-4" style={r.type === 'trial' ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' } : CARD}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <p className="font-bold">{r.member_name}</p>
+                      <a href={`/admin/members/${r.member_id}/settings`} className="font-bold hover:underline">{r.member_name}</a>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.trainer_name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -362,9 +362,9 @@ export default function ReservationsPage() {
                         </span>
                         {res ? (
                           <div className="flex-1 flex items-center justify-between gap-2">
-                            <span className="text-sm font-bold truncate">
+                            <a href={`/admin/members/${res.member_id}/settings`} className="text-sm font-bold truncate hover:underline">
                               {res.member_name}
-                            </span>
+                            </a>
                             <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#1B3B2F' }}>{STATUS_MAP[res.status]}</span>
                           </div>
                         ) : closed ? (
@@ -395,9 +395,9 @@ export default function ReservationsPage() {
 
                 {selectedRes ? (
                   <div className="space-y-3">
-                    <p className="font-bold text-sm">
+                    <a href={`/admin/members/${selectedRes.member_id}/settings`} className="font-bold text-sm hover:underline">
                       {selectedRes.member_name}
-                    </p>
+                    </a>
                     <p className="text-xs font-bold px-2 py-1 rounded-lg inline-block" style={{ background: STATUS_COLOR[selectedRes.status], color: STATUS_TEXT[selectedRes.status] }}>
                       {STATUS_MAP[selectedRes.status]}
                     </p>

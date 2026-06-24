@@ -273,7 +273,7 @@ export default function AdminDashboard() {
     setModalData([])
     const supabase = createClient()
     let q = supabase.from('reservations')
-      .select('id, start_time, end_time, status, members(name, surname), trainers(name, surname)')
+      .select('id, start_time, end_time, status, member_id, members(name, surname), trainers(name, surname)')
       .eq('scheduled_date', selectedDate).in('status', ['pending','approved','completed']).order('start_time')
     if (key === 'completed') q = q.eq('status', 'completed')
     if (key === 'pending')   q = q.in('status', ['pending', 'approved'])
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
     setModalData((data ?? []).map((r: any) => {
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       const t = Array.isArray(r.trainers) ? r.trainers[0] : r.trainers
-      return { id: r.id, time: `${r.start_time?.substring(0,5)} – ${r.end_time?.substring(0,5)}`,
+      return { id: r.id, member_id: r.member_id, time: `${r.start_time?.substring(0,5)} – ${r.end_time?.substring(0,5)}`,
                member: m ? `${m.name} ${m.surname}` : 'Bilinmiyor',
                trainer: t ? `${t.name} ${t.surname}` : '—', status: r.status }
     }))
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
                   className="w-full rounded-2xl p-3 flex justify-between items-center text-left active:opacity-70"
                   style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.08)' }}>
                   <div>
-                    <p className="text-sm font-bold">{r.member}</p>
+                    <a href={`/admin/members/${r.member_id}/settings`} className="text-sm font-bold hover:underline">{r.member}</a>
                     <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.time} · {r.trainer}</p>
                   </div>
                   <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_COLOR[r.status] ?? '#1B3B2F' }}>
@@ -519,7 +519,7 @@ export default function AdminDashboard() {
                 <div key={i} className="rounded-2xl p-3 flex justify-between items-center"
                   style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.15)' }}>
                   <div>
-                    <p className="text-sm font-bold">{p.member_name}</p>
+                    <a href={`/admin/members/${p.member_id}/settings`} className="text-sm font-bold hover:underline">{p.member_name}</a>
                     <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{p.total_lessons} ders · {fmtDate(p.start_date)}</p>
                   </div>
                   <p className="text-sm font-bold" style={{ color: '#34d399' }}>{parseFloat(p.payment_amount).toLocaleString('tr-TR')}₺</p>
@@ -527,10 +527,10 @@ export default function AdminDashboard() {
               ))}
               {/* Gelen üye listesi */}
               {!genericLoading && genericModal.type === 'visit' && genericData.map((m, i) => (
-                <div key={i} className="rounded-2xl p-3"
+                <a key={i} href={`/admin/members/${m.id}/settings`} className="block rounded-2xl p-3 active:opacity-70"
                   style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}>
                   <p className="text-sm font-bold">{m.name}</p>
-                </div>
+                </a>
               ))}
             </div>
           </div>

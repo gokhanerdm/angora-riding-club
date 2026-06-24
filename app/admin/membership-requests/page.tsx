@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface Request {
-  id: string; member_name: string; member_email: string
+  id: string; member_id: string; member_name: string; member_email: string
   lesson_count: number; request_type: string; price: number
   status: string; created_at: string
 }
@@ -90,7 +90,7 @@ export default function MembershipRequestsPage() {
           <div key={r.id} className="rounded-2xl p-4" style={CARD}>
             <div className="flex justify-between items-start mb-3 gap-2">
               <div>
-                <p className="font-bold">{r.member_name}</p>
+                <a href={`/admin/members/${r.member_id}/settings`} className="font-bold hover:underline">{r.member_name}</a>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.member_email}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDate(r.created_at)}</p>
               </div>
@@ -121,7 +121,7 @@ export default function MembershipRequestsPage() {
         {processed.map(r => (
           <div key={r.id} className="rounded-2xl p-4 flex justify-between items-center" style={CARD}>
             <div>
-              <span className="font-bold">{r.member_name}</span>
+              <a href={`/admin/members/${r.member_id}/settings`} className="font-bold hover:underline">{r.member_name}</a>
               <span className="text-xs ml-3" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.lesson_count} Ders</span>
             </div>
             <span className="text-xs font-bold px-2 py-1 rounded-lg"

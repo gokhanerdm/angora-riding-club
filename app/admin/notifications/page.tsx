@@ -233,7 +233,7 @@ export default function NotificationsPage() {
                     {key === 'package_request' && (
                       packageRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen paket talebi yok.</p> :
                       packageRequests.map(r => (
-                        <Link key={r.id} href="/admin/membership-requests"
+                        <Link key={r.id} href={`/admin/members/${r.member_id}/settings`}
                           className="block rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
                           <p className="font-bold text-sm">{r.member_name}</p>
                           <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.member_email}</p>
@@ -247,7 +247,7 @@ export default function NotificationsPage() {
                       legacyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen eski üye kaydı yok.</p> :
                       legacyRequests.map(m => (
                         <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
-                          <p className="font-bold text-sm">{m.name} {m.surname}</p>
+                          <Link href={`/admin/members/${m.id}/settings`} className="font-bold text-sm hover:underline">{m.name} {m.surname}</Link>
                           <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email}</p>
                           <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(m.created_at)}</p>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -291,7 +291,7 @@ export default function NotificationsPage() {
                       familyRequests.length === 0 ? <p className="text-xs pt-3" style={{ color: 'rgba(27,59,47,0.55)' }}>Bekleyen aile üyesi talebi yok.</p> :
                       familyRequests.map(m => (
                         <div key={m.id} className="rounded-xl p-3 mt-3" style={{ background: 'rgba(27,59,47,0.04)' }}>
-                          <p className="font-bold text-sm">{m.name} {m.surname}</p>
+                          <Link href={`/admin/members/${m.id}/settings`} className="font-bold text-sm hover:underline">{m.name} {m.surname}</Link>
                           <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{m.email}</p>
                           <p className="text-xs mt-1" style={{ color: 'rgba(27,59,47,0.4)' }}>{formatDateTime(m.created_at)}</p>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
