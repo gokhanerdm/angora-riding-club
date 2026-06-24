@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LogoutButton from '@/components/logout-button'
 import { isSlotPast } from '@/lib/lessons/time'
@@ -114,6 +115,7 @@ export default function TrainerDashboardClient({
   const [closedSlots, setClosedSlots] = useState<Set<string>>(new Set())
   const [closedSlotNotes, setClosedSlotNotes] = useState<Record<string, string>>({})
   const [slotNoteInput, setSlotNoteInput] = useState('')
+  const router = useRouter()
   const [openExtraSlots, setOpenExtraSlots] = useState<Set<string>>(new Set())
   const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({})
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
@@ -443,24 +445,8 @@ export default function TrainerDashboardClient({
     setActionLoading(false)
   }
 
-  const handleMemberClick = async (member: Member) => {
-    setSelectedMember(member)
-    setSelectedMemberStats(null)
-    setMemberStatsLoading(true)
-    const supabase = createClient()
-    const { data } = await supabase.rpc('member_dashboard_stats', { user_id: member.user_id })
-    const stats = data?.[0]
-    if (stats) {
-      setSelectedMemberStats({
-        total_lessons: stats.total_lessons ?? 0,
-        used_lessons: stats.used_lessons ?? 0,
-        remaining_lessons: stats.remaining_lessons ?? 0,
-        reserved_lessons: stats.reserved_lessons ?? 0,
-      })
-    } else {
-      setSelectedMemberStats({ total_lessons: 0, used_lessons: 0, remaining_lessons: 0, reserved_lessons: 0 })
-    }
-    setMemberStatsLoading(false)
+  const handleMemberClick = (member: Member) => {
+    router.push(`/trainer/members/${member.id}/view`)
   }
 
   const saveShift = async (newShift: string) => {
