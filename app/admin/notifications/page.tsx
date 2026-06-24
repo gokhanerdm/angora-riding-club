@@ -146,10 +146,12 @@ export default function NotificationsPage() {
     }))
     setLegacyRequests(legacyData ?? [])
     // Deneme dersi: bekleyen paket talebi olanlar Yeni Üye Kaydı'na taşındığı için burada gösterilmez
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' })
     setTrialLessons((trialData ?? [])
       .filter((r: any) => {
         const m = Array.isArray(r.members) ? r.members[0] : r.members
         return !(m?.membership_requests ?? []).some((x: any) => x.status === 'pending')
+          && r.scheduled_date >= todayStr
       })
       .map((r: any) => {
         const m = Array.isArray(r.members) ? r.members[0] : r.members
