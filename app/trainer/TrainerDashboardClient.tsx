@@ -6,7 +6,7 @@ import LogoutButton from '@/components/logout-button'
 import { isSlotPast } from '@/lib/lessons/time'
 
 type Stats = { today_lessons: number; completed_lessons: number; monthly_reserved: number; next_month_reserved: number; monthly_prim: number }
-type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string; type: string }
+type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string; member_id: string; type: string }
 type Member = { id: string; user_id: string; name: string; surname: string; remaining_lessons: number }
 type MemberStats = { total_lessons: number; used_lessons: number; remaining_lessons: number; reserved_lessons: number }
 
@@ -149,7 +149,7 @@ export default function TrainerDashboardClient({
 
     const [{ data: resData }, { data: scheduleData }, { data: dailyShiftData }] = await Promise.all([
       supabase.from('reservations')
-        .select('id, start_time, end_time, status, type, members(name, surname)')
+        .select('id, start_time, end_time, status, type, member_id, members(name, surname)')
         .eq('trainer_id', trainerId)
         .eq('scheduled_date', dateKey)
         .neq('status', 'cancelled'),
@@ -171,7 +171,7 @@ export default function TrainerDashboardClient({
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       resMap[r.start_time] = {
         id: r.id, start_time: r.start_time, end_time: r.end_time,
-        status: r.status, type: r.type, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor'
+        status: r.status, type: r.type, member_id: r.member_id, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor'
       }
     }
 
@@ -783,7 +783,7 @@ export default function TrainerDashboardClient({
                   const isFuture  = !isOrange && !isNoShow && currentStatus !== 'cancelled'
                   return (
                     <div className="space-y-2">
-                      <p className="font-bold">{selectedRes.member_name}</p>
+                      <a href={`/admin/members/${selectedRes.member_id}/settings`} className="font-bold hover:underline">{selectedRes.member_name}</a>
                       <p className="text-xs mb-1" style={{ color: isNoShow ? '#f87171' : isOrange ? '#f59e0b' : 'rgba(27,59,47,0.55)' }}>
                         {isNoShow ? 'Gelmedi' : isOrange ? 'Ders saati geldi' : 'Onaylı'}
                       </p>
