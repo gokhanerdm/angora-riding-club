@@ -405,22 +405,22 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div
             className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '70vh', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#FBFBFB', maxHeight: '70vh', border: '1px solid rgba(27,59,47,0.12)' }}
           >
             {/* Modal header */}
-            <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-[#1B3B2F]">
                   {selectedDate && formatDisplayDate(selectedDate)}
                 </h3>
                 {slots.length > 0 && (
-                  <p className="text-xs mt-0.5" style={{ color: '#7b93c4' }}>{slots[0].trainer_name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{slots[0].trainer_name}</p>
                 )}
               </div>
               <button
                 onClick={() => { setModalOpen(false); setConfirmSlot(null) }}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
               >✕</button>
             </div>
 
@@ -439,10 +439,10 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                 </div>
               )}
 
-              {loading && <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Yükleniyor...</p>}
+              {loading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
 
               {!loading && slots.length === 0 && (
-                <p className="text-center py-8 text-sm" style={{ color: '#7b93c4' }}>Bu tarihte müsait ders bulunamadı.</p>
+                <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Bu tarihte müsait ders bulunamadı.</p>
               )}
 
               {!loading && slots.length > 0 && (
@@ -462,7 +462,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
                           className="w-full rounded-xl py-2 px-2 text-left transition-opacity disabled:cursor-default active:opacity-70"
                           style={{ background: st.bg, border: isAdmin && isClosedSlot ? '1px solid rgba(248,113,113,0.3)' : st.border }}
                         >
-                          <p className="text-sm font-bold text-white">
+                          <p className="text-sm font-bold text-[#1B3B2F]">
                             {slot.slot_time.substring(0,5)} – {slotEnd(slot.slot_time)}
                           </p>
                           <p className="text-xs font-bold mt-0.5" style={{ color: isAdmin && isClosedSlot ? '#f87171' : st.color }}>
@@ -490,10 +490,10 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
       {/* Slot aç/kapat modal (admin) */}
       {toggleSlot && (
         <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <p className="text-white font-bold text-base mb-1">{toggleSlot.trainer_name}</p>
-            <p className="text-sm mb-1" style={{ color: '#7b93c4' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
+            <p className="font-bold text-base mb-1 text-[#1B3B2F]">{toggleSlot.trainer_name}</p>
+            <p className="text-sm mb-1" style={{ color: 'rgba(27,59,47,0.55)' }}>
               {selectedDate && formatDisplayDate(selectedDate)} · {toggleSlot.slot_time.substring(0,5)} – {slotEnd(toggleSlot.slot_time)}
             </p>
             <p className="text-sm font-bold mb-6" style={{ color: toggleSlot.slot_status === 'closed' ? '#34d399' : '#f87171' }}>
@@ -501,7 +501,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
             </p>
             <div className="flex gap-3">
               <button onClick={() => setToggleSlot(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={handleToggleSlot} disabled={toggleSaving}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
                 style={toggleSlot.slot_status === 'closed'
@@ -517,15 +517,15 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
       {/* Geçmiş ders ekleme seçimi */}
       {pastSlot && (
         <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <p className="text-white font-bold text-base mb-1">{pastSlot.trainer_name}</p>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>
+          <div className="w-full rounded-t-3xl p-6 pb-32" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
+            <p className="font-bold text-base mb-1 text-[#1B3B2F]">{pastSlot.trainer_name}</p>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>
               {selectedDate && formatDisplayDate(selectedDate)} · {pastSlot.slot_time.substring(0,5)} – {slotEnd(pastSlot.slot_time)}
             </p>
             <div className="flex gap-3">
               <button onClick={() => setPastSlot(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={() => savePastLesson('no_show')} disabled={pastSaving}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-40"
                 style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
@@ -546,29 +546,29 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
         <div className="fixed inset-0 z-[60] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div
             className="w-full rounded-t-3xl p-6"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}
+            style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}
           >
-            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(255,255,255,0.15)' }} />
-            <h3 className="text-lg font-bold text-white mb-4">Ders Al</h3>
+            <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(27,59,47,0.12)' }} />
+            <h3 className="text-lg font-bold text-[#1B3B2F] mb-4">Ders Al</h3>
 
-            <div className="rounded-2xl p-4 mb-5 space-y-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="rounded-2xl p-4 mb-5 space-y-2" style={{ background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.10)' }}>
               <div className="flex items-center gap-3">
                 <span className="text-xl">📅</span>
-                <span className="text-sm font-bold text-white">{formatDisplayDate(selectedDate)}</span>
+                <span className="text-sm font-bold text-[#1B3B2F]">{formatDisplayDate(selectedDate)}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xl">⏰</span>
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-[#1B3B2F]">
                   {confirmSlot.slot_time.substring(0,5)} – {slotEnd(confirmSlot.slot_time)}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xl">👤</span>
-                <span className="text-sm font-bold text-white">{confirmSlot.trainer_name}</span>
+                <span className="text-sm font-bold text-[#1B3B2F]">{confirmSlot.trainer_name}</span>
               </div>
             </div>
 
-            <p className="text-sm mb-6 text-center" style={{ color: '#7b93c4' }}>
+            <p className="text-sm mb-6 text-center" style={{ color: 'rgba(27,59,47,0.55)' }}>
               Bu dersi almak istiyor musunuz?
             </p>
 
@@ -576,7 +576,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
               <button
                 onClick={() => setConfirmSlot(null)}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: '#7b93c4' }}
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
               >
                 Vazgeç
               </button>
