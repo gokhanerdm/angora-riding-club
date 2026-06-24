@@ -6,7 +6,7 @@ import LogoutButton from '@/components/logout-button'
 import { isSlotPast } from '@/lib/lessons/time'
 
 type Stats = { today_lessons: number; completed_lessons: number; monthly_reserved: number; next_month_reserved: number; monthly_prim: number }
-type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string }
+type Reservation = { id: string; start_time: string; end_time: string; status: string; member_name: string; type: string }
 type Member = { id: string; user_id: string; name: string; surname: string; remaining_lessons: number }
 type MemberStats = { total_lessons: number; used_lessons: number; remaining_lessons: number; reserved_lessons: number }
 
@@ -149,7 +149,7 @@ export default function TrainerDashboardClient({
 
     const [{ data: resData }, { data: scheduleData }, { data: dailyShiftData }] = await Promise.all([
       supabase.from('reservations')
-        .select('id, start_time, end_time, status, members(name, surname)')
+        .select('id, start_time, end_time, status, type, members(name, surname)')
         .eq('trainer_id', trainerId)
         .eq('scheduled_date', dateKey)
         .neq('status', 'cancelled'),
@@ -171,7 +171,7 @@ export default function TrainerDashboardClient({
       const m = Array.isArray(r.members) ? r.members[0] : r.members
       resMap[r.start_time] = {
         id: r.id, start_time: r.start_time, end_time: r.end_time,
-        status: r.status, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor'
+        status: r.status, type: r.type, member_name: m ? `${m.name} ${m.surname}` : 'Bilinmiyor'
       }
     }
 
@@ -722,7 +722,13 @@ export default function TrainerDashboardClient({
                       {formatTime(slot)} – {formatTime(addHalfHour(slot))}
                     </span>
                     {subText && (
-                      <span className="text-[10px] font-medium truncate ml-1" style={{ color: subColor, maxWidth: '45%' }}>{subText}</span>
+                      <span className="text-[10px] font-medium truncate ml-1 flex items-center gap-1" style={{ color: subColor, maxWidth: '50%' }}>
+                        {res?.type === 'trial' && (
+                          <span className="px-1 py-0.5 rounded font-bold text-[9px] flex-shrink-0"
+                            style={{ background: 'rgba(245,158,11,0.3)', color: '#f59e0b' }}>DD</span>
+                        )}
+                        {subText}
+                      </span>
                     )}
                   </button>
                 )
