@@ -173,13 +173,22 @@ export default function AdminDashboard() {
     // Üyeler (raw)
     supabase.from('members').select('id, name, surname, email, created_at, member_status').is('deleted_at', null).then(async ({ data: allMems }) => {
       const mems = allMems ?? []
-      const { data: allMemberships } = await supabase.from('memberships').select('member_id, start_date')
-        .in('member_id', mems.map(m => m.id))
+      const memberIds = mems.map(m => m.id)
+      const [{ data: allMemberships }, { data: allReservations }] = await Promise.all([
+        supabase.from('memberships').select('member_id, start_date').in('member_id', memberIds),
+        supabase.from('reservations').select('member_id, scheduled_date').eq('status', 'completed').in('member_id', memberIds),
+      ])
       const firstStartDate = new Map<string, string>()
       for (const ms of allMemberships ?? []) {
         if (!ms.start_date) continue
         const cur = firstStartDate.get(ms.member_id)
         if (!cur || ms.start_date < cur) firstStartDate.set(ms.member_id, ms.start_date)
+      }
+      // En erken tamamlanan rezervasyon start_date'ten önceyse onu kullan
+      for (const r of allReservations ?? []) {
+        if (!r.scheduled_date) continue
+        const cur = firstStartDate.get(r.member_id)
+        if (!cur || r.scheduled_date < cur) firstStartDate.set(r.member_id, r.scheduled_date)
       }
       const realMembers = mems
         .filter(m => firstStartDate.has(m.id) || m.member_status === 'active')
