@@ -243,11 +243,11 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
         <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div
             className="w-full rounded-t-3xl p-6"
-            style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}
           >
-            <h3 className="text-lg font-bold text-white mb-1">Ders Durumu</h3>
-            <p className="font-bold mb-0.5" style={{ color: '#c8d6f0' }}>{attendanceModal.memberName}</p>
-            <p className="text-sm mb-6" style={{ color: '#7b93c4' }}>
+            <h3 className="text-lg font-bold text-[#1B3B2F] mb-1">Ders Durumu</h3>
+            <p className="font-bold mb-0.5" style={{ color: '#1B3B2F' }}>{attendanceModal.memberName}</p>
+            <p className="text-sm mb-6" style={{ color: 'rgba(27,59,47,0.55)' }}>
               {attendanceModal.date} — {attendanceModal.time.substring(0,5)}
             </p>
             <div className="mb-3">
@@ -263,7 +263,7 @@ export default function TrainerScheduleClient({ trainerId, days, closedSlots, re
             <button
               onClick={() => setAttendanceModal(null)}
               className="w-full py-2 text-sm font-bold rounded-2xl"
-              style={{ background: 'rgba(255,255,255,0.06)', color: '#7b93c4' }}
+              style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
             >
               İptal
             </button>

@@ -442,13 +442,13 @@ export default function AdminDashboard() {
       {activeCard && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.10)' }}>
+            style={{ background: '#FBFBFB', maxHeight: '75vh', border: '1px solid rgba(27,59,47,0.12)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
               <h3 className="text-base font-bold">{MODAL_TITLE[activeCard]}</h3>
               <button onClick={() => setActiveCard(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-4 space-y-2">
               {modalLoading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
@@ -478,13 +478,13 @@ export default function AdminDashboard() {
       {genericModal && (
         <div className="fixed inset-0 z-[70] flex items-end" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="w-full rounded-t-3xl flex flex-col"
-            style={{ background: '#0d1b4b', maxHeight: '75vh', border: '1px solid rgba(255,255,255,0.10)' }}>
+            style={{ background: '#FBFBFB', maxHeight: '75vh', border: '1px solid rgba(27,59,47,0.12)' }}>
             <div className="flex justify-between items-center px-5 py-4 flex-shrink-0"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ borderBottom: '1px solid rgba(27,59,47,0.10)' }}>
               <h3 className="text-base font-bold">{genericModal.title}</h3>
               <button onClick={() => setGenericModal(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
-                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>✕</button>
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-4 space-y-2">
               {genericLoading && <p className="text-center py-8 text-sm" style={{ color: 'rgba(27,59,47,0.55)' }}>Yükleniyor...</p>}
@@ -540,8 +540,8 @@ export default function AdminDashboard() {
       {/* Düzenleme modalı */}
       {editItem && (
         <div className="fixed inset-0 z-[80] flex items-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="w-full rounded-t-3xl p-6" style={{ background: '#0d1b4b', border: '1px solid rgba(255,255,255,0.10)' }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="w-full rounded-t-3xl p-6" style={{ background: '#FBFBFB', border: '1px solid rgba(27,59,47,0.12)' }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(27,59,47,0.12)' }} />
             <h3 className="text-base font-bold mb-1">{editItem.member}</h3>
             <p className="text-xs mb-4" style={{ color: 'rgba(27,59,47,0.55)' }}>{editItem.time} · {editItem.trainer}</p>
             <div className="space-y-3 mb-4">
@@ -564,7 +564,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setEditItem(null)} className="flex-1 py-3 rounded-2xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
+                style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}>Vazgeç</button>
               <button onClick={() => handleDeleteRes(editItem.id)} className="py-3 px-4 rounded-2xl font-bold text-sm"
                 style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}>Sil</button>
               <button onClick={handleEditRes} disabled={editSaving} className="flex-1 py-3 rounded-2xl font-bold text-sm disabled:opacity-50"
