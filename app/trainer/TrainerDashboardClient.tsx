@@ -783,7 +783,7 @@ export default function TrainerDashboardClient({
                   const isFuture  = !isOrange && !isNoShow && currentStatus !== 'cancelled'
                   return (
                     <div className="space-y-2">
-                      <a href={`/admin/members/${selectedRes.member_id}/settings`} className="font-bold hover:underline">{selectedRes.member_name}</a>
+                      <a href={`/admin/members/${selectedRes.member_id}/view`} className="font-bold hover:underline">{selectedRes.member_name}</a>
                       <p className="text-xs mb-1" style={{ color: isNoShow ? '#f87171' : isOrange ? '#f59e0b' : 'rgba(27,59,47,0.55)' }}>
                         {isNoShow ? 'Gelmedi' : isOrange ? 'Ders saati geldi' : 'Onaylı'}
                       </p>

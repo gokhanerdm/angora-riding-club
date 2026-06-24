@@ -275,7 +275,7 @@ export default function ReservationsPage() {
                 <div key={r.id} className="rounded-2xl p-4" style={r.type === 'trial' ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' } : CARD}>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <a href={`/admin/members/${r.member_id}/settings`} className="font-bold hover:underline">{r.member_name}</a>
+                      <a href={`/admin/members/${r.member_id}/view`} className="font-bold hover:underline">{r.member_name}</a>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(27,59,47,0.55)' }}>{r.trainer_name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -362,7 +362,7 @@ export default function ReservationsPage() {
                         </span>
                         {res ? (
                           <div className="flex-1 flex items-center justify-between gap-2">
-                            <a href={`/admin/members/${res.member_id}/settings`} className="text-sm font-bold truncate hover:underline">
+                            <a href={`/admin/members/${res.member_id}/view`} className="text-sm font-bold truncate hover:underline">
                               {res.member_name}
                             </a>
                             <span className="text-xs font-bold flex-shrink-0" style={{ color: STATUS_TEXT[res.status] ?? '#1B3B2F' }}>{STATUS_MAP[res.status]}</span>
@@ -395,7 +395,7 @@ export default function ReservationsPage() {
 
                 {selectedRes ? (
                   <div className="space-y-3">
-                    <a href={`/admin/members/${selectedRes.member_id}/settings`} className="font-bold text-sm hover:underline">
+                    <a href={`/admin/members/${selectedRes.member_id}/view`} className="font-bold text-sm hover:underline">
                       {selectedRes.member_name}
                     </a>
                     <p className="text-xs font-bold px-2 py-1 rounded-lg inline-block" style={{ background: STATUS_COLOR[selectedRes.status], color: STATUS_TEXT[selectedRes.status] }}>
