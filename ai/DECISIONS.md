@@ -63,3 +63,16 @@ UI/TypeScript etkileyen hiçbir iş, build/typecheck ve deploy doğrulaması yap
 
 Çıkarılan Ders:
 Kod değişmiş olabilir ama production güncellenmemiş olabilir. "Bitti" demek için sadece kodun yazılması değil, build'in geçmesi ve canlıda doğrulanması gerekir.
+
+### Öğrenme Kaydı #4 — Metrik Ground-Truth Doğrulama
+
+Tarih: 2026-06-25
+
+Olay:
+Gelen Üye metriği ekranda yanlış gösteriyordu, sistem bunu yakalayamadı çünkü Reviewer/Security sadece kod değişikliğini denetliyordu, veri doğruluğunu denetlemiyordu. Bu yüzden Reviewer'a ground-truth doğrulama kuralı eklendi.
+
+Kalıcı Karar:
+Ekranda gösterilen her sayı/metrik/toplam, DB'den doğrudan sorguyla alınan ground truth ile karşılaştırılmadan onaylanmaz.
+
+Çıkarılan Ders:
+"Kod doğru" ile "gösterilen sayı doğru" aynı şey değildir. Client-side dedup/limit/filtre, kod hatasız olsa bile yanlış sayı üretebilir; tek güvenilir kontrol DB'deki gerçek değerle karşılaştırmaktır.

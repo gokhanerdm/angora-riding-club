@@ -37,6 +37,9 @@ Her kod değişikliği tesliminde Reviewer bu listeyi uygular.
 - [ ] Deploy sonrası canlı ortamın güncellendiği doğrulanmalı
 - [ ] Vercel build failed ise iş tamamlandı sayılmaz
 
+### Metrik / Ground-Truth (sayı/sayaç/toplam değişikliğinde zorunlu)
+- [ ] Yeni veya değişen her metrik/sayaç/toplam için: DB'den doğrudan sorguyla ground truth alınır, ekrandaki değerle karşılaştırılır, eşleşmiyorsa onay verilmez.
+
 ---
 
 ## Kalite Kontrolleri (Bunlar öneri, zorunlu değil)

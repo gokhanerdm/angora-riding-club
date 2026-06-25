@@ -26,6 +26,9 @@ Detaylı kontrol için bkz. `/ai/REVIEW_CHECKLIST.md`
 ### Build/Deploy Kuralı
 - UI veya TypeScript etkileyen her değişiklikte build/typecheck geçmeden onay verilmez.
 
+### Metrik / Ground-Truth Kuralı
+- Bir ekranda sayı/metrik/toplam gösteriliyorsa, bu değer DB'den ground truth ile karşılaştırılmadan onaylanmaz. Client-side dedup/limit/filtre varsa, bunun SQL tarafındaki gerçek sayıyla tutarlı olduğu doğrulanır.
+
 ## Karar Yetkisi
 - Onay: değişiklik production'a hazır
 - Revizyon: Developer'a geri gönder, neyi değiştirmesi gerektiğini söyle
