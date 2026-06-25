@@ -216,7 +216,7 @@ export default function AdminDashboard() {
       })
 
     // Tamamlanan dersler (raw — gelen üye için)
-    supabase.from('reservations').select('member_id, scheduled_date, members(name, surname)').eq('status', 'completed')
+    supabase.from('reservations').select('member_id, scheduled_date, members(name, surname)').eq('status', 'completed').order('scheduled_date', { ascending: false }).limit(5000)
       .then(({ data: allCompleted }) => {
         const all = allCompleted ?? []
         const toMemList = (rows: any[]) => {
