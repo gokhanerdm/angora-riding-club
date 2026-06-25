@@ -44,7 +44,7 @@ BEGIN
   END IF;
 
   IF NOT FOUND THEN
-    RAISE EXCEPTION 'Bu tarih icin aktif uyelik paketi bulunamadi. Lutfen ders tarihini veya uyelik paketini kontrol edin.';
+    RAISE EXCEPTION 'Paketin suresi bitmistir, lutfen yenileyiniz.';
   END IF;
 
   v_status := CASE
