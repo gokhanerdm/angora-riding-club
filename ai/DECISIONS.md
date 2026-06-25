@@ -46,3 +46,20 @@ Bu kasıtlı bir iş kuralıdır, bug değildir.
 **Etki:** `mark_attendance` RPC'sinde `used_lessons` decrement'i yalnızca
 `approved`/`pending` durumundan geçişte çalışır; `completed`'dan geçişte bilinçli olarak
 çalışmaz. Bu davranışı "düzeltilmesi gereken hata" olarak ele alma.
+
+---
+
+## Öğrenme Kayıtları
+
+### Öğrenme Kaydı #3 — Build/Deploy Doğrulama
+
+Tarih: 2026-06-25
+
+Olay:
+Frontend build kırıldığı için production uzun süre eski sürümde kalmıştı. DB güncellemeleri canlıydı ama UI deploy edilemiyordu.
+
+Kalıcı Karar:
+UI/TypeScript etkileyen hiçbir iş, build/typecheck ve deploy doğrulaması yapılmadan tamamlanmış sayılmaz.
+
+Çıkarılan Ders:
+Kod değişmiş olabilir ama production güncellenmemiş olabilir. "Bitti" demek için sadece kodun yazılması değil, build'in geçmesi ve canlıda doğrulanması gerekir.
