@@ -368,7 +368,7 @@ export default function MemberDashboardClient({
 
       {/* Calendar */}
       <div className="flex-1 px-2">
-        <ReservationCalendar overrideUserId={adminMemberId ? userId : undefined} isAdmin={!!adminMemberId} />
+        <ReservationCalendar overrideUserId={adminMemberId ? userId : undefined} />
       </div>
 
       {/* Profil bilgileri modalı */}
