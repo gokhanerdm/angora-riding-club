@@ -70,8 +70,6 @@ export default function AdminDashboard() {
   // Ham veriler (modal için)
   const [rawRealMembers,    setRawRealMembers]    = useState<any[]>([])
   const [rawPackages,       setRawPackages]       = useState<any[]>([])
-  const [rawVisits,         setRawVisits]         = useState<{ today: any[]; week: any[]; month: any[]; total: any[] }>({ today: [], week: [], month: [], total: [] })
-  const [allCompletedRaw,   setAllCompletedRaw]   = useState<any[]>([])
   const [rawTrials,         setRawTrials]         = useState<any[]>([])
   const [rawTrialMembers,   setRawTrialMembers]   = useState<any[]>([])
 
@@ -129,7 +127,25 @@ export default function AdminDashboard() {
     }
 
     if (type === 'visit' && period !== 'year') {
-      setGenericData(rawVisits[period as 'today' | 'week' | 'month' | 'total'])
+      const cutoff = period === 'today' ? selectedDate
+        : period === 'week' ? weekStart
+        : period === 'month' ? monthStart
+        : '2000-01-01'
+      const { data: rows } = await supabase.from('reservations')
+        .select('member_id, scheduled_date, members(name, surname)')
+        .eq('status', 'completed')
+        .gte('scheduled_date', cutoff)
+        .lte('scheduled_date', selectedDate)
+        .order('scheduled_date', { ascending: false })
+        .limit(5000)
+      const seen = new Map<string, string>()
+      for (const r of rows ?? []) {
+        if (!seen.has((r as any).member_id)) {
+          const m = Array.isArray((r as any).members) ? (r as any).members[0] : (r as any).members
+          seen.set((r as any).member_id, m ? `${m.name} ${m.surname}` : '—')
+        }
+      }
+      setGenericData([...seen.entries()].map(([id, name]) => ({ id, name })))
     }
 
     if (type === 'trial') {
@@ -147,11 +163,22 @@ export default function AdminDashboard() {
 
   const INPUT_S = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
-  // ---- Auto complete ----
+  // ---- Auto complete (önce çalışsın; gelen-üye sayıları bundan SONRA okunmalı) ----
+  const [autoCompleteDone, setAutoCompleteDone] = useState(false)
   useEffect(() => {
     const supabase = createClient()
-    void supabase.rpc('auto_complete_past_lessons')
+    supabase.rpc('auto_complete_past_lessons').then(() => setAutoCompleteDone(true))
   }, [])
+
+  // ---- Gelen Üye sayıları — tek kaynak: get_admin_visit_stats RPC (cap/dedup/yarış yok) ----
+  useEffect(() => {
+    if (!autoCompleteDone) return
+    const supabase = createClient()
+    supabase.rpc('get_admin_visit_stats', { p_date: selectedDate }).then(({ data }) => {
+      const row: any = Array.isArray(data) ? data[0] : data
+      if (row) setVisitStats({ today: row.today, week: row.week, month: row.month, total: row.total })
+    })
+  }, [selectedDate, autoCompleteDone])
 
   // ---- Ham veri yükle (bir kez) ----
   useEffect(() => {
@@ -214,30 +241,6 @@ export default function AdminDashboard() {
         }
         setRawTrialMembers([...seen.entries()].map(([id, name]) => ({ id, name })))
       })
-
-    // Tamamlanan dersler (raw — gelen üye için)
-    supabase.from('reservations').select('member_id, scheduled_date, members(name, surname)').eq('status', 'completed').order('scheduled_date', { ascending: false }).limit(5000)
-      .then(({ data: allCompleted }) => {
-        const all = allCompleted ?? []
-        const toMemList = (rows: any[]) => {
-          const seen = new Map<string, string>()
-          for (const r of rows) {
-            if (!seen.has(r.member_id)) {
-              const m = Array.isArray(r.members) ? r.members[0] : r.members
-              seen.set(r.member_id, m ? `${m.name} ${m.surname}` : '—')
-            }
-          }
-          return [...seen.entries()].map(([id, name]) => ({ id, name }))
-        }
-        setRawVisits({
-          today: toMemList(all), // placeholder, filtreleme selectedDate effect'inde
-          week:  toMemList(all),
-          month: toMemList(all),
-          total: toMemList(all),
-        })
-        // raw tüm completed rezervasyonları sakla
-        setAllCompletedRaw(all)
-      })
   }, [])
 
   // ---- Seçili tarihe göre istatistikleri yeniden hesapla ----
@@ -263,31 +266,6 @@ export default function AdminDashboard() {
       total: sum(rawPackages.filter(p => p.start_date <= selectedDate)),
     })
 
-    // Gelen üye istatistikleri
-    if (allCompletedRaw.length > 0) {
-      const toMemList = (rows: any[]) => {
-        const seen = new Map<string, string>()
-        for (const r of rows) {
-          if (!seen.has(r.member_id)) {
-            const m = Array.isArray(r.members) ? r.members[0] : r.members
-            seen.set(r.member_id, m ? `${m.name} ${m.surname}` : '—')
-          }
-        }
-        return [...seen.entries()].map(([id, name]) => ({ id, name }))
-      }
-      const todayRows  = allCompletedRaw.filter(r => r.scheduled_date === selectedDate)
-      const weekRows   = allCompletedRaw.filter(r => r.scheduled_date >= weekStart && r.scheduled_date <= selectedDate)
-      const monthRows  = allCompletedRaw.filter(r => r.scheduled_date >= monthStart && r.scheduled_date <= selectedDate)
-      const visits = {
-        today: toMemList(todayRows),
-        week:  toMemList(weekRows),
-        month: toMemList(monthRows),
-        total: toMemList(allCompletedRaw.filter(r => r.scheduled_date <= selectedDate)),
-      }
-      setRawVisits(visits)
-      setVisitStats({ today: visits.today.length, week: visits.week.length, month: visits.month.length, total: visits.total.length })
-    }
-
     // Deneme dersi istatistikleri
     if (rawTrials.length > 0 || rawTrialMembers.length >= 0) {
       setTrialStats({
@@ -297,7 +275,7 @@ export default function AdminDashboard() {
         membership: rawTrialMembers.length,
       })
     }
-  }, [selectedDate, rawRealMembers, rawPackages, allCompletedRaw, rawTrials, rawTrialMembers])
+  }, [selectedDate, rawRealMembers, rawPackages, rawTrials, rawTrialMembers])
 
   // ---- Ders istatistikleri (seçili güne göre) ----
   useEffect(() => {
