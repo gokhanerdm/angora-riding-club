@@ -200,13 +200,22 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
   const handleSlotClick = (slot: TimeSlot) => {
     const slotIsPast = isSlotPast(selectedDate, slot.slot_time)
 
-    // Admin + geçmiş slot + boş → Tamamlandı/Gelmedi seçimi
-    if (isAdmin && slotIsPast && (slot.slot_status === 'available' || slot.slot_status === 'past')) {
+    // Admin + geçmiş slot (yerel saate göre) + dolu değil → Tamamlandı/Gelmedi seçimi
+    if (isAdmin && slotIsPast && !['reserved', 'closed', 'own_reservation', 'own_completed', 'own_no_show'].includes(slot.slot_status)) {
       setPastSlot(slot)
       return
     }
 
-    // Tıklanamaz
+    // Admin + gelecek slot (yerel saate göre) + dolu değil → rezervasyon
+    if (isAdmin && !slotIsPast && !['reserved', 'closed', 'own_reservation'].includes(slot.slot_status)) {
+      setModalOpen(false)
+      setConfirmSlot(slot)
+      setBookingState('idle')
+      setBookingMsg('')
+      return
+    }
+
+    // Üye: sadece available slotları alabililir
     if (slot.slot_status !== 'available') return
 
     setModalOpen(false)
