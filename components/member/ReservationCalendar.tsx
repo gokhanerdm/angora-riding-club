@@ -209,6 +209,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
     // Tıklanamaz
     if (slot.slot_status !== 'available') return
 
+    setModalOpen(false)
     setConfirmSlot(slot)
     setBookingState('idle')
     setBookingMsg('')
@@ -574,7 +575,7 @@ export default function ReservationCalendar({ overrideUserId }: { overrideUserId
 
             <div className="flex gap-3">
               <button
-                onClick={() => setConfirmSlot(null)}
+                onClick={() => { setConfirmSlot(null); setModalOpen(true) }}
                 className="flex-1 py-3 rounded-2xl font-bold text-sm"
                 style={{ background: 'rgba(27,59,47,0.06)', color: 'rgba(27,59,47,0.55)' }}
               >
