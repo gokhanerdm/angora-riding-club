@@ -76,3 +76,12 @@ Ekranda gösterilen her sayı/metrik/toplam, DB'den doğrudan sorguyla alınan g
 
 Çıkarılan Ders:
 "Kod doğru" ile "gösterilen sayı doğru" aynı şey değildir. Client-side dedup/limit/filtre, kod hatasız olsa bile yanlış sayı üretebilir; tek güvenilir kontrol DB'deki gerçek değerle karşılaştırmaktır.
+
+---
+
+## Bilinen Teknik Borç
+
+### auto_complete_past_lessons concurrency-safe değil
+Tarih: 2026-06-26
+
+`auto_complete_past_lessons` birden fazla yerden çağrılabiliyor ve concurrency-safe değil (cursor'da kilit yok, UPDATE'te durum yeniden kontrol edilmiyor). İki paralel çağrı aynı bekleyen dersi commit'ten önce görüp ikisi de tamamlarsa `used_lessons` çift artabilir. İleride `FOR UPDATE SKIP LOCKED` (veya UPDATE'e `AND status IN ('approved','pending')` guard'ı) ile kökten düzeltilmeli. Şimdilik tekil çağrı noktasına indirgendi (yalnızca `get_admin_visit_stats` içinden çağrılıyor; admin anasayfadaki ayrı mount tetiklemesi kaldırıldı).

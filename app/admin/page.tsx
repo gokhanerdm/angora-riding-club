@@ -163,22 +163,17 @@ export default function AdminDashboard() {
 
   const INPUT_S = { background: 'rgba(27,59,47,0.04)', border: '1px solid rgba(27,59,47,0.15)', color: '#1B3B2F' }
 
-  // ---- Auto complete (önce çalışsın; gelen-üye sayıları bundan SONRA okunmalı) ----
-  const [autoCompleteDone, setAutoCompleteDone] = useState(false)
+  // ---- Gelen Üye sayıları — tek kaynak: get_admin_visit_stats RPC ----
+  // RPC kendi içinde auto_complete_past_lessons çağırır; ayrı bir mount tetiklemesi yok —
+  // iki paralel auto_complete çağrısı used_lessons'ı çift sayabiliyordu.
   useEffect(() => {
     const supabase = createClient()
-    supabase.rpc('auto_complete_past_lessons').then(() => setAutoCompleteDone(true))
-  }, [])
-
-  // ---- Gelen Üye sayıları — tek kaynak: get_admin_visit_stats RPC (cap/dedup/yarış yok) ----
-  useEffect(() => {
-    if (!autoCompleteDone) return
-    const supabase = createClient()
-    supabase.rpc('get_admin_visit_stats', { p_date: selectedDate }).then(({ data }) => {
+    supabase.rpc('get_admin_visit_stats', { p_date: selectedDate }).then(({ data, error }) => {
+      if (error) { console.error('get_admin_visit_stats hatası:', error.message); return }
       const row: any = Array.isArray(data) ? data[0] : data
       if (row) setVisitStats({ today: row.today, week: row.week, month: row.month, total: row.total })
     })
-  }, [selectedDate, autoCompleteDone])
+  }, [selectedDate])
 
   // ---- Ham veri yükle (bir kez) ----
   useEffect(() => {
