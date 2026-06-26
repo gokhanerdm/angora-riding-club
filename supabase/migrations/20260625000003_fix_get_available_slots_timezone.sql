@@ -1,5 +1,6 @@
--- get_available_slots: CURRENT_TIME + '7 hours' yerine Istanbul timezone kullan
--- UTC+3 olan Istanbul icin +7 saat yanlistı; tum bugunun slotlari 'past' gorünuyordu
+-- get_available_slots: CURRENT_TIME + '7 hours' yerine Istanbul timezone + 4 saat buffer
+-- Eski +7 saat: UTC_simdi + 7 = Istanbul_simdi + 4 (4 saatlik on rezervasyon kurali)
+-- Yeni: Istanbul timezone'u dogru kullan + 4 saat buffer ekle
 CREATE OR REPLACE FUNCTION public.get_available_slots(user_id uuid, selected_date date)
 RETURNS TABLE(trainer_id uuid, trainer_name text, slot_time time without time zone, is_available boolean, slot_status text)
 LANGUAGE plpgsql
@@ -89,7 +90,7 @@ BEGIN
     trainer_record.tname,
     s.st,
     (
-      (selected_date > CURRENT_DATE OR (selected_date = CURRENT_DATE AND s.st > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Istanbul')::time))
+      (selected_date > CURRENT_DATE OR (selected_date = CURRENT_DATE AND s.st > ((CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Istanbul')::time + INTERVAL '4 hours')))
       AND NOT EXISTS (SELECT 1 FROM reservations r WHERE r.trainer_id = trainer_record.tid AND r.scheduled_date = selected_date AND r.start_time = s.st AND r.status != 'cancelled')
       AND NOT EXISTS (SELECT 1 FROM trainer_schedules ts WHERE ts.trainer_id = trainer_record.tid AND ts.scheduled_date = selected_date AND ts.start_time = s.st AND ts.is_available = false)
     )::boolean,
@@ -110,7 +111,7 @@ BEGIN
         WHERE r.trainer_id = trainer_record.tid AND r.scheduled_date = selected_date
           AND r.start_time = s.st AND r.status != 'cancelled'
       ) THEN 'reserved'
-      WHEN NOT (selected_date > CURRENT_DATE OR (selected_date = CURRENT_DATE AND s.st > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Istanbul')::time))
+      WHEN NOT (selected_date > CURRENT_DATE OR (selected_date = CURRENT_DATE AND s.st > ((CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Istanbul')::time + INTERVAL '4 hours')))
         THEN 'past'
       ELSE 'available'
     END
