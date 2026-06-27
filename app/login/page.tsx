@@ -57,22 +57,38 @@ export default function LoginPage() {
     }
   };
 
+  const sendResetLink = async (targetEmail: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    });
+    if (error) setResetErr("Gönderilemedi. Email adresini kontrol et.");
+    else setResetMsg("Şifre sıfırlama linki emailine gönderildi.");
+  };
+
+  // "Şifremi Unuttum" — login alanında email doluysa direkt gönder, boşsa modal aç
+  const handleForgotClick = async () => {
+    setResetErr("");
+    setResetMsg("");
+    if (email.trim()) {
+      setForgotOpen(true);
+      setResetEmail(email);
+      setResetLoading(true);
+      await sendResetLink(email.trim());
+      setResetLoading(false);
+    } else {
+      setForgotOpen(true);
+      setResetEmail("");
+    }
+  };
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetLoading(true);
     setResetErr("");
     setResetMsg("");
-
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-    });
-
+    await sendResetLink(resetEmail);
     setResetLoading(false);
-    if (error) setResetErr("Gönderilemedi. Email adresini kontrol et.");
-    else {
-      setResetMsg("Şifre sıfırlama linki emailine gönderildi.");
-      setResetEmail("");
-    }
+    setResetEmail("");
   };
 
   const inputStyle = {
@@ -141,7 +157,7 @@ export default function LoginPage() {
           <div className="text-right">
             <button
               type="button"
-              onClick={() => { setForgotOpen(true); setResetEmail(email); }}
+              onClick={handleForgotClick}
               className="text-xs font-bold"
               style={{ color: MUTED }}
             >
