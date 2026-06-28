@@ -1,6 +1,23 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
-export default function UnauthorizedPage() {
+export default async function UnauthorizedPage() {
+  // Giriş yapmış kullanıcı yanlış panele düşmüşse çıkmaz sokak gösterme,
+  // rolüne göre doğru paneline yönlendir.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role === 'admin') redirect('/admin')
+    if (profile?.role === 'trainer') {
+      // Sadece gerçek trainer kaydı varsa yönlendir, yoksa loop olur
+      const { data: t } = await supabase.from('trainers').select('id').eq('user_id', user.id).is('deleted_at', null).single()
+      if (t) redirect('/trainer')
+    }
+    if (profile?.role === 'member') redirect('/member')
+  }
+
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
