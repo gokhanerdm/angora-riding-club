@@ -232,10 +232,16 @@ export default function TrainerDashboardClient({
     setMembersLoading(true)
     const supabase = createClient()
 
-    // Her zaman sadece atanmış öğrenciler
-    let memberIds: string[] = []
-    const { data: assignedData } = await supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId)
-    memberIds = (assignedData ?? []).map((r: any) => r.member_id)
+    // Eğitmenin öğrencileri: default_trainer_id VEYA member_allowed_trainers
+    // (get_available_slots ile aynı mantık — tek kaynak)
+    const [{ data: assignedData }, { data: defaultData }] = await Promise.all([
+      supabase.from('member_allowed_trainers').select('member_id').eq('trainer_id', trainerId),
+      supabase.from('members').select('id').eq('default_trainer_id', trainerId).is('deleted_at', null),
+    ])
+    const memberIds = [...new Set([
+      ...(assignedData ?? []).map((r: any) => r.member_id),
+      ...(defaultData ?? []).map((r: any) => r.id),
+    ])]
     if (memberIds.length === 0) { setMembers([]); setMembersLoading(false); return }
 
     const { data: membersData } = await supabase
